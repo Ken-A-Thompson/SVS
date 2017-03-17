@@ -48,7 +48,7 @@ B = 2 #number of offspring per generation per surviving individual
 u = 0.01 #mutation probability
 alpha = 0.1 #mutational sd
 
-n0 = K #initial population size
+N0 = K #initial population size
 maxgen = 10000 #maximum number of generations (positive integer)
 opt = [0] * n #optimum phenotype
 outputFreq = 100 #record and print update this many generations
@@ -61,15 +61,19 @@ def main():
 
 	# intialize
 	gen = 0 #generation
-	pop = np.array([[0] * n] * n0) #array of individual trait vectors
+	pop = np.array([[0]] * N0]) #list of mutations held by each individual (0 is mutation that does nothing - ie a placeholder)
+	mut = np.array([[0] * n]) #list of phenotypic effect of mutations
 		
 	# open output files
 	fileHandles = open_output_files(K, n, B, u, alpha) 
 	
 	while gen < maxgen:
 
+		# genotype to phenotype
+		phenos = np.array([sum(mut[i]) for i in pop]) #add mutation effects up within each individual (try to improve by getting rid of loop!)
+
 		# viability selection
-		dist = np.linalg.norm(pop - opt, axis=1) #phenotypic distance from optimum
+		dist = np.linalg.norm(phenos - opt, axis=1) #phenotypic distance from optimum
 		w = np.exp(-dist**2) #probability of survival
 		rand = np.random.uniform(size = len(pop)) #random uniform number in [0,1] for each individual
 		surv = pop[rand < w] #survivors
@@ -81,10 +85,12 @@ def main():
 		
 		# mutation
 		rand = np.random.uniform(size = len(off)) #random uniform number in [0,1] for each offspring
-		muts = np.multiply(np.random.normal(0, alpha, (len(off), n)), (rand < u)[:,np.newaxis]) #mutations (with probability u all traits mutate by multivariate normal with sd alpha)
-		
-		# update population
-		pop = off + muts
+		nmuts = sum(rand < u) #number of new mutations
+		newmuts = np.random.normal(0, alpha, (nmuts,n)) #phenotypic effect of new mutations
+
+		# update
+		pop = 
+		mut = np.append(mut,newmuts,axis=0) #append effect of new mutations to mutation list
 
 		#end simulation if extinct        
 		if len(pop) == 0: 
