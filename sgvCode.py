@@ -61,7 +61,7 @@ def main():
 
 	# intialize
 	gen = 0 #generation
-	pop = np.array([[0]] * N0]) #list of mutations held by each individual (0 is mutation that does nothing - ie a placeholder)
+	pop = np.array([[0]] * N0) #list of mutations held by each individual (0 is mutation that does nothing - ie a placeholder)
 	mut = np.array([[0] * n]) #list of phenotypic effect of mutations
 		
 	# open output files
@@ -86,11 +86,15 @@ def main():
 		# mutation
 		rand = np.random.uniform(size = len(off)) #random uniform number in [0,1] for each offspring
 		nmuts = sum(rand < u) #number of new mutations
+		whomuts = np.where(rand < u) #indices of mutants
+
 		newmuts = np.random.normal(0, alpha, (nmuts,n)) #phenotypic effect of new mutations
+
 
 		# update
 		pop = 
 		mut = np.append(mut,newmuts,axis=0) #append effect of new mutations to mutation list
+			totmuts=len(mut)-1
 
 		#end simulation if extinct        
 		if len(pop) == 0: 
