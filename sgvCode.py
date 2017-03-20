@@ -16,9 +16,10 @@ def open_output_files(K, n, B, u, alpha):
 
     sim_id = 'K%d_n%d_B%d_u%r_alpha%r' %(K,n,B,u,alpha)
 
-    outfile_A = open("dat_%s.dat" %(sim_id),"w")
+    outfile_A = open("pop_%s.dat" %(sim_id),"w")
+    outfile_B = open("mut_%s.dat" %(sim_id),"w")
 
-    return [outfile_A]
+    return [outfile_A, outfile_B]
 
 def write_data_to_output(fileHandles, gen, data):
     """
@@ -28,7 +29,7 @@ def write_data_to_output(fileHandles, gen, data):
     """
     
     for i in range(0,len(fileHandles)):
-        fileHandles[i].write("%d  %r\n" %(gen, data))
+        fileHandles[i].write("%d  %r\n" %(gen, data[i]))
     
 def close_output_files(fileHandles):
     """
@@ -49,7 +50,7 @@ u = 0.01 #mutation probability
 alpha = 0.1 #mutational sd
 
 N0 = K #initial population size
-maxgen = 10000 #maximum number of generations (positive integer)
+maxgen = 1000 #maximum number of generations (positive integer)
 opt = [0] * n #optimum phenotype
 outputFreq = 100 #record and print update this many generations
 
@@ -60,17 +61,17 @@ outputFreq = 100 #record and print update this many generations
 def main():
 
 	# intialize
-	gen = 0 #generation
-	pop = np.array([[0]] * N0) #list of mutations held by each individual (0 is mutation that does nothing - ie a placeholder)
-	mut = np.array([[0] * n]) #list of phenotypic effect of mutations
+	pop = np.array([[1]] * N0) #list of mutations held by each individual (all start with same mutation at first locus)
+	mut = np.array([[0] * n]) #list of phenotypic effect of initial mutations (mutation at first locus puts all individuals at origin)
 		
 	# open output files
 	fileHandles = open_output_files(K, n, B, u, alpha) 
 	
+	gen = 0 #generation
 	while gen < maxgen:
 
 		# genotype to phenotype
-		phenos = np.array([sum(mut[i]) for i in pop]) #add mutation effects up within each individual (try to improve by getting rid of loop!)
+		phenos = np.dot(pop,mut)
 
 		# viability selection
 		dist = np.linalg.norm(phenos - opt, axis=1) #phenotypic distance from optimum
@@ -87,14 +88,15 @@ def main():
 		rand = np.random.uniform(size = len(off)) #random uniform number in [0,1] for each offspring
 		nmuts = sum(rand < u) #number of new mutations
 		whomuts = np.where(rand < u) #indices of mutants
-
 		newmuts = np.random.normal(0, alpha, (nmuts,n)) #phenotypic effect of new mutations
 
-
 		# update
-		pop = 
+		pop = np.append(off, np.transpose(np.identity(len(off),dtype=int)[whomuts[0]]), axis=1) #add new loci and identify mutants
 		mut = np.append(mut,newmuts,axis=0) #append effect of new mutations to mutation list
-			totmuts=len(mut)-1
+
+		# remove lost mutations (all zero columns)
+		mut = np.delete(mut, np.where(~pop.any(axis=0))[0], axis=0)
+		pop = pop[:, ~np.all(pop==0, axis=0)]
 
 		#end simulation if extinct        
 		if len(pop) == 0: 
@@ -105,7 +107,7 @@ def main():
         # dump data every outputFreq iteration
         # also print a short progess message 
 		if (gen % outputFreq) == 0:
-			write_data_to_output(fileHandles, gen, pop)
+			write_data_to_output(fileHandles, gen, [pop,mut])
 			print("gen %d    N %d" %(gen, len(pop)/B))   
 
 		# go to next generation
