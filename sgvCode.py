@@ -86,7 +86,7 @@ def main():
 		
 		# mutation
 		rand = np.random.uniform(size = len(off)) #random uniform number in [0,1] for each offspring
-		nmuts = sum(rand < u) #number of new mutations
+		nmuts = sum(rand < u) # mutate if random number is below mutation rate; returns number of new mutations
 		whomuts = np.where(rand < u) #indices of mutants
 		newmuts = np.random.normal(0, alpha, (nmuts,n)) #phenotypic effect of new mutations
 
