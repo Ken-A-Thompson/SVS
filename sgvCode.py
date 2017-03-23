@@ -52,7 +52,7 @@ def close_output_files(fileHandles):
 ##PARAMETERS##
 ######################################################################
 
-K = 100 #max number of parents (positive integer)
+K = 1000 #max number of parents (positive integer)
 n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per genome (0<u<1)
@@ -87,27 +87,26 @@ def main():
 		# viability selection
 		dist = np.linalg.norm(phenos - opt, axis=1) #phenotypic distance from optimum
 		w = np.exp(-dist**2) #probability of survival
-		rand = np.random.uniform(size = len(pop)) #random uniform number in [0,1] for each individual
-		surv = pop[rand < w] #survivors
+		rand1 = np.random.uniform(size = len(pop)) #random uniform number in [0,1] for each individual
+		surv = pop[rand1 < w] #survivors
 		if len(surv) > K:
 			surv = surv[np.random.randint(len(surv), size = K)] #randomly choose K individuals if more than K
-		
+
 		# birth
 		# off = np.repeat(surv, B, axis=0) #offspring of survivors (asexual)
 		# sex: i.e., make diploid from random haploid parents then segregate to haploid offspring
 		# pairs = np.transpose(np.array([np.arange(len(surv)),np.random.randint(len(surv),size=len(surv))])) #random mate pairs (can mate multiple times; all mate)
 		pairs = np.resize(np.random.choice(len(surv), size=len(surv), replace=False), (int(len(surv)/2), 2)) #random mate pairs (each mates at most once and not with self)
-		i = 0
-		off = []
-		while i < B:
-			rec = np.random.randint(2, size=(len(pairs), len(surv[0]))) #from which parent each offspring inherits each allele (free recombination, fair transmission)
-			off = np.append(off,[sum(surv[pairs][i]*[(-rec[i]+1),rec[i]]) for i in range(len(rec))]) #make offspring
-			i =+ 1
+		rand2 = np.random.randint(2, size=(len(pairs), len(surv[0]))) #from which parent each offspring inherits each allele (free recombination, fair transmission)
+		rec = np.resize(np.append(rand2,1-rand2,axis=1),(len(rand2),2,len(rand2[0]))) #reshape
+		off1 = np.sum(surv[pairs] * rec, axis=1) #one product of meiosis
+		off2 = np.sum(surv[pairs] * (1-rec), axis=1) #other product of meiosis
+		off = np.repeat(np.append(off1, off2, axis=0), B, axis=0) #each product of meiosis produced B times
 
 		# mutation
-		rand = np.random.uniform(size = len(off)) #random uniform number in [0,1] for each offspring
-		nmuts = sum(rand < u) #number of new mutations
-		whomuts = np.where(rand < u) #indices of mutants
+		rand3 = np.random.uniform(size = len(off)) #random uniform number in [0,1] for each offspring
+		nmuts = sum(rand3 < u) # mutate if random number is below mutation rate; returns number of new mutations
+		whomuts = np.where(rand3 < u) #indices of mutants
 		newmuts = np.random.normal(0, alpha, (nmuts,n)) #phenotypic effect of new mutations
 
 		# update
