@@ -18,8 +18,8 @@ def open_output_files(K, n, B, u, alpha):
 
     sim_id = 'K%d_n%d_B%d_u%r_alpha%r' %(K,n,B,u,alpha)
 
-    outfile_A = open("pop_%s.dat" %(sim_id),"w")
-    outfile_B = open("mut_%s.dat" %(sim_id),"w")
+    outfile_A = open("pop_%s.dat" %(sim_id),"wb")
+    outfile_B = open("mut_%s.dat" %(sim_id),"wb")
 
     return [outfile_A, outfile_B]
 
@@ -31,7 +31,12 @@ def write_data_to_output(fileHandles, gen, data):
     """
     
     for i in range(0,len(fileHandles)):
-    	fileHandles[i].write("%d %r\n" %(gen,data[i]))
+    	# fileHandles[i].write("%d %r\n" %(gen,data[i]))
+    	if i == 0:
+    		np.savetxt(fileHandles[i], data[i], fmt='%d')
+    	else:
+    		np.savetxt(fileHandles[i], data[i], fmt='%7.4f')
+
 
 	# for i in range(0,len(fileHandles)):
 	# 	fileHandles[i].write("%d  %r\n" %(gen, data[i]))
