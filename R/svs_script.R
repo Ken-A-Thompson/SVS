@@ -9,18 +9,14 @@ library(tidyverse)
 #Generate vectors
 
 mut.d1 <- c(0, 
-            rnorm(19) %>% 
-  as.vector() %>% 
-  abs() %>% 
-  sort())
+            rnorm(10) %>% 
+  as.vector())
   
 mut.d2 <- c(0, 
-            rnorm(19) %>% 
-  as.vector() %>% 
-  abs() %>% 
-  sort())
+            rnorm(10) %>% 
+  as.vector())
 
-#Generate a 'hybrid'
+# Generate a 'hybrid'
 
 ## Create 'parents'
 anc.d1 <- rep(0, length(mut.d1))

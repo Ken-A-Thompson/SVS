@@ -15,3 +15,4 @@
 1. Analytical modelling of hybrid fitness… can we predict segregation variance? Can we predict fitness by angle?
 2. Incorporate adaptation using ‘list’ of constrained mutations. 
 
+?
