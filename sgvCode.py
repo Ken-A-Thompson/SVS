@@ -18,10 +18,11 @@ def open_output_files(K, n, B, u, alpha):
     """
 
     sim_id = 'K%d_n%d_B%d_u%r_alpha%r' %(K,n,B,u,alpha)
+    data_dir = 'data'
 
-    outfile_A = open("pop_%s.pkl" %(sim_id),"ab")
-    outfile_B = open("mut_%s.pkl" %(sim_id),"ab")
-    outfile_C = open("gen_%s.pkl" %(sim_id),"ab")
+    outfile_A = open("%s/pop_%s.pkl" %(data_dir,sim_id),"ab")
+    outfile_B = open("%s/mut_%s.pkl" %(data_dir,sim_id),"ab")
+    outfile_C = open("%s/gen_%s.pkl" %(data_dir,sim_id),"ab")
 
     return [outfile_A, outfile_B, outfile_C]
 
@@ -143,28 +144,3 @@ start = time.time()
 main()
 end = time.time()
 print(end-start)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
