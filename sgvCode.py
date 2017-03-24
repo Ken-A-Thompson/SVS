@@ -3,6 +3,7 @@
 
 import numpy as np
 import time
+import pickle
 
 np.set_printoptions(threshold=np.inf) #to write all of the entries in a large numpy array to file
 
@@ -18,32 +19,24 @@ def open_output_files(K, n, B, u, alpha):
 
     sim_id = 'K%d_n%d_B%d_u%r_alpha%r' %(K,n,B,u,alpha)
 
-    outfile_A = open("pop_%s.dat" %(sim_id),"wb")
-    outfile_B = open("mut_%s.dat" %(sim_id),"wb")
+    outfile_A = open("pop_%s.pkl" %(sim_id),"ab")
+    outfile_B = open("mut_%s.pkl" %(sim_id),"ab")
+    outfile_C = open("gen_%s.pkl" %(sim_id),"ab")
 
-    return [outfile_A, outfile_B]
+    return [outfile_A, outfile_B, outfile_C]
 
-def write_data_to_output(fileHandles, gen, data):
+def write_data_to_output(fileHandles, data):
     """
     This function writes a (time, data) pair to the
     corresponding output file. We write densities
     not abundances.
     """
-    
+	
     for i in range(0,len(fileHandles)):
-    	# fileHandles[i].write("%d %r\n" %(gen,data[i]))
-    	if i == 0:
-    		np.savetxt(fileHandles[i], data[i], fmt='%d')
-    	else:
-    		np.savetxt(fileHandles[i], data[i], fmt='%7.4f')
-
+        pickle.dump(data[i],fileHandles[i])
 
 	# for i in range(0,len(fileHandles)):
-	# 	fileHandles[i].write("%d  %r\n" %(gen, data[i]))
-		# with fileHandles[i] as outfile:
-		# 	for data_slice in data:
-		# 		np.savetxt(outfile, data_slice, fmt='%-7.2f')
-		# 		outfile.write('generation %d\n' %gen)
+	# 	pickle.dump(data[i],fileHandles[i])
 
 def close_output_files(fileHandles):
     """
@@ -132,7 +125,7 @@ def main():
         # dump data every outputFreq iteration
         # also print a short progess message (generation and number of parents)
 		if (gen % outputFreq) == 0:
-			write_data_to_output(fileHandles, gen, [pop,mut])
+			write_data_to_output(fileHandles, [pop,mut,gen])
 			print("gen %d    N %d" %(gen, len(pop)/B))   
 		
 		# go to next generation
