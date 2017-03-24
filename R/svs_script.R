@@ -2,6 +2,7 @@
 ## Author Ken A. Thompson
 
 #load packages
+#install.packages('tidyverse')
 library(tidyverse)
 
 
