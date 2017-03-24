@@ -9,13 +9,13 @@ library(tidyverse)
 #Generate vectors
 
 mut.d1 <- c(0, 
-            rnorm(9) %>% 
+            rnorm(19) %>% 
   as.vector() %>% 
   abs() %>% 
   sort())
   
 mut.d2 <- c(0, 
-            rnorm(9) %>% 
+            rnorm(19) %>% 
   as.vector() %>% 
   abs() %>% 
   sort())
@@ -31,10 +31,10 @@ muts.d1 <- diff(mut.d1, lag = 1)
 muts.d2 <- diff(mut.d2, lag = 1)
 
 muts.d1.vec <- c(0, muts.d1)
-muts.d1.vec <- c(0, muts.d2)
+muts.d2.vec <- c(0, muts.d2)
 
-hyb.d1 <- replicate(1000, sum(sample(c(muts.d1.vec, anc.d1),10,replace=F))) #Sum of 'trait value' for D1
-hyb.d2 <- replicate(1000, sum(sample(c(muts.d1.vec, anc.d2),10,replace=F))) #Sum of 'trait value' for D2
+hyb.d1 <- replicate(1000, sum(sample(c(muts.d1.vec, anc.d1), length(muts.d1.vec),replace=F))) #Sum of 'trait value' for D1
+hyb.d2 <- replicate(1000, sum(sample(c(muts.d2.vec, anc.d2), length(muts.d2.vec),replace=F))) #Sum of 'trait value' for D2
 
 
 ## Generate figure for 'adaptive' walk
