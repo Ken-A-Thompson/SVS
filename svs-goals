@@ -1,0 +1,17 @@
+# Goals
+
+## Short term
+1. (Burn in), then have population adapt to specified optimum...
+2. Load the data into R.
+3. Plot the adaptive walk
+4. Plot hybrid between derived and ancestor
+
+## Longer term
+1. Two separate populations adapting to same optimum
+2. Plot their adaptive walks
+3. Plot hybrid between two derived populations
+
+## Extra long term
+1. Analytical modelling of hybrid fitness… can we predict segregation variance? Can we predict fitness by angle?
+2. Incorporate adaptation using ‘list’ of constrained mutations. 
+
