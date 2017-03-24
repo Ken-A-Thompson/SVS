@@ -4,6 +4,8 @@
 import numpy as np
 import time
 
+np.set_printoptions(threshold=np.inf) #to write all of the entries in a large numpy array to file
+
 ######################################################################
 ##HELPER FUNCTIONS##
 ######################################################################
@@ -16,8 +18,8 @@ def open_output_files(K, n, B, u, alpha):
 
     sim_id = 'K%d_n%d_B%d_u%r_alpha%r' %(K,n,B,u,alpha)
 
-    outfile_A = open("pop_%s.dat" %(sim_id),"w")
-    outfile_B = open("mut_%s.dat" %(sim_id),"w")
+    outfile_A = open("pop_%s.dat" %(sim_id),"wb")
+    outfile_B = open("mut_%s.dat" %(sim_id),"wb")
 
     return [outfile_A, outfile_B]
 
@@ -29,8 +31,20 @@ def write_data_to_output(fileHandles, gen, data):
     """
     
     for i in range(0,len(fileHandles)):
-        fileHandles[i].write("%d  %r\n" %(gen, data[i]))
-    
+    	# fileHandles[i].write("%d %r\n" %(gen,data[i]))
+    	if i == 0:
+    		np.savetxt(fileHandles[i], data[i], fmt='%d')
+    	else:
+    		np.savetxt(fileHandles[i], data[i], fmt='%7.4f')
+
+
+	# for i in range(0,len(fileHandles)):
+	# 	fileHandles[i].write("%d  %r\n" %(gen, data[i]))
+		# with fileHandles[i] as outfile:
+		# 	for data_slice in data:
+		# 		np.savetxt(outfile, data_slice, fmt='%-7.2f')
+		# 		outfile.write('generation %d\n' %gen)
+
 def close_output_files(fileHandles):
     """
     This function closes all output files.
@@ -43,16 +57,18 @@ def close_output_files(fileHandles):
 ##PARAMETERS##
 ######################################################################
 
-K = 1000 #max population size (positive integer)
+K = 1000 #max number of parents (positive integer)
 n = 2 #number of traits (positive integer)
-B = 2 #number of offspring per generation per surviving individual
-u = 0.01 #mutation probability
-alpha = 0.1 #mutational sd
+B = 2 #number of offspring per generation per parent (positive integer)
+u = 0.001 #mutation probability per genome (0<u<1)
+alpha = 0.1 #mutational sd (positive real number)
 
 N0 = K #initial population size
 maxgen = 1000 #maximum number of generations (positive integer)
 opt = [0] * n #optimum phenotype
 outputFreq = 100 #record and print update this many generations
+
+remove_lost = True #remove mutations that are lost?
 
 ######################################################################
 ##SIMULATION##
@@ -71,23 +87,31 @@ def main():
 	while gen < maxgen:
 
 		# genotype to phenotype
-		phenos = np.dot(pop,mut)
+		phenos = np.dot(pop,mut) #sum mutations held by each individual
 
 		# viability selection
 		dist = np.linalg.norm(phenos - opt, axis=1) #phenotypic distance from optimum
 		w = np.exp(-dist**2) #probability of survival
-		rand = np.random.uniform(size = len(pop)) #random uniform number in [0,1] for each individual
-		surv = pop[rand < w] #survivors
+		rand1 = np.random.uniform(size = len(pop)) #random uniform number in [0,1] for each individual
+		surv = pop[rand1 < w] #survivors
 		if len(surv) > K:
 			surv = surv[np.random.randint(len(surv), size = K)] #randomly choose K individuals if more than K
-		
+
 		# birth
-		off = np.repeat(surv, B, axis=0) #offspring of survivors (asexual)
-		
+		# off = np.repeat(surv, B, axis=0) #offspring of survivors (asexual)
+		# sex: i.e., make diploid from random haploid parents then segregate to haploid offspring
+		# pairs = np.transpose(np.array([np.arange(len(surv)),np.random.randint(len(surv),size=len(surv))])) #random mate pairs (can mate multiple times; all mate)
+		pairs = np.resize(np.random.choice(len(surv), size=len(surv), replace=False), (int(len(surv)/2), 2)) #random mate pairs (each mates at most once and not with self)
+		rand2 = np.random.randint(2, size=(len(pairs), len(surv[0]))) #from which parent each offspring inherits each allele (free recombination, fair transmission)
+		rec = np.resize(np.append(rand2,1-rand2,axis=1),(len(rand2),2,len(rand2[0]))) #reshape
+		off1 = np.sum(surv[pairs] * rec, axis=1) #one product of meiosis
+		off2 = np.sum(surv[pairs] * (1-rec), axis=1) #other product of meiosis
+		off = np.repeat(np.append(off1, off2, axis=0), B, axis=0) #each product of meiosis produced B times
+
 		# mutation
-		rand = np.random.uniform(size = len(off)) #random uniform number in [0,1] for each offspring
-		nmuts = sum(rand < u) # mutate if random number is below mutation rate; returns number of new mutations
-		whomuts = np.where(rand < u) #indices of mutants
+		rand3 = np.random.uniform(size = len(off)) #random uniform number in [0,1] for each offspring
+		nmuts = sum(rand3 < u) # mutate if random number is below mutation rate; returns number of new mutations
+		whomuts = np.where(rand3 < u) #indices of mutants
 		newmuts = np.random.normal(0, alpha, (nmuts,n)) #phenotypic effect of new mutations
 
 		# update
@@ -95,8 +119,9 @@ def main():
 		mut = np.append(mut,newmuts,axis=0) #append effect of new mutations to mutation list
 
 		# remove lost mutations (all zero columns)
-		mut = np.delete(mut, np.where(~pop.any(axis=0))[0], axis=0)
-		pop = pop[:, ~np.all(pop==0, axis=0)]
+		if remove_lost:
+			mut = np.delete(mut, np.where(~pop.any(axis=0))[0], axis=0)
+			pop = pop[:, ~np.all(pop==0, axis=0)]
 
 		#end simulation if extinct        
 		if len(pop) == 0: 
@@ -105,11 +130,11 @@ def main():
             
         #otherwise continue
         # dump data every outputFreq iteration
-        # also print a short progess message 
+        # also print a short progess message (generation and number of parents)
 		if (gen % outputFreq) == 0:
 			write_data_to_output(fileHandles, gen, [pop,mut])
 			print("gen %d    N %d" %(gen, len(pop)/B))   
-
+		
 		# go to next generation
 		gen += 1
 
