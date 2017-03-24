@@ -8,15 +8,33 @@ library(tidyverse)
 ## Testing script for plotting adaptive walk
 #Generate vectors
 
-mut.d1 <- rnorm(10) %>% 
+mut.d1 <- c(0, 
+            rnorm(9) %>% 
   as.vector() %>% 
   abs() %>% 
-  sort()
+  sort())
   
-mut.d2 <- rnorm(10) %>% 
+mut.d2 <- c(0, 
+            rnorm(9) %>% 
   as.vector() %>% 
   abs() %>% 
-  sort()
+  sort())
+
+#Generate a 'hybrid'
+
+## Create 'parents'
+anc.d1 <- rep(0, length(mut.d1))
+anc.d2 <- rep(0, length(mut.d2))
+
+#Generate Hybrids
+muts.d1 <- diff(mut.d1, lag = 1)
+muts.d2 <- diff(mut.d2, lag = 1)
+
+muts.d1.vec <- c(0, muts.d1)
+muts.d1.vec <- c(0, muts.d2)
+
+hyb.d1 <- replicate(1000, sum(sample(c(muts.d1.vec, anc.d1),10,replace=F))) #Sum of 'trait value' for D1
+hyb.d2 <- replicate(1000, sum(sample(c(muts.d1.vec, anc.d2),10,replace=F))) #Sum of 'trait value' for D2
 
 
 ## Generate figure for 'adaptive' walk
@@ -47,9 +65,16 @@ df <- data.frame(mut.d1, mut.d2) # Generate data frame for ggplot with both muta
 ### plot it 
 adapt.walk <- ggplot(df, aes(x = mut.d1, y= mut.d2)) +
   geom_point() + 
+  labs(x = "Trait 1", y = "Trait 2") +
   geom_segment(aes(xend=c(tail(mut.d1, n=-1), NA), yend=c(tail(mut.d2, n=-1), NA)),
                arrow=arrow(length=unit(0.3,"cm"), type = "open")) + 
   theme_ng1
 adapt.walk
 
+#Plot hybrids
+## Create hybrid dataframe
+
+hyb.df <- data.frame(hyb.d1, hyb.d2)
+
+adapt.walk + geom_point(data = hyb.df, aes(x = hyb.d1, y = hyb.d2), alpha = 0.25)
 
