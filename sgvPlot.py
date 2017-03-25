@@ -45,6 +45,15 @@ phenos = []
 for i in range(len(gen)):
 	phenos.append(np.dot(pop[i],mut[i]))
 
+# mean phenotypes
+mean_phenos = []
+for i in range(len(phenos)):
+    # plt.plot(np.mean(phenos[i][:,0]),np.mean(phenos[i][:,1]), color='black')
+    # plt.plot(np.mean(phenos[i][:,0]),np.mean(phenos[i][:,1]), color='black')
+    mean_phenos.append(np.mean(phenos[i], axis=0))
+
+mean_pheno = np.array(mean_phenos)
+
 # save pheno data as CSV for R (can take a little time!)
 # import csv
 # with open("%s/phenos_%s.csv" %(data_dir,sim_id), "w") as f:
@@ -57,13 +66,6 @@ for i, c in zip(range(len(phenos)), colors):
     plt.scatter(phenos[i][:,0],phenos[i][:,1], color=c)
 
 # plot mean phenotypes
-mean_phenos = []
-for i in range(len(phenos)):
-    # plt.plot(np.mean(phenos[i][:,0]),np.mean(phenos[i][:,1]), color='black')
-    # plt.plot(np.mean(phenos[i][:,0]),np.mean(phenos[i][:,1]), color='black')
-    mean_phenos.append(np.mean(phenos[i], axis=0))
-
-mean_pheno = np.array(mean_phenos)
 plt.plot(mean_pheno[:,0],mean_pheno[:,1], color='black')
 
 # save plot
