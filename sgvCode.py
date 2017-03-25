@@ -5,7 +5,7 @@ import numpy as np
 import time
 import pickle
 
-np.set_printoptions(threshold=np.inf) #to write all of the entries in a large numpy array to file
+#np.set_printoptions(threshold=np.inf) #to write all of the entries in a large numpy array to file
 
 ######################################################################
 ##HELPER FUNCTIONS##
@@ -55,11 +55,14 @@ K = 1000 #max number of parents (positive integer)
 n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per genome (0<u<1)
-alpha = 0.1 #mutational sd (positive real number)
+alpha = 0.01 #mutational sd (positive real number)
 
 N0 = K #initial population size
-maxgen = 1000 #maximum number of generations (positive integer)
-opt = [0] * n #optimum phenotype
+maxgen = 2000 #maximum number of generations (positive integer)
+opt0 = [0] * n #optimum phenotype during burn in
+opt1 = [0.5] * n #optimum phenotype after burn in
+burn_gen = 1000 #number of generations of burn in (<maxgen)
+
 outputFreq = 100 #record and print update this many generations
 
 remove_lost = True #remove mutations that are lost?
@@ -82,6 +85,12 @@ def main():
 
 		# genotype to phenotype
 		phenos = np.dot(pop,mut) #sum mutations held by each individual
+
+		# optimum phenotype
+		if gen < burn_gen:
+			opt = opt0
+		else:
+			opt = opt1
 
 		# viability selection
 		dist = np.linalg.norm(phenos - opt, axis=1) #phenotypic distance from optimum
