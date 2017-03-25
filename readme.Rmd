@@ -4,3 +4,6 @@
 ### Background
 
 Test
+
+## Running simulations
+To run the simulation make sure Python is installed and type "python sgvCode.py" in terminal while in the SVS directory. To plot the data type "python sgvPlot.py". The resulting data and image files will be in the data folder. 
