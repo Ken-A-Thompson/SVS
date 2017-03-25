@@ -58,7 +58,7 @@ u = 0.001 #mutation probability per genome (0<u<1)
 alpha = 0.01 #mutational sd (positive real number)
 
 N0 = K #initial population size
-maxgen = 2000 #maximum number of generations (positive integer)
+maxgen = 20000 #maximum number of generations (positive integer)
 opt0 = [0] * n #optimum phenotype during burn in
 opt1 = [0.5] * n #optimum phenotype after burn in
 burn_gen = 1000 #number of generations of burn in (<maxgen)

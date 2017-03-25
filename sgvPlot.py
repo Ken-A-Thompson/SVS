@@ -51,11 +51,22 @@ for i in range(len(gen)):
 #     writer = csv.writer(f)
 #     writer.writerows(phenos)
 
-# plot phenotypes
+# plot all phenotypes
 colors = cm.rainbow(np.linspace(0, 1, len(phenos)))
 for i, c in zip(range(len(phenos)), colors):
     plt.scatter(phenos[i][:,0],phenos[i][:,1], color=c)
-# plt.show()
+
+# plot mean phenotypes
+mean_phenos = []
+for i in range(len(phenos)):
+    # plt.plot(np.mean(phenos[i][:,0]),np.mean(phenos[i][:,1]), color='black')
+    # plt.plot(np.mean(phenos[i][:,0]),np.mean(phenos[i][:,1]), color='black')
+    mean_phenos.append(np.mean(phenos[i], axis=0))
+
+mean_pheno = np.array(mean_phenos)
+plt.plot(mean_pheno[:,0],mean_pheno[:,1], color='black')
+
+# save plot
 plt.savefig('%s/plot_%s.png' %(data_dir,sim_id))
 
 
