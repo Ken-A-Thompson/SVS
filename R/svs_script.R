@@ -10,11 +10,11 @@ library(tidyverse)
 #Generate vectors
 
 mut.d1 <- c(0, 
-            rnorm(10) %>% 
+            rnorm(20) %>% 
   as.vector())
   
 mut.d2 <- c(0, 
-            rnorm(10) %>% 
+            rnorm(20) %>% 
   as.vector())
 
 # Generate a 'hybrid'
@@ -74,4 +74,26 @@ adapt.walk
 hyb.df <- data.frame(hyb.d1, hyb.d2)
 
 adapt.walk + geom_point(data = hyb.df, aes(x = hyb.d1, y = hyb.d2), alpha = 0.25)
+
+
+# Import numpy data into R
+
+sgv.phenos <- read.csv("/Users/Ken/Documents/Projects/SVS/data/phenos_K1000_n2_B2_u0.001_alpha0.01.csv", header = F, 
+                       col.names = 1:ncol(sgv.phenos), check.names = F, na.strings = c("[", "]"))
+
+## Add generation number to dataset
+gen <- 1:nrow(sgv.phenos)
+sgv.phenos.gen <- cbind(gen, sgv.phenos)
+
+
+
+sgv.tidy <- sgv.phenos.gen %>% 
+  gather(key = individudal, value = pheno, 2:ncol(sgv.phenos.gen)) %>% #convert to long format
+  mutate(pheno = gsub("\\[|\\]","", pheno)) %>%  #get rid of square brackets
+  mutate(pheno.t = trimws(pheno)) %>% #get rid of leading white space
+  separate(pheno.t, c("X", "Y"), sep = c(" ", "  ")) %>% #seperate X and Y
+  View()
+
+
+
 
