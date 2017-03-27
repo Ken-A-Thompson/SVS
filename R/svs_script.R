@@ -3,7 +3,10 @@
 
 #load packages
 #install.packages('tidyverse')
+#install.packages('splitstackshape')
+library(splitstackshape)
 library(tidyverse)
+
 
 
 ## Testing script for plotting adaptive walk
@@ -85,14 +88,47 @@ sgv.phenos <- read.csv("/Users/Ken/Documents/Projects/SVS/data/phenos_K1000_n2_B
 gen <- 1:nrow(sgv.phenos)
 sgv.phenos.gen <- cbind(gen, sgv.phenos)
 
-
-
 sgv.tidy <- sgv.phenos.gen %>% 
-  gather(key = individudal, value = pheno, 2:ncol(sgv.phenos.gen)) %>% #convert to long format
+  gather(key = individual, value = pheno, 2:ncol(sgv.phenos.gen)) %>% #convert to long format
   mutate(pheno = gsub("\\[|\\]","", pheno)) %>%  #get rid of square brackets
   mutate(pheno.t = trimws(pheno)) %>% #get rid of leading white space
-  separate(pheno.t, c("X", "Y"), sep = c(" ", "  ")) %>% #seperate X and Y
-  View()
+  mutate(pheno.D = paste(pheno.t, "D", step = "")) %>%  #add 'dummy character' "D" to end of string to enable deletion
+  mutate(pheno.t2 = gsub("0.  0. D ","0 0", pheno.D)) %>%  #get rid of double zero oddity
+  mutate(pheno.t3 = gsub("D","", pheno.t2)) %>%  #get rid of Dummy
+  mutate(pheno.t4 = gsub("  "," ", pheno.t3)) %>%  #get rid of double space
+  mutate(pheno.t5 = trimws(pheno.t4)) #get rid of trailing white space
+
+#use cSplit to get X and Y
+sgv.tidy.split <- cSplit(sgv.tidy, splitCols = "pheno.t5", sep = " ")
+
+sgv.plot <- sgv.tidy.split %>% 
+  select(gen, individual, pheno.t5_1, pheno.t5_2) %>% 
+  rename(X = pheno.t5_1) %>% 
+  rename(Y = pheno.t5_2) 
+
+#Finally... now plot it
+
+arrows <- plyr::ddply(na.omit(sgv.plot), ~gen, summarise, meanX = mean(X), meanY= mean(Y))
+
+real.walk.means <- ggplot(arrows, aes(x = meanX, y= meanY)) +
+  geom_point() + 
+  labs(x = "Trait 1", y = "Trait 2") +
+  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+               arrow=arrow(length=unit(0.3,"cm"), type = "open")) + 
+  theme_ng1
+real.walk.means
+
+real.walk.means + geom_point(data = sgv.plot, aes(x = X, y = Y, colour = gen), alpha = 0.1)
+
+#real.walk <- ggplot(na.omit(sgv.plot), aes(x = X, y= Y, colour = gen)) +
+#  geom_point(aes(colour = gen), alpha = 0.2) + #colour by generation; lighter are later on
+#  stat_summary(fun.y=mean, geom = "line", aes(group =factor(gen))) + 
+#  labs(x = "Trait 1", y = "Trait 2") +
+#  theme_ng1
+#real.walk
+
+
+
 
 
 
