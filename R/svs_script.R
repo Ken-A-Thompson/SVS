@@ -106,6 +106,8 @@ sgv.plot <- sgv.tidy.split %>%
   rename(X = pheno.t5_1) %>% 
   rename(Y = pheno.t5_2) 
 
+write.csv(sgv.plot, file = "R/2017-03-27-tidySVS.csv")
+
 #Finally... now plot it
 
 arrows <- plyr::ddply(na.omit(sgv.plot), ~gen, summarise, meanX = mean(X), meanY= mean(Y))
