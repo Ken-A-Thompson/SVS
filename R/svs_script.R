@@ -13,12 +13,16 @@ library(tidyverse)
 #Generate vectors
 
 mut.d1 <- c(0, 
-            rnorm(20) %>% 
-  as.vector())
+            rnorm(20)) %>%
+  abs() %>% 
+  sort() %>% 
+  as.vector()
   
 mut.d2 <- c(0, 
-            rnorm(20) %>% 
-  as.vector())
+            rnorm(20)) %>%
+  abs() %>% 
+  sort() %>% 
+  as.vector()
 
 # Generate a 'hybrid'
 
@@ -27,8 +31,8 @@ anc.d1 <- rep(0, length(mut.d1))
 anc.d2 <- rep(0, length(mut.d2))
 
 #Generate Hybrids
-muts.d1 <- diff(mut.d1, lag = 1)
-muts.d2 <- diff(mut.d2, lag = 1)
+muts.d1 <- rev(diff(mut.d1, lag = 1))
+muts.d2 <- rev(diff(mut.d2, lag = 1))
 
 muts.d1.vec <- c(0, muts.d1)
 muts.d2.vec <- c(0, muts.d2)
@@ -63,10 +67,10 @@ theme_ng1 <- theme(aspect.ratio=1.0,panel.background = element_blank(),
 df <- data.frame(mut.d1, mut.d2) # Generate data frame for ggplot with both mutation vectors
 
 ### plot it 
-adapt.walk <- ggplot(df, aes(x = mut.d1, y= mut.d2)) +
+adapt.walk <- ggplot(df, aes(x = rev(mut.d1), y= rev(mut.d2))) +
   geom_point() + 
   labs(x = "Trait 1", y = "Trait 2") +
-  geom_segment(aes(xend=c(tail(mut.d1, n=-1), NA), yend=c(tail(mut.d2, n=-1), NA)),
+  geom_segment(aes(xend=c(tail(rev(mut.d1), n=-1), NA), yend=c(tail(rev(mut.d2), n=-1), NA)),
                arrow=arrow(length=unit(0.3,"cm"), type = "open")) + 
   theme_ng1
 adapt.walk
@@ -116,7 +120,7 @@ real.walk.means <- ggplot(arrows, aes(x = meanX, y= meanY)) +
   geom_point() + 
   labs(x = "Trait 1", y = "Trait 2") +
   geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
-               arrow=arrow(length=unit(0.3,"cm"), type = "open")) + 
+               arrow=arrow(length=unit(0.3,"cm"), type = "open")) +
   theme_ng1
 real.walk.means
 
