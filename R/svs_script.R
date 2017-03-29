@@ -85,8 +85,7 @@ adapt.walk + geom_point(data = hyb.df, aes(x = hyb.d1, y = hyb.d2), alpha = 0.25
 
 # Import numpy data into R
 
-sgv.phenos <- read.csv("/Users/Ken/Documents/Projects/SVS/data/phenos_K1000_n2_B2_u0.001_alpha0.01.csv", header = F, 
-                       col.names = 1:ncol(sgv.phenos), check.names = F, na.strings = c("[", "]"))
+sgv.phenos <- read.csv("/Users/Ken/Documents/Projects/SVS/data/phenos_K1000_n2_B2_u0.001_alpha0.01.csv", header = F, col.names = 1:ncol(sgv.phenos), check.names = F, na.strings = c("[", "]"))
 
 ## Add generation number to dataset
 gen <- 1:nrow(sgv.phenos)
@@ -126,12 +125,12 @@ real.walk.means
 
 real.walk.means + geom_point(data = sgv.plot, aes(x = X, y = Y, colour = gen), alpha = 0.1)
 
-#real.walk <- ggplot(na.omit(sgv.plot), aes(x = X, y= Y, colour = gen)) +
-#  geom_point(aes(colour = gen), alpha = 0.2) + #colour by generation; lighter are later on
-#  stat_summary(fun.y=mean, geom = "line", aes(group =factor(gen))) + 
-#  labs(x = "Trait 1", y = "Trait 2") +
-#  theme_ng1
-#real.walk
+real.walk <- ggplot(na.omit(sgv.plot), aes(x = X, y= Y, colour = gen)) +
+ geom_point(aes(colour = gen), alpha = 0.2) + #colour by generation; lighter are later on
+ stat_summary(fun.y=mean, geom = "line", aes(group =factor(gen))) +
+ labs(x = "Trait 1", y = "Trait 2") +
+ theme_ng1
+real.walk
 
 
 
