@@ -7,8 +7,6 @@
 library(splitstackshape)
 library(tidyverse)
 
-
-
 ## Testing script for plotting adaptive walk
 #Generate vectors
 
@@ -115,7 +113,7 @@ write.csv(sgv.plot, file = "R/2017-03-27-tidySVS.csv")
 
 arrows <- plyr::ddply(na.omit(sgv.plot), ~gen, summarise, meanX = mean(X), meanY= mean(Y))
 
-real.walk.means <- ggplot(arrows, aes(x = meanX, y= meanY)) +
+real.walk.means <- ggplot(arrows[1:20,], aes(x = meanX, y= meanY)) +
   geom_point() + 
   labs(x = "Trait 1", y = "Trait 2") +
   geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
