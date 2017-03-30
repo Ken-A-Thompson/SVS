@@ -1,16 +1,23 @@
+#Author: Matthew Osmond <mmosmond@zoology.ubc.ca>
+#Description: Adaptation from standing genetic variance (SGV) in Fisher's geometric model, implications for hybrids
+#Adapt using standing genetic variance from burn-in as well as new mutations
+
 import numpy as np
-import matplotlib.pyplot as plt
-import pickle
-import matplotlib.cm as cm
 import time
+import pickle
+
+######################################################################
+##LOAD DATA FROM BURN_IN##
+######################################################################
 
 K = 1000 #max number of parents (positive integer)
 n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per genome (0<u<1)
 alpha = 0.01 #mutation SD
+maxgen = 10000 #number of gens in burn-in
 
-sim_id = 'K%d_n%d_B%d_u%r_alpha%r' %(K,n,B,u,alpha)
+sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn' %(K,n,B,u,alpha,maxgen)
 
 data_dir = 'data'
 
@@ -32,19 +39,17 @@ while 1:
     except EOFError:
         break
 
-
-
 ######################################################################
 ##HELPER FUNCTIONS##
 ######################################################################
 
-def open_output_files(K, n, B, u, alpha, opt1):
+def open_output_files(K, n, B, u, alpha, maxgen, opt1):
     """
     This function opens the output files and returns file
     handles to each.
     """
 
-    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_opt%r' %(K,n,B,u,alpha,opt1)
+    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_opt%s_adapt' %(K,n,B,u,alpha,maxgen,'-'.join(str(e) for e in opt1))
     data_dir = 'data'
 
     outfile_A = open("%s/pop_%s.pkl" %(data_dir,sim_id),"ab")
@@ -78,10 +83,12 @@ def close_output_files(fileHandles):
 ##PARAMETERS##
 ######################################################################
 
-maxgen = 9000 #maximum number of generations (positive integer)
-opt1 = [0] * n #optimum phenotype after burn in
+maxgen = 10000 #maximum number of generations (positive integer)
+opt1 = [0] * n #optimum phenotype 
+# opt1 = [0.5] * n #optimum phenotype 
+# opt1 = [-0.5] * n #optimum phenotype 
 
-outputFreq = 100 #record and print update this many generations
+outputFreq = maxgen #record and print update this many generations
 
 remove_lost = True #remove mutations that are lost?
 
@@ -96,16 +103,16 @@ def main():
 	mut = mutall[-1] #list of phenotypic effect of initial mutations (mutation at first locus puts all individuals at origin)
 		
 	# open output files
-	fileHandles = open_output_files(K, n, B, u, alpha, opt1) 
+	fileHandles = open_output_files(K, n, B, u, alpha, maxgen, opt1) 
 	
-	gen = 0 #generation
-	while gen < maxgen:
+	# optimum phenotype
+	opt = opt1
+
+	gen = 1 #generation
+	while gen < maxgen + 1:
 
 		# genotype to phenotype
 		phenos = np.dot(pop,mut) #sum mutations held by each individual
-
-		# optimum phenotype
-		opt = opt1
 
 		# viability selection
 		dist = np.linalg.norm(phenos - opt, axis=1) #phenotypic distance from optimum
@@ -149,9 +156,9 @@ def main():
         #otherwise continue
         # dump data every outputFreq iteration
         # also print a short progess message (generation and number of parents)
-		if (gen % outputFreq) == 0:
+		if gen > 0 and (gen % outputFreq) == 0:
 			write_data_to_output(fileHandles, [pop,mut,gen])
-			print("gen %d    N %d" %(gen, len(pop)/B))   
+			print("gen %d    N %d" %(gen, len(pop)))   
 		
 		# go to next generation
 		gen += 1
