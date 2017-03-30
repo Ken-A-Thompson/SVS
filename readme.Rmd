@@ -14,4 +14,12 @@ One striking result from models is that reproductive isolation evolves at the sa
 
 
 ## Running simulations
-To run the simulation make sure Python is installed and type "python sgvCode.py" in terminal while in the SVS directory. To plot the data type "python sgvPlot.py". The resulting data and image files will be in the data folder. 
+1. open sgvBurn.py and choose parameters for burn-in (allowing a build-up of standing genetic variance in ancestor population)
+2. run sgvBurn.py by typing "python sgvBurn.py" in terminal while in SVS directory
+3. open sgvAdapt.py and choose parameters that align with ancestor population of choice (must be first used to run sgvBurn.py)
+4. in sgvAdapt.py choose new optimum and time to adapt to it
+5. run sgvAdapt.py
+6. repeat 4 and 5 with different optima if you wish
+7. open sgvHybrid.py and choose parameters that align with adapted populations of choice (must be first used to run sgvAdapt.py)
+8. run sgvHybrid.py
+9. see newly created plots in data folder
