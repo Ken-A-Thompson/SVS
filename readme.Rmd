@@ -8,7 +8,7 @@ Models of ecological speciation (when natural selection generates reproductive i
 
 One striking result from models is that reproductive isolation evolves at the same rate when allopatric populations adapt to divergent optima as it does when they undergo parallel evolution to the same optimum. However, data from nature suggest that this is not the case. [[To be continued]]
 
-![Fig. 1](Figs/Conceptual/2017-03-15-SVS_onlyDNM_Fig.png, width = "100")
+![Fig. 1](Figs/Conceptual/2017-03-15-SVS_onlyDNM_Fig.png | width = 50)
 
 
 
