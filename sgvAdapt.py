@@ -15,7 +15,7 @@ n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per genome (0<u<1)
 alpha = 0.01 #mutation SD
-maxgen = 10000 #number of gens in burn-in
+maxgen = 1000 #number of gens in burn-in
 
 sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn' %(K,n,B,u,alpha,maxgen)
 
@@ -83,12 +83,12 @@ def close_output_files(fileHandles):
 ##PARAMETERS##
 ######################################################################
 
-maxgen = 10000 #maximum number of generations (positive integer)
-opt1 = [0] * n #optimum phenotype 
+maxgen = 1000 #maximum number of generations (positive integer)
+# opt1 = [0] * n #optimum phenotype 
 # opt1 = [0.5] * n #optimum phenotype 
-# opt1 = [-0.5] * n #optimum phenotype 
+opt1 = [-0.5] * n #optimum phenotype 
 
-outputFreq = maxgen #record and print update this many generations
+outputFreq = 100 #record and print update this many generations
 
 remove_lost = True #remove mutations that are lost?
 
@@ -121,7 +121,19 @@ def main():
 		surv = pop[rand1 < w] #survivors
 		if len(surv) > K:
 			surv = surv[np.random.randint(len(surv), size = K)] #randomly choose K individuals if more than K
-
+		
+		#end simulation if extinct        
+		if len(surv) == 0: 
+			print("Extinct")              
+			break 
+            
+        #otherwise continue
+        # dump data every outputFreq iteration
+        # also print a short progess message (generation and number of parents)
+		if gen > 0 and (gen % outputFreq) == 0:
+			write_data_to_output(fileHandles, [surv,mut,gen])
+			print("gen %d    N %d" %(gen, len(surv)))  
+			
 		# birth
 		# off = np.repeat(surv, B, axis=0) #offspring of survivors (asexual)
 		# sex: i.e., make diploid from random haploid parents then segregate to haploid offspring
@@ -146,19 +158,7 @@ def main():
 		# remove lost mutations (all zero columns)
 		if remove_lost:
 			mut = np.delete(mut, np.where(~pop.any(axis=0))[0], axis=0)
-			pop = pop[:, ~np.all(pop==0, axis=0)]
-
-		#end simulation if extinct        
-		if len(pop) == 0: 
-			print("Extinct")              
-			break 
-            
-        #otherwise continue
-        # dump data every outputFreq iteration
-        # also print a short progess message (generation and number of parents)
-		if gen > 0 and (gen % outputFreq) == 0:
-			write_data_to_output(fileHandles, [pop,mut,gen])
-			print("gen %d    N %d" %(gen, len(pop)))   
+			pop = pop[:, ~np.all(pop==0, axis=0)] 
 		
 		# go to next generation
 		gen += 1
