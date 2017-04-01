@@ -1,7 +1,9 @@
 #Author: Matthew Osmond <mmosmond@zoology.ubc.ca>
 #Description: Adaptation from standing genetic variance (SGV) in Fisher's geometric model, implications for hybrids
 
-import numpy as np
+#load packages
+
+import numpy as np # np is alias pointing to numpy
 import time
 import pickle
 
@@ -17,12 +19,12 @@ def open_output_files(K, n, B, u, alpha):
     handles to each.
     """
 
-    sim_id = 'K%d_n%d_B%d_u%r_alpha%r' %(K,n,B,u,alpha)
+    sim_id = 'K%d_n%d_B%d_u%r_alpha%r' %(K,n,B,u,alpha) #gives sumilation name associated with parameter values
     data_dir = 'data'
 
-    outfile_A = open("%s/pop_%s.pkl" %(data_dir,sim_id),"ab")
-    outfile_B = open("%s/mut_%s.pkl" %(data_dir,sim_id),"ab")
-    outfile_C = open("%s/gen_%s.pkl" %(data_dir,sim_id),"ab")
+    outfile_A = open("%s/pop_%s.pkl" %(data_dir,sim_id),"ab") #population phentype 
+    outfile_B = open("%s/mut_%s.pkl" %(data_dir,sim_id),"ab") #mutations 
+    outfile_C = open("%s/gen_%s.pkl" %(data_dir,sim_id),"ab") #generation 
 
     return [outfile_A, outfile_B, outfile_C]
 
@@ -84,7 +86,7 @@ def main():
 	while gen < maxgen:
 
 		# genotype to phenotype
-		phenos = np.dot(pop,mut) #sum mutations held by each individual
+		phenos = np.dot(pop, mut) #sum mutations held by each individual
 
 		# optimum phenotype
 		if gen < burn_gen:
