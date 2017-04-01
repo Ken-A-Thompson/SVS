@@ -4,10 +4,10 @@
 1. ~~(Burn in), then have population adapt to specified optimum...~~  
 2. ~~Load the data into R.~~  
 3. ~~Plot the adaptive walk~~  
-4. Plot hybrid between derived and ancestor  
-    + Render parental chromosomes that are of identical length and shared mutations only at sites that are indentical-by-descent.  
-    + Alternative is to specify that hybrid inherits each mutation with 50% chance UNLESS both parents have it (IBD).  
-    + After one of above complete, generate list of 'n' hybrids. Import list into R... then plot!  
+4. Plot hybrid between derived and ancestor in ~~python~~ & R
+    + ~~Render parental chromosomes that are of identical length and shared mutations only at sites that are indentical-by-descent.~~
+    + ~~Alternative is to specify that hybrid inherits each mutation with 50% chance UNLESS both parents have it (IBD).~~  
+    + ~~After one of above complete, generate list of 'n' hybrids.~~ Import list into R... then plot!  
 5. Assign hybrids a fitness value relative to parents (**New**)
 
 ## Longer term
