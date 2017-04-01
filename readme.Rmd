@@ -9,7 +9,7 @@ One striking result from models is that reproductive isolation evolves at the sa
 
 When populations adapt from ancestral standing genetic variation, then under some circumstances the exact same allele can be fixed in indepdently evolving populations. If adapting populations fix the same---as opposed to alternative---adaptive alleles, then there will be no segregation variance at that locus. Under parallel evolution, it is likely that many of the same ancestral alleles will be fixed, whereas under divergent evolution, this is unlikely. Thus, our expectation is that, by incorporating standing genetic variation into our models, that this will reduce postzygotic isolation between popoulations that have evolved in parallel.  
 
-![**Fig. 1** Adaptation to (a) divergent and (b) parallel phenotypic optima from a common ancestor when adaptation is from both standing genetic variation (red arrows) and *de novo* mutation (blue arrows).](/Users/Ken/Documents/Projects/SVS/Figs/Conceptual/2017-03-13-SVS_SGV_and_DNM_Fig copy.png)
+<!-- ![**Fig. 1** Adaptation to (a) divergent and (b) parallel phenotypic optima from a common ancestor when adaptation is from both standing genetic variation (red arrows) and *de novo* mutation (blue arrows).](/Users/Ken/Documents/Projects/SVS/Figs/Conceptual/2017-03-13-SVS_SGV_and_DNM_Fig copy.png) -->
 
 A similar case arises when the number of possible mutations is limited. In reality, adaptation via *de novo* mutation does not happen at random. Rather, it is predictable because there are a finite number of possible adaptive mutations.  (More soon).
 
