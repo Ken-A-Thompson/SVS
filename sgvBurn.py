@@ -59,7 +59,7 @@ u = 0.001 #mutation probability per genome (0<u<1)
 alpha = 0.01 #mutational sd (positive real number)
 
 N0 = B*K #initial population size
-maxgen = 10000 #maximum number of generations (positive integer)
+maxgen = 1000 #maximum number of generations (positive integer)
 opt0 = [0] * n #optimum phenotype during burn in
 
 outputFreq = maxgen #record and print update this many generations
@@ -96,6 +96,17 @@ def main():
 		if len(surv) > K:
 			surv = surv[np.random.randint(len(surv), size = K)] #randomly choose K individuals if more than K
 
+		#end simulation if extinct        
+		if len(surv) == 0: 
+			print("Extinct")              
+			break 
+            
+        # dump data every outputFreq iteration
+        # also print a short progess message (generation and number of parents)
+		if gen > 0 and (gen % outputFreq) == 0:
+			write_data_to_output(fileHandles, [surv,mut,gen])
+			print("gen %d    N %d" %(gen, len(surv)))   
+
 		# birth
 		# off = np.repeat(surv, B, axis=0) #offspring of survivors (asexual)
 		# sex: i.e., make diploid from random haploid parents then segregate to haploid offspring
@@ -121,18 +132,6 @@ def main():
 		if remove_lost:
 			mut = np.delete(mut, np.where(~pop.any(axis=0))[0], axis=0)
 			pop = pop[:, ~np.all(pop==0, axis=0)]
-
-		#end simulation if extinct        
-		if len(pop) == 0: 
-			print("Extinct")              
-			break 
-            
-        #otherwise continue
-        # dump data every outputFreq iteration
-        # also print a short progess message (generation and number of parents)
-		if gen > 0 and (gen % outputFreq) == 0:
-			write_data_to_output(fileHandles, [pop,mut,gen])
-			print("gen %d    N %d" %(gen, len(pop)))   
 		
 		# go to next generation
 		gen += 1
