@@ -1,5 +1,6 @@
 ## Standing Genetic Variation & Speciation R Analysis script
 ## Author Ken A. Thompson
+### 02 Apr 2017
 
 #load packages
 #install.packages('tidyverse')
@@ -129,6 +130,18 @@ real.walk <- ggplot(na.omit(sgv.plot), aes(x = X, y= Y, colour = gen)) +
  labs(x = "Trait 1", y = "Trait 2") +
  theme_ng1
 real.walk
+
+# Plot divergent adaptation then hybrids.
+## Load in burn-in, both adaptive walks, and hybrid dataframe
+
+sgv.burn <- read.csv()
+
+sgv.adapt1 <- read.csv()
+
+sgv.adapt2 <- read.csv()
+
+sgv.hybrid <- read.csv()
+
 
 
 

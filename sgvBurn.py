@@ -59,10 +59,10 @@ u = 0.001 #mutation probability per genome (0<u<1)
 alpha = 0.01 #mutational sd (positive real number)
 
 N0 = B*K #initial population size
-maxgen = 1000 #maximum number of generations (positive integer)
+maxgen = 10000 #maximum number of generations (positive integer)
 opt0 = [0] * n #optimum phenotype during burn in
 
-outputFreq = maxgen #record and print update this many generations
+outputFreq = 1000 #record and print update this many generations
 
 remove_lost = True #remove mutations that are lost?
 

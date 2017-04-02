@@ -20,7 +20,7 @@ maxgen = 10000
 
 pop = []
 mut = []
-opt1s = [[0] * n, [0.5] * n, [-0.5] * n]
+opt1s = [[0.5] * n, [-0.5] * n] #which parental optima to use
 for i in range(len(opt1s)):
     # optimum for simulation i
     opt1 = opt1s[i]
