@@ -16,7 +16,7 @@ n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per genome (0<u<1)
 alpha = 0.01 #mutation SD
-maxgen = 1000
+maxgen = 10000 #number of generations during parent adaptation post-burnin (positive integer)
 
 pop = []
 mut = []
@@ -60,7 +60,7 @@ mean_pheno = np.array(mean_phenos) #reformat to numpy array
 
 # save pheno data as CSV for R (can take a little time!)
 import csv
-sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r' %(K,n,B,u,alpha,maxgen)
+sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn' %(K,n,B,u,alpha,maxgen)
 with open("%s/parent_phenos_%s.csv" %(data_dir,sim_id), "w") as f:
     writer = csv.writer(f)
     writer.writerows(phenos)
@@ -69,7 +69,7 @@ with open("%s/parent_phenos_%s.csv" %(data_dir,sim_id), "w") as f:
 # ##MAKE HYBRIDS##
 # ######################################################################
 
-nHybrids = 100 #number of hybrids to make
+nHybrids = 1000 #number of hybrids to make
 
 i=0
 j=1
@@ -101,7 +101,7 @@ for k in range(nHybrids):
 offphenos01 = np.array(offphenos) #reformat correctly
 mean_offpheno01 = np.mean(offphenos,axis=0) #mean
 
-sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r' %(K,n,B,u,alpha,maxgen)
+sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn' %(K,n,B,u,alpha,maxgen)
 with open("%s/hybrid_phenos_%s.csv" %(data_dir,sim_id), "w") as f:
     writer = csv.writer(f)
     writer.writerows(offphenos01)
@@ -167,25 +167,25 @@ with open("%s/hybrid_phenos_%s.csv" %(data_dir,sim_id), "w") as f:
 # ######################################################################
 
 # plot all phenotypes in parental populations
-colors = cm.rainbow(np.linspace(0, 1, len(phenos)))
-for i, c in zip(range(len(phenos)), colors):
-    plt.scatter(phenos[i][:,0],phenos[i][:,1], color=c)
+# colors = cm.rainbow(np.linspace(0, 1, len(phenos)))
+# for i, c in zip(range(len(phenos)), colors):
+#     plt.scatter(phenos[i][:,0],phenos[i][:,1], color=c)
 
-# plot mean phenotypes of parental population
-plt.scatter(mean_pheno[:,0],mean_pheno[:,1], color='black')
+# # plot mean phenotypes of parental population
+# plt.scatter(mean_pheno[:,0],mean_pheno[:,1], color='black')
 
-# plot hybrid phenos
-plt.scatter(offphenos01[:,0],offphenos01[:,1], color='gray')
-plt.scatter(mean_offpheno01[0],mean_offpheno01[1], color='black')
+# # plot hybrid phenos
+# plt.scatter(offphenos01[:,0],offphenos01[:,1], color='gray')
+# plt.scatter(mean_offpheno01[0],mean_offpheno01[1], color='black')
 
-# plt.scatter(offphenos02[:,0],offphenos02[:,1], color='green')
-# plt.scatter(mean_offpheno02[0],mean_offpheno02[1], color='black')
+# # plt.scatter(offphenos02[:,0],offphenos02[:,1], color='green')
+# # plt.scatter(mean_offpheno02[0],mean_offpheno02[1], color='black')
 
-# plt.scatter(offphenos12[:,0],offphenos12[:,1], color='gray')
-# plt.scatter(mean_offpheno12[0],mean_offpheno12[1], color='black')
+# # plt.scatter(offphenos12[:,0],offphenos12[:,1], color='gray')
+# # plt.scatter(mean_offpheno12[0],mean_offpheno12[1], color='black')
 
-# show plot
-# plt.show()
+# # show plot
+# # plt.show()
 
-# save plot
-plt.savefig('%s/plot_%s_hybrids.png' %(data_dir,sim_id))
+# # save plot
+# plt.savefig('%s/plot_%s_hybrids.png' %(data_dir,sim_id))
