@@ -60,7 +60,7 @@ alpha = 0.02 #mutational sd (positive real number)
 
 N0 = B*K #initial population size
 maxgen = 10000 #maximum number of generations (positive integer)
-opt0 = [0] * n #optimum phenotype during burn in
+opt0 = [0] * n #average optimum phenotype during burn in
 
 outputFreq = 10000 #record and print update this many generations
 
@@ -78,15 +78,15 @@ def main():
 		
 	# open output files
 	fileHandles = open_output_files(K, n, B, u, alpha, maxgen) 
-	
-	# optimum phenotype
-	opt = opt0
 
 	gen = 1 #generation
 	while gen < maxgen + 1:
 
 		# genotype to phenotype
 		phenos = np.dot(pop,mut) #sum mutations held by each individual
+
+		# optimum phenotype
+		opt = opt0 + np.random.uniform(size=n) - [0.5]*n #choose optimum for generation from random uniform distribution in [-0.5,0.5] for each dimension 
 
 		# viability selection
 		dist = np.linalg.norm(phenos - opt, axis=1) #phenotypic distance from optimum

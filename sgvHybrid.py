@@ -6,9 +6,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 import matplotlib.cm as cm
+import csv
 
 ######################################################################
-##LOAD DATA FROM ADAPTED POPNS##
+##LOAD DATA FROM BURN IN##
 ######################################################################
 
 K = 1000 #max number of parents (positive integer)
@@ -16,18 +17,50 @@ n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per genome (0<u<1)
 alpha = 0.02 #mutation SD
+maxgen = 10000 #number of gens in burn-in (positive integer)
+
+sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn' %(K,n,B,u,alpha,maxgen)
+
+data_dir = 'data'
+
+# load pop data
+f = open('%s/pop_%s.pkl' %(data_dir,sim_id), 'rb')
+popall = []
+while 1:
+    try:
+        popall.append(pickle.load(f))
+    except EOFError:
+        break
+
+# load mut data
+g = open('%s/mut_%s.pkl' %(data_dir,sim_id), 'rb')
+mutall = []
+while 1:
+    try:
+        mutall.append(pickle.load(g))
+    except EOFError:
+        break
+
+# make csv of last time point of population list (mutations in each individual)
+with open("%s/ancestor_pop_%s.csv" %(data_dir,sim_id), "w") as f:
+    writer = csv.writer(f)
+    writer.writerows(popall[-1])
+
+######################################################################
+##LOAD DATA FROM PARENTAL POPNS##
+######################################################################
+
 maxgen = 10000 #number of generations during parent adaptation post-burnin (positive integer)
-
-
+nfounders = len(popall[-1]) #number of individuals from burn-in used to found parntal population
 opt1s = [[0.5] * n, [-0.5] * n] #simulations to load
+
+data_dir = 'data'
+
 pops = dict()
 muts = dict()
 for i in range(len(opt1s)):
-    # optimum for simulation i
-    opt1 = opt1s[i]
-    # filename and directory of data
-    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_opt%s_adapt' %(K,n,B,u,alpha,maxgen,'-'.join(str(e) for e in opt1))
-    data_dir = 'data'
+    # filename of data
+    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_founders%d_opt%s_adapt' %(K,n,B,u,alpha,maxgen,nfounders,'-'.join(str(e) for e in opt1s[i]))
     # load pop data
     pop = []
     f = open('%s/pop_%s.pkl' %(data_dir,sim_id), 'rb')
@@ -47,6 +80,13 @@ for i in range(len(opt1s)):
             break
     muts[i] = mut
 
+# make csv
+for i in range(len(pops)):
+    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_opt%s' %(K,n,B,u,alpha,maxgen,'-'.join(str(e) for e in opt1s[i]))
+    with open("%s/parent_pop_%s.csv" %(data_dir,sim_id), "w") as f:
+        writer = csv.writer(f)
+        writer.writerows(pops[i])
+
 ######################################################################
 ##PARENTAL PHENOTYPES##
 ######################################################################
@@ -65,7 +105,6 @@ for i in range(len(phenos)):
     mean_phenos[i] = np.mean(phenos[i], axis=1)
 
 # save pheno data as CSV for R (can take a little time!)
-import csv
 for i in range(len(phenos)):
 	sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_opt%s' %(K,n,B,u,alpha,maxgen,'-'.join(str(e) for e in opt1s[i]))
 	with open("%s/parent_phenos_%s.csv" %(data_dir,sim_id), "w") as f:
@@ -180,7 +219,8 @@ for i in range(len(phenos)):
 		plt.scatter(phenos[i][j][:,0],phenos[i][j][:,1], color=c)
 
 # plot mean phenotypes of parental population
-plt.scatter(mean_pheno[:,0],mean_pheno[:,1], color='black')
+for i in range(len(phenos)):
+    plt.scatter(mean_phenos[i][:,0],mean_phenos[i][:,1], color='black')
 
 # plot hybrid phenos
 plt.scatter(offphenos01[:,0],offphenos01[:,1], color='gray')
@@ -193,7 +233,7 @@ plt.scatter(mean_offpheno01[0],mean_offpheno01[1], color='black')
 # # plt.scatter(mean_offpheno12[0],mean_offpheno12[1], color='black')
 
 # # show plot
-plt.show()
+# plt.show()
 
 # # save plot
-# plt.savefig('%s/plot_%s_hybrids.png' %(data_dir,sim_id))
+plt.savefig('%s/plot_%s_hybrids.png' %(data_dir,sim_id))
