@@ -14,7 +14,7 @@ K = 1000 #max number of parents (positive integer)
 n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per genome (0<u<1)
-alpha = 0.01 #mutation SD
+alpha = 0.02 #mutation SD
 maxgen = 10000 #number of gens in burn-in (positive integer)
 
 sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn' %(K,n,B,u,alpha,maxgen)
