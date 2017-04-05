@@ -7,6 +7,46 @@ import time
 import pickle
 
 ######################################################################
+##HELPER FUNCTIONS##
+######################################################################
+
+def open_output_files(K, n, B, u, alpha, maxgen, nfounders, opt1):
+    """
+    This function opens the output files and returns file
+    handles to each.
+    """
+
+    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%d_founders%d_opt%s_adapt' %(K,n,B,u,alpha,maxgen,nfounders,'-'.join(str(e) for e in opt1))
+    data_dir = 'data'
+
+    outfile_A = open("%s/pop_%s.pkl" %(data_dir,sim_id),"ab")
+    outfile_B = open("%s/mut_%s.pkl" %(data_dir,sim_id),"ab")
+    outfile_C = open("%s/gen_%s.pkl" %(data_dir,sim_id),"ab")
+
+    return [outfile_A, outfile_B, outfile_C]
+
+def write_data_to_output(fileHandles, data):
+    """
+    This function writes a (time, data) pair to the
+    corresponding output file. We write densities
+    not abundances.
+    """
+	
+    for i in range(0,len(fileHandles)):
+        pickle.dump(data[i],fileHandles[i])
+
+	# for i in range(0,len(fileHandles)):
+	# 	pickle.dump(data[i],fileHandles[i])
+
+def close_output_files(fileHandles):
+    """
+    This function closes all output files.
+    """
+
+    for i in range(0,len(fileHandles)):
+        fileHandles[i].close()
+
+######################################################################
 ##LOAD DATA FROM BURN_IN##
 ######################################################################
 
@@ -40,53 +80,16 @@ while 1:
         break
 
 ######################################################################
-##HELPER FUNCTIONS##
-######################################################################
-
-def open_output_files(K, n, B, u, alpha, maxgen, opt1):
-    """
-    This function opens the output files and returns file
-    handles to each.
-    """
-
-    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_opt%s_adapt' %(K,n,B,u,alpha,maxgen,'-'.join(str(e) for e in opt1))
-    data_dir = 'data'
-
-    outfile_A = open("%s/pop_%s.pkl" %(data_dir,sim_id),"ab")
-    outfile_B = open("%s/mut_%s.pkl" %(data_dir,sim_id),"ab")
-    outfile_C = open("%s/gen_%s.pkl" %(data_dir,sim_id),"ab")
-
-    return [outfile_A, outfile_B, outfile_C]
-
-def write_data_to_output(fileHandles, data):
-    """
-    This function writes a (time, data) pair to the
-    corresponding output file. We write densities
-    not abundances.
-    """
-	
-    for i in range(0,len(fileHandles)):
-        pickle.dump(data[i],fileHandles[i])
-
-	# for i in range(0,len(fileHandles)):
-	# 	pickle.dump(data[i],fileHandles[i])
-
-def close_output_files(fileHandles):
-    """
-    This function closes all output files.
-    """
-
-    for i in range(0,len(fileHandles)):
-        fileHandles[i].close()
-
-######################################################################
-##PARAMETERS##
+##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
 maxgen = 10000 #maximum number of generations (positive integer)
+
 # opt1 = [0] * n #optimum phenotype 
-# opt1 = [0.5] * n #optimum phenotype 
-opt1 = [-0.5] * n #optimum phenotype 
+opt1 = [0.5] * n #optimum phenotype 
+# opt1 = [-0.5] * n #optimum phenotype 
+
+nfounders = len(popall[-1]) #size of founding population
 
 outputFreq = 1000 #record and print update this many generations
 
@@ -99,11 +102,12 @@ remove_lost = True #remove mutations that are lost?
 def main():
 
 	# intialize
+	np.random.choice(len(popall[-1]),size=nfounders)
 	pop = popall[-1] #list of mutations held by each individual (all start with same mutation at first locus)
 	mut = mutall[-1] #list of phenotypic effect of initial mutations (mutation at first locus puts all individuals at origin)
 		
 	# open output files
-	fileHandles = open_output_files(K, n, B, u, alpha, maxgen, opt1) 
+	fileHandles = open_output_files(K, n, B, u, alpha, maxgen, nfounders, opt1) 
 	
 	# optimum phenotype
 	opt = opt1
