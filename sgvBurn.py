@@ -52,17 +52,17 @@ def close_output_files(fileHandles):
 ##PARAMETERS##
 ######################################################################
 
-K = 1000 #max number of parents (positive integer)
+K = 10000 #max number of parents (positive integer)
 n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per genome (0<u<1)
-alpha = 0.02 #mutational sd (positive real number)
+alpha = 0.0001 #mutational sd (positive real number)
 
 N0 = B*K #initial population size
 maxgen = 10000 #maximum number of generations (positive integer)
 opt0 = [0] * n #average optimum phenotype during burn in
 
-outputFreq = 10000 #record and print update this many generations
+outputFreq = 1000 #record and print update this many generations
 
 remove_lost = True #remove mutations that are lost?
 
@@ -86,11 +86,12 @@ def main():
 		phenos = np.dot(pop,mut) #sum mutations held by each individual
 
 		# optimum phenotype
-		opt = opt0 + np.random.uniform(size=n) - [0.5]*n #choose optimum for generation from random uniform distribution in [-0.5,0.5] for each dimension 
+		#width = 0.1 
+		opt = opt0 #+ np.random.uniform(size=n)*width - [width*0.5]*n #choose optimum for generation from random uniform distribution in [-0.1,0.1] for each dimension 
 
 		# viability selection
 		dist = np.linalg.norm(phenos - opt, axis=1) #phenotypic distance from optimum
-		w = np.exp(-dist**2) #probability of survival
+		w = np.exp(-0.1*dist**2) #probability of survival (first number is 'sigma' from Fraise 2016)
 		rand1 = np.random.uniform(size = len(pop)) #random uniform number in [0,1] for each individual
 		surv = pop[rand1 < w] #survivors
 		if len(surv) > K:

@@ -8,78 +8,78 @@
 library(splitstackshape)
 library(tidyverse)
 
-## Testing script for plotting adaptive walk
-#Generate vectors
-
-mut.d1 <- c(0, 
-            rnorm(20)) %>%
-  abs() %>% 
-  sort() %>% 
-  as.vector()
-  
-mut.d2 <- c(0, 
-            rnorm(20)) %>%
-  abs() %>% 
-  sort() %>% 
-  as.vector()
-
-# Generate a 'hybrid'
-
-## Create 'parents'
-anc.d1 <- rep(0, length(mut.d1))
-anc.d2 <- rep(0, length(mut.d2))
-
-#Generate Hybrids
-muts.d1 <- rev(diff(mut.d1, lag = 1))
-muts.d2 <- rev(diff(mut.d2, lag = 1))
-
-muts.d1.vec <- c(0, muts.d1)
-muts.d2.vec <- c(0, muts.d2)
-
-hyb.d1 <- replicate(1000, sum(sample(c(muts.d1.vec, anc.d1), length(muts.d1.vec),replace=F))) #Sum of 'trait value' for D1
-hyb.d2 <- replicate(1000, sum(sample(c(muts.d2.vec, anc.d2), length(muts.d2.vec),replace=F))) #Sum of 'trait value' for D2
-
-
-## Generate figure for 'adaptive' walk
-### Run theme
-
-theme_ng1 <- theme(aspect.ratio=1.0,panel.background = element_blank(), 
-             panel.grid.major = element_blank(), 
-             panel.grid.minor = element_blank(),
-             panel.border=element_blank(),
-             axis.line = element_line(size=1), 
-             axis.line.x = element_line(color="black", size = 1),
-             axis.line.y = element_line(color="black", size = 1),
-             axis.ticks=element_line(color="black"), 
-             axis.text=element_text(color="black"), 
-             axis.title=element_text(color="black"), 
-             axis.title.y=element_text(vjust=0.2, size=12),
-             axis.title.x=element_text(vjust=0.1,size=12),
-             axis.text.x=element_text(size=10),
-             axis.text.y=element_text(size=10),
-             legend.position="none",
-             legend.title=element_blank(),
-             plot.title = element_blank())
-
-### End theme 
-
-df <- data.frame(mut.d1, mut.d2) # Generate data frame for ggplot with both mutation vectors
-
-### plot it 
-adapt.walk <- ggplot(df, aes(x = rev(mut.d1), y= rev(mut.d2))) +
-  geom_point() + 
-  labs(x = "Trait 1", y = "Trait 2") +
-  geom_segment(aes(xend=c(tail(rev(mut.d1), n=-1), NA), yend=c(tail(rev(mut.d2), n=-1), NA)),
-               arrow=arrow(length=unit(0.3,"cm"), type = "open")) + 
-  theme_ng1
-adapt.walk
-
-#Plot hybrids
-## Create hybrid dataframe
-
-hyb.df <- data.frame(hyb.d1, hyb.d2)
-
-adapt.walk + geom_point(data = hyb.df, aes(x = hyb.d1, y = hyb.d2), alpha = 0.25)
+# # Testing script for plotting adaptive walk
+# # Generate vectors
+# 
+# mut.d1 <- c(0,
+#             rnorm(20)) %>%
+#   abs() %>%
+#   sort() %>% 
+#   as.vector()
+#   
+# mut.d2 <- c(0, 
+#             rnorm(20)) %>%
+#   abs() %>% 
+#   sort() %>% 
+#   as.vector()
+# 
+# # Generate a 'hybrid'
+# 
+# ## Create 'parents'
+# anc.d1 <- rep(0, length(mut.d1))
+# anc.d2 <- rep(0, length(mut.d2))
+# 
+# #Generate Hybrids
+# muts.d1 <- rev(diff(mut.d1, lag = 1))
+# muts.d2 <- rev(diff(mut.d2, lag = 1))
+# 
+# muts.d1.vec <- c(0, muts.d1)
+# muts.d2.vec <- c(0, muts.d2)
+# 
+# hyb.d1 <- replicate(1000, sum(sample(c(muts.d1.vec, anc.d1), length(muts.d1.vec),replace=F))) #Sum of 'trait value' for D1
+# hyb.d2 <- replicate(1000, sum(sample(c(muts.d2.vec, anc.d2), length(muts.d2.vec),replace=F))) #Sum of 'trait value' for D2
+# 
+# 
+# ## Generate figure for 'adaptive' walk
+# ### Run theme
+# 
+# theme_ng1 <- theme(aspect.ratio=1.0,panel.background = element_blank(), 
+#              panel.grid.major = element_blank(), 
+#              panel.grid.minor = element_blank(),
+#              panel.border=element_blank(),
+#              axis.line = element_line(size=1), 
+#              axis.line.x = element_line(color="black", size = 1),
+#              axis.line.y = element_line(color="black", size = 1),
+#              axis.ticks=element_line(color="black"), 
+#              axis.text=element_text(color="black"), 
+#              axis.title=element_text(color="black"), 
+#              axis.title.y=element_text(vjust=0.2, size=12),
+#              axis.title.x=element_text(vjust=0.1,size=12),
+#              axis.text.x=element_text(size=10),
+#              axis.text.y=element_text(size=10),
+#              legend.position="none",
+#              legend.title=element_blank(),
+#              plot.title = element_blank())
+# 
+# ### End theme 
+# 
+# df <- data.frame(mut.d1, mut.d2) # Generate data frame for ggplot with both mutation vectors
+# 
+# ### plot it 
+# adapt.walk <- ggplot(df, aes(x = rev(mut.d1), y= rev(mut.d2))) +
+#   geom_point() + 
+#   labs(x = "Trait 1", y = "Trait 2") +
+#   geom_segment(aes(xend=c(tail(rev(mut.d1), n=-1), NA), yend=c(tail(rev(mut.d2), n=-1), NA)),
+#                arrow=arrow(length=unit(0.3,"cm"), type = "open")) + 
+#   theme_ng1
+# adapt.walk
+# 
+# #Plot hybrids
+# ## Create hybrid dataframe
+# 
+# hyb.df <- data.frame(hyb.d1, hyb.d2)
+# 
+# adapt.walk + geom_point(data = hyb.df, aes(x = hyb.d1, y = hyb.d2), alpha = 0.25)
 
 
 # Import numpy data into R
@@ -133,19 +133,36 @@ real.walk
 
 # Plot divergent adaptation then hybrids.
 ## Load in burn-in, both adaptive walks, and hybrid dataframe
-
 sgv.burn <- read.csv()
-
 sgv.adapt1 <- read.csv()
-
 sgv.adapt2 <- read.csv()
-
 sgv.hybrid <- read.csv()
 
+### Fig. 1. SGV with increasing burn-in
 
+sgv.100 <- read.csv('data/ancestor_pop_K1000_n2_B2_u0.001_alpha0.02_gens100_burn.csv', header = F, check.names = F)
 
+sgv.1000 <- read.csv('data/ancestor_pop_K1000_n2_B2_u0.001_alpha0.02_gens1000_burn.csv', header = F, check.names = F)
 
+sgv.5000 <- read.csv('data/ancestor_pop_K1000_n2_B2_u0.001_alpha0.02_gens5000_burn.csv', header = F, check.names = F)
 
+sgv.10000 <- read.csv('data/ancestor_pop_K1000_n2_B2_u0.001_alpha0.02_gens10000_burn.csv', header = F, check.names = F)
 
+sgv.20000 <- read.csv('data/ancestor_pop_K1000_n2_B2_u0.001_alpha0.02_gens20000_burn.csv', header = F, check.names = F)
 
+#try distancematrix in hopach
+#Within population diversity function returns the mean euclidean distance between individuals in a population
+within.pop.diversity <- function(x) {
+  dist.mat <- as.matrix(dist(x, method = "euclidean"))
+  dist.mat[upper.tri(dist.mat)] <- NA
+  pairwise.dist <- as.data.frame(cbind(which(!is.na(dist.mat),arr.ind = TRUE),na.omit(as.vector(dist.mat))))
+  pairwise.dist$same.ind <- pairwise.dist$row - pairwise.dist$col
+  pairwise.dist.new <- pairwise.dist %>% 
+    mutate(same.ind = row - col) %>% 
+    filter(same.ind != 0) %>% 
+    select(-same.ind) 
+  return(mean(pairwise.dist.new$V3))
+}
+
+within.pop.diversity(sgv.100)
 
