@@ -8,6 +8,48 @@
 library(splitstackshape)
 library(tidyverse)
 
+### Run themes
+
+theme_ng1 <- theme(aspect.ratio=1.0,panel.background = element_blank(),
+                   panel.grid.major = element_blank(),
+                   panel.grid.minor = element_blank(),
+                   panel.border=element_blank(),
+                   axis.line = element_line(size=1),
+                   axis.line.x = element_line(color="black", size = 1),
+                   axis.line.y = element_line(color="black", size = 1),
+                   axis.ticks=element_line(color="black"),
+                   axis.text=element_text(color="black"),
+                   axis.title=element_text(color="black"),
+                   axis.title.y=element_text(vjust=0.2, size=12),
+                   axis.title.x=element_text(vjust=0.1,size=12),
+                   axis.text.x=element_text(size=10),
+                   axis.text.y=element_text(size=10),
+                   legend.position="none",
+                   legend.title=element_blank(),
+                   plot.title = element_blank())
+
+theme_fig2 <- theme(aspect.ratio=1.0,panel.background = element_blank(),
+                   panel.grid.major = element_blank(),
+                   panel.grid.minor = element_blank(),
+                   panel.border=element_blank(),
+                   axis.line = element_line(size=1),
+                   axis.line.x = element_blank(),
+                   axis.line.y = element_blank(),
+                   axis.ticks=element_blank(),
+                   axis.text=element_blank(),
+                   axis.title=element_blank(),
+                   axis.title.y=element_blank(),
+                   axis.title.x=element_blank(),
+                   axis.text.x=element_blank(),
+                   axis.text.y=element_blank(),
+                   legend.position="none",
+                   legend.title=element_blank(),
+                   plot.title = element_blank())
+
+
+### End theme
+
+
 # # Testing script for plotting adaptive walk
 # # Generate vectors
 # 
@@ -40,28 +82,8 @@ library(tidyverse)
 # hyb.d2 <- replicate(1000, sum(sample(c(muts.d2.vec, anc.d2), length(muts.d2.vec),replace=F))) #Sum of 'trait value' for D2
 # 
 # 
-# ## Generate figure for 'adaptive' walk
-# ### Run theme
-# 
-# theme_ng1 <- theme(aspect.ratio=1.0,panel.background = element_blank(), 
-#              panel.grid.major = element_blank(), 
-#              panel.grid.minor = element_blank(),
-#              panel.border=element_blank(),
-#              axis.line = element_line(size=1), 
-#              axis.line.x = element_line(color="black", size = 1),
-#              axis.line.y = element_line(color="black", size = 1),
-#              axis.ticks=element_line(color="black"), 
-#              axis.text=element_text(color="black"), 
-#              axis.title=element_text(color="black"), 
-#              axis.title.y=element_text(vjust=0.2, size=12),
-#              axis.title.x=element_text(vjust=0.1,size=12),
-#              axis.text.x=element_text(size=10),
-#              axis.text.y=element_text(size=10),
-#              legend.position="none",
-#              legend.title=element_blank(),
-#              plot.title = element_blank())
-# 
-# ### End theme 
+## Generate figure for 'adaptive' walk
+
 # 
 # df <- data.frame(mut.d1, mut.d2) # Generate data frame for ggplot with both mutation vectors
 # 
@@ -156,7 +178,6 @@ within.pop.diversity <- function(x) {
   dist.mat <- as.matrix(dist(x, method = "euclidean"))
   dist.mat[upper.tri(dist.mat)] <- NA
   pairwise.dist <- as.data.frame(cbind(which(!is.na(dist.mat),arr.ind = TRUE),na.omit(as.vector(dist.mat))))
-  pairwise.dist$same.ind <- pairwise.dist$row - pairwise.dist$col
   pairwise.dist.new <- pairwise.dist %>% 
     mutate(same.ind = row - col) %>% 
     filter(same.ind != 0) %>% 
@@ -164,5 +185,120 @@ within.pop.diversity <- function(x) {
   return(mean(pairwise.dist.new$V3))
 }
 
-within.pop.diversity(sgv.100)
+
+# Figure 2: Adaptive walks with hybrids from DNM only (A-B) and DNM + SGV
+
+## Dependent functions
+
+## Create function to convert numpy array to long format
+numpy.as.long <- function(x) {
+  gen <- 1:nrow(x) ## Create variable with 'generation' number
+  phenos.gen <- cbind(gen, x) ## Add generation number to numpy array
+  phenos.tidy <- phenos.gen %>% 
+    gather(key = individual, value = pheno, 2:ncol(sgv.phenos.gen)) %>% #convert to long format
+    mutate(pheno = gsub("\\[|\\]","", pheno)) 
+  phenos.tidy.split <- cSplit(phenos.tidy, splitCols = "pheno", sep = " ") #use cSplit to get X and Y
+  return(phenos.tidy.split)
+}
+
+#Create function that joins the two datasets 
+join.and.group <- function(x, y){
+  data1 <- numpy.as.long(x)
+  data2 <- numpy.as.long(y)
+  data1$group <- rep("A", nrow(data1))
+  data2$group <- rep("B", nrow(data1))
+  plot.data <- rbind(data1, data2) %>% 
+    rename(X = pheno_1) %>% 
+    rename(Y = pheno_2)
+  plot.data$group <- as.factor(plot.data$group)
+  return(plot.data)
+}
+
+
+## Load data
+### DNM only
+DNM1pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.51-0.51_DNM.csv', header = F, col.names = 1:ncol(SGV1pos), check.names = F, na.strings = c("[", "]"))
+DNM2pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.49-0.49_DNM.csv', header = F, col.names = 1:ncol(SGV1pos), check.names = F, na.strings = c("[", "]"))
+
+###SGV + DNM
+SGV1pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.51-0.51.csv', header = F, col.names = 1:ncol(SGV1pos), check.names = F, na.strings = c("[", "]"))
+SGV2pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.49-0.49.csv', header = F, col.names = 1:ncol(SGV2pos), check.names = F, na.strings = c("[", "]"))
+SGV1neg <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt-0.51--0.51.csv', header = F, col.names = 1:ncol(SGV2pos), check.names = F, na.strings = c("[", "]"))
+
+
+# Fig. 2A Adaptation to parallel optima with only DNM
+Parallel.DNM.Data <- join.and.group(DNM1pos, DNM2pos)
+Fig2A.Hybrids <- as.data.frame(read.csv('data/hybrid_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500.csv',header = F, col.names = c("X", "Y")))
+
+Fig.2A.Data <- Parallel.SGV.Data %>% 
+  group_by(group, gen) %>% 
+  summarise(meanX = mean(X), meanY = mean(Y)) %>% 
+  as.data.frame() %>% 
+  add_row(group = "A", gen = 0, meanX = 0, meanY = 0) %>% #ancestor
+  add_row(group = "B", gen = 0, meanX = 0, meanY = 0) %>%  #ancestor
+  arrange(group, gen)
+
+Fig.2A <- ggplot(Fig.2A.Data, aes(x = meanX, y= meanY, colour = group)) +
+  geom_point() + 
+  geom_point(data = Fig2A.Hybrids, aes(x = X, y = Y, colour = NULL), alpha = 0.2) +
+  labs(x = "Trait 1", y = "Trait 2") +
+  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2A.Data[1:16,]) +
+  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2A.Data[17:30,]) +
+  theme_ng1
+Fig.2A
+ 
+
+
+
+
+## Fig. 2C - Adaptation to parallel optima from both SGV and DNM
+Parallel.SGV.Data <- join.and.group(SGV1pos, SGV2pos)
+Fig2C.Hybrids <- as.data.frame(read.csv('data/hybrid_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500.csv',header = F, col.names = c("X", "Y")))
+
+Fig.2C.Data <- Parallel.SGV.Data %>% 
+  group_by(group, gen) %>% 
+  summarise(meanX = mean(X), meanY = mean(Y)) %>% 
+  as.data.frame() %>% 
+  add_row(group = "A", gen = 0, meanX = 0, meanY = 0) %>% #ancestor
+  add_row(group = "B", gen = 0, meanX = 0, meanY = 0) %>%  #ancestor
+  arrange(group, gen)
+  
+Fig.2C <- ggplot(Fig.2C.Data, aes(x = meanX, y= meanY, colour = group)) +
+  geom_point() + 
+  geom_point(data = Fig2C.Hybrids, aes(x = X, y = Y, colour = NULL), alpha = 0.2) +
+  labs(x = "Trait 1", y = "Trait 2") +
+  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2C.Data[1:16,]) +
+  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2C.Data[17:30,]) +
+  theme_ng1
+Fig.2C
+
+#Fig. 2D Adaptation to divergent optima from both SGV and DNM
+Divergent.SGV.Data <- join.and.group(SGV1pos, SGV1neg)
+Fig2D.Hybrids <- as.data.frame(read.csv('data/hybrid_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500.csv',header = F, col.names = c("X", "Y"))) # load hybrid data (need to make it so it's unique)
+
+Fig.2D.Data <- Divergent.SGV.Data %>%
+  group_by(group, gen) %>% 
+  summarise(meanX = mean(X), meanY = mean(Y)) %>% 
+  as.data.frame() %>% 
+  add_row(group = "A", gen = 0, meanX = 0, meanY = 0) %>% #ancestor
+  add_row(group = "B", gen = 0, meanX = 0, meanY = 0)  %>% #ancestor
+  arrange(group, gen)
+
+Fig.2D <- ggplot(Fig.2D.Data, aes(x = meanX, y= meanY, colour = group)) +
+  geom_point() + 
+  geom_point(data = Fig2D.Hybrids, aes(x = X, y = Y, colour = NULL), alpha = 0.2) +
+  geom_point(data = Fig2C.Hybrids, aes(x = X, y = Y, colour = NULL), alpha = 0.2) +
+  labs(x = "Trait 1", y = "Trait 2") +
+  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2D.Data[1:16,]) +
+  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2D.Data[17:30,]) +
+  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2C.Data[17:30,]) + #plots parallal and divergent this and above)
+  theme_fig2
+Fig.2D
 
