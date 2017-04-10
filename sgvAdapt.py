@@ -16,7 +16,7 @@ def open_output_files(K, n, B, u, alpha, maxgen, nfounders, opt1):
     handles to each.
     """
 
-    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%d_founders%d_opt%s_adapt' %(K,n,B,u,alpha,maxgen,nfounders,'-'.join(str(e) for e in opt1))
+    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%d_founders%d_opt%s_adapt_DNM' %(KAdapt,n,B,u,alpha,maxgen,nfounders,'-'.join(str(e) for e in opt1))
     data_dir = 'data'
 
     outfile_A = open("%s/pop_%s.pkl" %(data_dir,sim_id),"ab")
@@ -50,12 +50,14 @@ def close_output_files(fileHandles):
 ##LOAD DATA FROM BURN_IN##
 ######################################################################
 
-K = 1000 #max number of parents (positive integer)
+K = 10000 #max number of parents (positive integer)
 n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per genome (0<u<1)
 alpha = 0.02 #mutation SD
-maxgen = 10000 #number of gens in burn-in (positive integer)
+# maxgen = 10000 #SGV number of gens in burn-in (positive integer)
+maxgen = 1 #DNM number of gens in burn-in (positive integer)
+
 
 sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn' %(K,n,B,u,alpha,maxgen)
 
@@ -83,17 +85,22 @@ while 1:
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-maxgen = 10000 #maximum number of generations (positive integer)
+maxgen = 1500 #maximum number of generations (positive integer)
+KAdapt = 1000 # maximum population size of adapting populations
+N0 = B*K #initial population size (DNM)
 
 # opt1 = [0] * n #optimum phenotype 
-opt1 = [0.5] * n #optimum phenotype 
+# opt1 = [0.51] * n #optimum phenotype 
+opt1 = [-0.51] * n #optimum phenotype 
+# opt1 = [0.49] * n #optimum phenotype 
 # opt1 = [-0.5] * n #optimum phenotype 
 
-nfounders = len(popall[-1]) #size of founding population
+# nfounders = len(popall[-1]) #size of founding population (on for SGV)
+nfounders = 0
 
-outputFreq = 1000 #record and print update this many generations
+outputFreq = 100 #record and print update this many generations
 
-remove_lost = True #remove mutations that are lost?
+remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 
 ######################################################################
 ##SIMULATION##
@@ -101,10 +108,14 @@ remove_lost = True #remove mutations that are lost?
 
 def main():
 
-	# intialize
-	np.random.choice(len(popall[-1]),size=nfounders)
-	pop = popall[-1] #list of mutations held by each individual (all start with same mutation at first locus)
-	mut = mutall[-1] #list of phenotypic effect of initial mutations (mutation at first locus puts all individuals at origin)
+	# # intialize pops with SGV
+	# np.random.choice(len(popall[-1]),size=nfounders)
+	# pop = popall[-1] #list of mutations held by each individual (all start with same mutation at first locus)
+	# mut = mutall[-1] #list of phenotypic effect of initial mutations (mutation at first locus puts all individuals at origin)
+
+	#initialize pops with no SGV (only DNM)
+	pop = np.array([[1]] * N0) #list of mutations held by each individual (all start with same mutation at first locus)
+	mut = np.array([[0] * n]) #list of phenotypic effect of initial mutations (mutation at first locus puts all individuals at origin)
 		
 	# open output files
 	fileHandles = open_output_files(K, n, B, u, alpha, maxgen, nfounders, opt1) 
@@ -123,8 +134,8 @@ def main():
 		w = np.exp(-dist**2) #probability of survival
 		rand1 = np.random.uniform(size = len(pop)) #random uniform number in [0,1] for each individual
 		surv = pop[rand1 < w] #survivors
-		if len(surv) > K:
-			surv = surv[np.random.randint(len(surv), size = K)] #randomly choose K individuals if more than K
+		if len(surv) > KAdapt:
+			surv = surv[np.random.randint(len(surv), size = KAdapt)] #randomly choose KAdapt individuals if more than KAdapt
 		
 		#end simulation if extinct        
 		if len(surv) == 0: 

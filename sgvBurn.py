@@ -56,10 +56,12 @@ K = 10000 #max number of parents (positive integer)
 n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per genome (0<u<1)
-alpha = 0.0001 #mutational sd (positive real number)
+alpha = 0.02 #mutational sd (positive real number)
 
 N0 = B*K #initial population size
-maxgen = 10000 #maximum number of generations (positive integer)
+# maxgen = 10000 #SGV maximum number of generations (positive integer)
+maxgen = 1 #DNM maximum number of generations (positive integer)
+
 opt0 = [0] * n #average optimum phenotype during burn in
 
 outputFreq = 1000 #record and print update this many generations
