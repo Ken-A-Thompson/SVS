@@ -5,6 +5,7 @@
 #load packages
 #install.packages('tidyverse')
 #install.packages('splitstackshape')
+library(cowplot)
 library(splitstackshape)
 library(tidyverse)
 
@@ -45,6 +46,8 @@ theme_fig2 <- theme(aspect.ratio=1.0,panel.background = element_blank(),
                    legend.position="none",
                    legend.title=element_blank(),
                    plot.title = element_blank())
+                   
+
 
 
 ### End theme
@@ -214,11 +217,11 @@ join.and.group <- function(x, y){
   return(plot.data)
 }
 
-
 ## Load data
 ### DNM only
 DNM1pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.51-0.51_DNM.csv', header = F, col.names = 1:ncol(SGV1pos), check.names = F, na.strings = c("[", "]"))
 DNM2pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.49-0.49_DNM.csv', header = F, col.names = 1:ncol(SGV1pos), check.names = F, na.strings = c("[", "]"))
+DNM2neg <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt-0.51--0.51_DNM.csv', header = F, col.names = 1:ncol(SGV1pos), check.names = F, na.strings = c("[", "]"))
 
 ###SGV + DNM
 SGV1pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.51-0.51.csv', header = F, col.names = 1:ncol(SGV1pos), check.names = F, na.strings = c("[", "]"))
@@ -230,7 +233,7 @@ SGV1neg <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_o
 Parallel.DNM.Data <- join.and.group(DNM1pos, DNM2pos)
 Fig2A.Hybrids <- as.data.frame(read.csv('data/hybrid_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500.csv',header = F, col.names = c("X", "Y")))
 
-Fig.2A.Data <- Parallel.SGV.Data %>% 
+Fig.2A.Data <- Parallel.DNM.Data %>% 
   group_by(group, gen) %>% 
   summarise(meanX = mean(X), meanY = mean(Y)) %>% 
   as.data.frame() %>% 
@@ -245,13 +248,36 @@ Fig.2A <- ggplot(Fig.2A.Data, aes(x = meanX, y= meanY, colour = group)) +
   geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
                arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2A.Data[1:16,]) +
   geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
-               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2A.Data[17:30,]) +
-  theme_ng1
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2A.Data[17:32,]) +
+  xlim(-0.6,0.6) +
+  ylim(-0.6,0.6) +
+  theme_fig2
 Fig.2A
  
+# Fig. 2B Adaptation to parallel optima with only DNM
+Divergent.DNM.Data <- join.and.group(DNM1pos, DNM2neg)
+Fig2B.Hybrids <- as.data.frame(read.csv('data/hybrid_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500.csv',header = F, col.names = c("X", "Y")))
 
+Fig.2B.Data <- Divergent.DNM.Data %>%  #can make this a function a bit later on if need be...
+  group_by(group, gen) %>% 
+  summarise(meanX = mean(X), meanY = mean(Y)) %>% 
+  as.data.frame() %>% 
+  add_row(group = "A", gen = 0, meanX = 0, meanY = 0) %>% #ancestor
+  add_row(group = "B", gen = 0, meanX = 0, meanY = 0) %>%  #ancestor
+  arrange(group, gen)
 
-
+Fig.2B <- ggplot(Fig.2B.Data, aes(x = meanX, y= meanY, colour = group)) +
+  geom_point() + 
+  geom_point(data = Fig2B.Hybrids, aes(x = X, y = Y, colour = NULL), alpha = 0.2) +
+  labs(x = "Trait 1", y = "Trait 2") +
+  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2B.Data[1:16,]) +
+  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2B.Data[17:32,]) +
+  xlim(-0.6,0.6) +
+  ylim(-0.6,0.6) +
+  theme_fig2
+Fig.2B
 
 ## Fig. 2C - Adaptation to parallel optima from both SGV and DNM
 Parallel.SGV.Data <- join.and.group(SGV1pos, SGV2pos)
@@ -272,8 +298,10 @@ Fig.2C <- ggplot(Fig.2C.Data, aes(x = meanX, y= meanY, colour = group)) +
   geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
                arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2C.Data[1:16,]) +
   geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
-               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2C.Data[17:30,]) +
-  theme_ng1
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2C.Data[17:32,]) +
+  xlim(-0.6,0.6) +
+  ylim(-0.6,0.6) +
+  theme_fig2
 Fig.2C
 
 #Fig. 2D Adaptation to divergent optima from both SGV and DNM
@@ -291,14 +319,22 @@ Fig.2D.Data <- Divergent.SGV.Data %>%
 Fig.2D <- ggplot(Fig.2D.Data, aes(x = meanX, y= meanY, colour = group)) +
   geom_point() + 
   geom_point(data = Fig2D.Hybrids, aes(x = X, y = Y, colour = NULL), alpha = 0.2) +
-  geom_point(data = Fig2C.Hybrids, aes(x = X, y = Y, colour = NULL), alpha = 0.2) +
+ # geom_point(data = Fig2C.Hybrids, aes(x = X, y = Y, colour = NULL), alpha = 0.2) +
   labs(x = "Trait 1", y = "Trait 2") +
   geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
                arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2D.Data[1:16,]) +
   geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
-               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2D.Data[17:30,]) +
-  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
-               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2C.Data[17:30,]) + #plots parallal and divergent this and above)
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2D.Data[17:32,]) +
+  # geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+  #              arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2C.Data[17:32,]) + #plots parallal and divergent this and above)
+  xlim(-0.6,0.6) +
+  ylim(-0.6,0.6) +
   theme_fig2
 Fig.2D
+
+#Create multipanel figure
+Fig.2 <- plot_grid(Fig.2A, Fig.2B, Fig.2C, Fig.2D, labels = c("A", "B", "C", "D"))
+
+
+
 

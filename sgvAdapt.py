@@ -91,8 +91,8 @@ N0 = B*K #initial population size (DNM)
 
 # opt1 = [0] * n #optimum phenotype 
 # opt1 = [0.51] * n #optimum phenotype 
-opt1 = [-0.51] * n #optimum phenotype 
-# opt1 = [0.49] * n #optimum phenotype 
+# opt1 = [-0.51] * n #optimum phenotype 
+opt1 = [0.49] * n #optimum phenotype 
 # opt1 = [-0.5] * n #optimum phenotype 
 
 # nfounders = len(popall[-1]) #size of founding population (on for SGV)
