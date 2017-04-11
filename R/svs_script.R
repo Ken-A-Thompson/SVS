@@ -3,9 +3,11 @@
 ### 02 Apr 2017
 
 #load packages
-#install.packages('tidyverse')
-#install.packages('splitstackshape')
+# install.packages('flexclust')
+# install.packages('tidyverse')
+# install.packages('splitstackshape')
 library(cowplot)
+library(flexclust)
 library(splitstackshape)
 library(tidyverse)
 
@@ -106,8 +108,24 @@ theme_fig2 <- theme(aspect.ratio=1.0,panel.background = element_blank(),
 # 
 # adapt.walk + geom_point(data = hyb.df, aes(x = hyb.d1, y = hyb.d2), alpha = 0.25)
 
+# Hybrid + parent fitness calculation
+## Using equation of Fraisse et al. 2016
+
+hybrid.fitness.n2.opt0.5 <- function(x,y){
+  euclid <- (sqrt((x - 0.5)^2 + (y - 0.5)^2))^2
+  fitness <- exp(-1 * euclid)
+  return(mean(fitness))
+}
+
+hybrid.fitness.n2.opt0.5(Fig2C.Hybrids$X, Fig2C.Hybrids$Y)
+
+hybrid.fitness.n2.opt0.5(Fig2A.Hybrids$X, Fig2A.Hybrids$Y)
+
 
 # Import numpy data into R
+
+
+
 
 sgv.phenos <- read.csv("/Users/Ken/Documents/Projects/SVS/data/phenos_K1000_n2_B2_u0.001_alpha0.01.csv", header = F, col.names = 1:ncol(sgv.phenos), check.names = F, na.strings = c("[", "]"))
 
@@ -156,12 +174,7 @@ real.walk <- ggplot(na.omit(sgv.plot), aes(x = X, y= Y, colour = gen)) +
  theme_ng1
 real.walk
 
-# Plot divergent adaptation then hybrids.
-## Load in burn-in, both adaptive walks, and hybrid dataframe
-sgv.burn <- read.csv()
-sgv.adapt1 <- read.csv()
-sgv.adapt2 <- read.csv()
-sgv.hybrid <- read.csv()
+
 
 ### Fig. 1. SGV with increasing burn-in
 
@@ -175,7 +188,6 @@ sgv.10000 <- read.csv('data/ancestor_pop_K1000_n2_B2_u0.001_alpha0.02_gens10000_
 
 sgv.20000 <- read.csv('data/ancestor_pop_K1000_n2_B2_u0.001_alpha0.02_gens20000_burn.csv', header = F, check.names = F)
 
-#try distancematrix in hopach
 #Within population diversity function returns the mean euclidean distance between individuals in a population
 within.pop.diversity <- function(x) {
   dist.mat <- as.matrix(dist(x, method = "euclidean"))
@@ -198,7 +210,7 @@ numpy.as.long <- function(x) {
   gen <- 1:nrow(x) ## Create variable with 'generation' number
   phenos.gen <- cbind(gen, x) ## Add generation number to numpy array
   phenos.tidy <- phenos.gen %>% 
-    gather(key = individual, value = pheno, 2:ncol(sgv.phenos.gen)) %>% #convert to long format
+    gather(key = individual, value = pheno, 2:ncol(x)) %>% #convert to long format
     mutate(pheno = gsub("\\[|\\]","", pheno)) 
   phenos.tidy.split <- cSplit(phenos.tidy, splitCols = "pheno", sep = " ") #use cSplit to get X and Y
   return(phenos.tidy.split)
@@ -219,20 +231,73 @@ join.and.group <- function(x, y){
 
 ## Load data
 ### DNM only
-DNM1pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.51-0.51_DNM.csv', header = F, col.names = 1:ncol(SGV1pos), check.names = F, na.strings = c("[", "]"))
-DNM2pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.49-0.49_DNM.csv', header = F, col.names = 1:ncol(SGV1pos), check.names = F, na.strings = c("[", "]"))
-DNM2neg <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt-0.51--0.51_DNM.csv', header = F, col.names = 1:ncol(SGV1pos), check.names = F, na.strings = c("[", "]"))
+DNM1pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.51-0.51_DNM.csv', header = F, check.names = F, na.strings = c("[", "]"))
+DNM2pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.49-0.49_DNM.csv', header = F, check.names = F, na.strings = c("[", "]"))
+DNM2neg <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt-0.51--0.51_DNM.csv', header = F, check.names = F, na.strings = c("[", "]"))
 
 ###SGV + DNM
-SGV1pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.51-0.51.csv', header = F, col.names = 1:ncol(SGV1pos), check.names = F, na.strings = c("[", "]"))
-SGV2pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.49-0.49.csv', header = F, col.names = 1:ncol(SGV2pos), check.names = F, na.strings = c("[", "]"))
-SGV1neg <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt-0.51--0.51.csv', header = F, col.names = 1:ncol(SGV2pos), check.names = F, na.strings = c("[", "]"))
+SGV1pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.51-0.51.csv', header = F, check.names = F, na.strings = c("[", "]"))
+SGV2pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.49-0.49.csv', header = F, check.names = F, na.strings = c("[", "]"))
+SGV1neg <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt-0.51--0.51.csv', header = F, check.names = F, na.strings = c("[", "]"))
 
 
 # Fig. 2A Adaptation to parallel optima with only DNM
 Parallel.DNM.Data <- join.and.group(DNM1pos, DNM2pos)
 Fig2A.Hybrids <- as.data.frame(read.csv('data/hybrid_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500.csv',header = F, col.names = c("X", "Y")))
 
+## Euclidean distance between populations
+### Load in the mutation matrices
+SGV1pos.muts <- read.csv('data/parent_pop_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.51-0.51.csv', header = F, check.names = F, na.strings = c("[", "]"))
+SGV2pos.muts <- read.csv('data/parent_pop_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.49-0.49.csv', header = F, check.names = F, na.strings = c("[", "]"))
+
+
+mutation.matrices <- function(x) { #this function works with lapply to take all the list items (generations) and make them into 'nice' matrices. 
+  cleaned.matrix <- t(as.data.frame(x))
+  fin.matrix <- data.frame(cleaned.matrix) %>% 
+    gather(key = individual, value = locus, 1:ncol(cleaned.matrix)) %>% #convert to long format
+    mutate(locus = gsub("\\[|\\]","", locus)) %>% #lose the square brackets, they suck!
+    cSplit(splitCols = "locus", sep = " ") %>%  #use cSplit to get all loci in unique columns
+    select(-individual) 
+  return(fin.matrix)
+}
+
+
+
+# Make each generation an item in a list
+matrix.list.SGV1pos.muts <- as.list(data.frame(t(SGV1pos.muts)))
+
+clean.list <- lapply(matrix.list.SGV1pos.muts, mutation.matrices) #next get everything into a 'good' list.
+
+
+pipe.data (t(data.frame(testdata))) #need to reclass into data frame because R breaks for some reason
+
+mutation.matrices(listitem)
+
+
+#now with this data frame compare it with another
+#need to do something about first mutation... it's not a fixed diff.
+zeroes.1 <- matrix(0L, nrow(loci.tidy.1), ncol(loci.tidy.2))
+homologs.1 <- as.data.frame(zeroes.1)
+pop.w.homologs.1 <- cbind(loci.tidy.1, homologs.1)
+
+zeroes.2 <- matrix(0L, nrow(loci.tidy.2), ncol(loci.tidy.1))
+homologs.2 <- as.data.frame(zeroes.2)
+pop.w.homologs.2 <- cbind(homologs.2, loci.tidy.2)
+
+#Get the pairwise distances between the matrices
+dist.mat <- as.matrix(dist2(pop.w.homologs.1, pop.w.homologs.2, method = "euclidean"))
+dist.mat[upper.tri(dist.mat)] <- NA
+pairwise.dist <- as.data.frame(cbind(which(!is.na(dist.mat),arr.ind = TRUE),na.omit(as.vector(dist.mat))))
+mean(pairwise.dist$V3)
+
+
+#Ok so now that I have it written out manually I need to make it for for x rows in 2 datasets.
+# also need to fix the hybid code because it always
+
+
+result <- 
+
+## Create data for Fig 2A
 Fig.2A.Data <- Parallel.DNM.Data %>% 
   group_by(group, gen) %>% 
   summarise(meanX = mean(X), meanY = mean(Y)) %>% 
