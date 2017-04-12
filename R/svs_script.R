@@ -3,11 +3,15 @@
 ### 02 Apr 2017
 
 #load packages
+# install.packages('cowplot')
 # install.packages('flexclust')
+# install.packages('pbapply')
 # install.packages('tidyverse')
 # install.packages('splitstackshape')
 library(cowplot)
+library(data.table)
 library(flexclust)
+# library(pbapply)
 library(splitstackshape)
 library(tidyverse)
 
@@ -45,15 +49,105 @@ theme_fig2 <- theme(aspect.ratio=1.0,panel.background = element_blank(),
                    axis.title.x=element_blank(),
                    axis.text.x=element_blank(),
                    axis.text.y=element_blank(),
-                   legend.position="none",
-                   legend.title=element_blank(),
+                   # legend.position="none",
+                   # legend.title=element_blank(),
                    plot.title = element_blank())
                    
+### End themes
+
+### Helper functions
+
+# Create function that calculates pairwise distance
+between.pop.diversity <- function(x, y){
+  ##first thing's first: delete 'locus 1' which is not useful information here because it is an automatic fixed difference that is a neutral mutation.
+  x %>% select(-1)
+  y %>% select(-1)
+  #Block of code to append loci with all zeroes to 'sister' population
+  ## first population
+  zeroes.1 <- matrix(0L, nrow(x), ncol(y))
+  homologs.1 <- as.data.frame(zeroes.1)
+  pop.w.homologs.1 <- cbind(x, homologs.1)
+  ## second population
+  zeroes.2 <- matrix(0L, nrow(y), ncol(x))
+  homologs.2 <- as.data.frame(zeroes.2)
+  pop.w.homologs.2 <- cbind(homologs.2, y) #do this in opposite order as above so that loci are 'aligned'
+  ## Get the pairwise euclidean distances between the matrices
+  dist.mat <- as.matrix(dist2(pop.w.homologs.1, pop.w.homologs.2, method = "euclidean")) #dist2 calculates for all pairs of rows across datasets
+  dist.mat[upper.tri(dist.mat)] <- NA
+  pairwise.dist <- as.data.frame(cbind(which(!is.na(dist.mat),arr.ind = TRUE),na.omit(as.vector(dist.mat))))
+  return(mean(pairwise.dist$V3))
+}
+
+#Mean hybrid fitness for two traits at optimum of 0.5
+hybrid.fitness.n2.opt0.5 <- function(x,y){ 
+  euclid <- (sqrt((x - 0.5)^2 + (y - 0.5)^2))^2
+  fitness <- exp(-1 * euclid)
+  return(mean(fitness))
+}
+
+#Create function that joins the two 'adaptive walk' datasets 
+join.and.group <- function(x, y){
+  data1 <- numpy.as.long(x)
+  data2 <- numpy.as.long(y)
+  data1$group <- rep("A", nrow(data1)) #this and below assigns each a unique group identifier
+  data2$group <- rep("B", nrow(data1))
+  plot.data <- rbind(data1, data2) %>% #combine the two datasets
+    rename(X = pheno_1) %>%  #rename the phenotypes to x and Y
+    rename(Y = pheno_2)
+  plot.data$group <- as.factor(plot.data$group) # make sure 'group' is coded as a factor
+  return(plot.data)
+}
+
+mutation.matrices <- function(x) { #this function works with lapply to take all the list items (generations) and make them into 'nice' matrices. 
+  cleaned.matrix <- t(as.data.frame(x))
+  fin.matrix <- data.frame(cleaned.matrix) %>% 
+    gather(key = individual, value = locus, 1:ncol(cleaned.matrix)) %>% #convert to long format
+    mutate(locus = gsub("\\[|\\]","", locus)) %>% #lose the square brackets, they suck!
+    cSplit(splitCols = "locus", sep = " ") %>%  #use cSplit to get all loci in unique columns
+    select(-individual) 
+  return(fin.matrix)
+}
 
 
+# Function to convert numpy array to long format
+numpy.as.long <- function(x) {
+  gen <- 1:nrow(x) ## Create variable with 'generation' number
+  phenos.gen <- cbind(gen, x) ## Add generation number to numpy array
+  phenos.tidy <- phenos.gen %>% 
+    gather(key = individual, value = pheno, 2:ncol(x)) %>% #convert to long format
+    mutate(pheno = gsub("\\[|\\]","", pheno)) 
+  phenos.tidy.split <- cSplit(phenos.tidy, splitCols = "pheno", sep = " ") #use cSplit to get X and Y
+  return(phenos.tidy.split)
+}
 
-### End theme
+# Function to remove columns that have only zeros in them (modified from SO to work in list loops)
+remove_zero_cols <- function(x) {
+  df <- as.data.frame(x)
+  rem_vec <- NULL
+  for(i in 1:ncol(df)){
+    this_sum <- summary(df[,i])
+    zero_test <- length(which(this_sum == 0))
+    if(zero_test == 6) {
+      rem_vec[i] <- names(df)[i]
+    }
+  }
+  features_to_remove <- rem_vec[!is.na(rem_vec)]
+  rem_ind <- which(names(df) %in% features_to_remove)
+  df <- df[,-rem_ind]
+  return(df)
+}
 
+#Within population diversity function returns the mean euclidean distance between individuals (rows) in a population
+within.pop.diversity <- function(x) {
+  dist.mat <- as.matrix(dist(sample_n(x, 1000), method = "euclidean")) #have the sample_n in there for now to limit to 1000 individuals (makes it run faster)
+  dist.mat[upper.tri(dist.mat)] <- NA
+  pairwise.dist <- as.data.frame(cbind(which(!is.na(dist.mat),arr.ind = TRUE),na.omit(as.vector(dist.mat))))
+  pairwise.dist.new <- pairwise.dist %>% 
+    mutate(same.ind = row - col) %>% 
+    filter(same.ind != 0) %>% 
+    select(-same.ind) 
+  return(mean(pairwise.dist.new$V3))
+}
 
 # # Testing script for plotting adaptive walk
 # # Generate vectors
@@ -111,122 +205,86 @@ theme_fig2 <- theme(aspect.ratio=1.0,panel.background = element_blank(),
 # Hybrid + parent fitness calculation
 ## Using equation of Fraisse et al. 2016
 
-hybrid.fitness.n2.opt0.5 <- function(x,y){
-  euclid <- (sqrt((x - 0.5)^2 + (y - 0.5)^2))^2
-  fitness <- exp(-1 * euclid)
-  return(mean(fitness))
-}
+
 
 hybrid.fitness.n2.opt0.5(Fig2C.Hybrids$X, Fig2C.Hybrids$Y)
 
 hybrid.fitness.n2.opt0.5(Fig2A.Hybrids$X, Fig2A.Hybrids$Y)
 
+###############################################
+################### FIGURES ###################
+###############################################
 
-# Import numpy data into R
+# Fig. 1. SGV with increasing burn-in
+## Load base data for fig (burn-in population sampled at different time points)
+
+Fig1.RawData <- fread('data/ancestor_pop_K10000_n2_B2_u0.001_alpha0.02_gens2000_burn.csv', header = F, check.names = F, na.strings = c("[", "]")) #use fread bc read.csv breaks R
+
+# Make each generation a list item
+Fig1.List <- as.list(data.frame(t(Fig1.RawData)))
+
+# Use the 'mutation.matrices' function to make each item in a list a matrix that can be used to calculate Euclidean distance (takes about a minute)
+Fig1.CleanList <- lapply(Fig1.List, mutation.matrices) 
+
+# Calculate within population diversity for every generation (can take a while, but currently am sampling just 1000 individuals from the 10000-long data)
+Fig1.SGV <- data.frame(sapply(Fig1.CleanList, within.pop.diversity))
+
+#Make data for Fig 1A
+Fig1A.Data <- setNames(data.frame(matrix(ncol = 2, nrow = nrow(Fig1.SGV))), c("Generation", "SGV")) #Create dataframe
+Fig1A.Data$SGV <- Fig1.SGV$sapply.Fig1.CleanList..within.pop.diversity. #Bring in data from sapply above with all within-pop pairwise distances
+Fig1A.Data$Generation <- as.vector(1:nrow(Fig1.SGV) * 100) #The second number is the frequency with which the data were sampled
+Fig.1A.Data.Sorted <- Fig1A.Data[order(Fig1B.Data$Generation),]
+
+#Create dataset to point at 'burn-in' arrow
+Fig1A.Arrow <- data.frame(x1 = last(Fig.1A.Data.Sorted$Generation), x2 = last(Fig.1A.Data.Sorted$Generation), y1 = 0.65*last(Fig.1A.Data.Sorted$SGV), y2 = 0.8*last(Fig.1A.Data.Sorted$SGV))
+
+#Plot figure 1A
+Fig.1A <- ggplot(Fig.1A.Data.Sorted, aes(x = Generation, y = SGV)) +
+  geom_point() + 
+  labs(x = "Generation #",
+       y = "Within-population genetic diversity") +
+  geom_smooth() + 
+  geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2), arrow=arrow(length=unit(0.3,"cm"), type = "open"), size = 1, data = Fig1A.Arrow) +
+  theme_ng1
+Fig.1A
+
+#Plot Figure 1B
+## number of mutations in the population
+
+# Need to count length of mutations (non-empty) in each generation... plot that
+# Remove columns that have only zeros; these mutations were present before selection but not after (i.e., they were just lost)
+Muts.No.Zeros <- lapply(Fig1.CleanList, remove_zero_cols)
+
+#Count ncols of each 'generation'
+Muts.ColCnt <- t(data.frame(lapply(Muts.No.Zeros, ncol)))
+
+#Make data for Fig. 2B
+#Make data for Fig 1A
+Fig1B.Data <- setNames(data.frame(matrix(ncol = 2, nrow = nrow(Fig1.SGV))), c("Generation", "Nmuts")) #Create dataframe
+Fig1B.Data$Nmuts <- Muts.ColCnt[,1] #Bring in data from sapply above with all within-pop pairwise distances
+Fig1B.Data$Generation <- as.vector(1:nrow(Fig1.SGV) * 100) #The second number is the frequency with which the data were sampled
+Fig1B.Data <- add_row(Fig1B.Data, Generation = 0, Nmuts = 1) #Root at 1 (start with one)
+Fig.1B.Data.Sorted <- Fig1B.Data[order(Fig1B.Data$Generation),]
+
+#Create dataset to point at 'burn-in' arrow
+Fig1B.Arrow <- data.frame(x1 = last(Fig.1B.Data.Sorted$Generation), x2 = last(Fig.1B.Data.Sorted$Generation), y1 = 0.65*last(Fig.1B.Data.Sorted$Nmuts), y2 = 0.8*last(Fig.1B.Data.Sorted$Nmuts))
+
+Fig.1B <- ggplot(Fig.1B.Data.Sorted, aes(x = Generation, y = Nmuts)) +
+  geom_point() + 
+  labs(x = "Generation #",
+       y = "Number of mutations in population") +
+  geom_smooth() + 
+  geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2), arrow=arrow(length=unit(0.3,"cm"), type = "open"), size = 1, data = Fig1B.Arrow) +
+  theme_ng1
+Fig.1B
 
 
+## Create multi-panel figure for Fig 1
 
+Fig.1 <- plot_grid(Fig.1A, Fig.1B, labels = c("a", "b"))
 
-# sgv.phenos <- read.csv("/Users/Ken/Documents/Projects/SVS/data/phenos_K1000_n2_B2_u0.001_alpha0.01.csv", header = F, col.names = 1:ncol(sgv.phenos), check.names = F, na.strings = c("[", "]"))
-# 
-# ## Add generation number to dataset
-# gen <- 1:nrow(sgv.phenos)
-# sgv.phenos.gen <- cbind(gen, sgv.phenos)
-# 
-# sgv.tidy <- sgv.phenos.gen %>% 
-#   gather(key = individual, value = pheno, 2:ncol(sgv.phenos.gen)) %>% #convert to long format
-#   mutate(pheno = gsub("\\[|\\]","", pheno)) %>%  #get rid of square brackets
-#   mutate(pheno.t = trimws(pheno)) %>% #get rid of leading white space
-#   mutate(pheno.D = paste(pheno.t, "D", step = "")) %>%  #add 'dummy character' "D" to end of string to enable deletion
-#   mutate(pheno.t2 = gsub("0.  0. D ","0 0", pheno.D)) %>%  #get rid of double zero oddity
-#   mutate(pheno.t3 = gsub("D","", pheno.t2)) %>%  #get rid of Dummy
-#   mutate(pheno.t4 = gsub("  "," ", pheno.t3)) %>%  #get rid of double space
-#   mutate(pheno.t5 = trimws(pheno.t4)) #get rid of trailing white space
-# 
-# #use cSplit to get X and Y
-# sgv.tidy.split <- cSplit(sgv.tidy, splitCols = "pheno.t5", sep = " ")
-# 
-# sgv.plot <- sgv.tidy.split %>% 
-#   select(gen, individual, pheno.t5_1, pheno.t5_2) %>% 
-#   rename(X = pheno.t5_1) %>% 
-#   rename(Y = pheno.t5_2) 
-# 
-# write.csv(sgv.plot, file = "R/2017-03-27-tidySVS.csv")
-# 
-# #Finally... now plot it
-# 
-# arrows <- plyr::ddply(na.omit(sgv.plot), ~gen, summarise, meanX = mean(X), meanY= mean(Y))
-# 
-# real.walk.means <- ggplot(arrows[1:20,], aes(x = meanX, y= meanY)) +
-#   geom_point() + 
-#   labs(x = "Trait 1", y = "Trait 2") +
-#   geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
-#                arrow=arrow(length=unit(0.3,"cm"), type = "open")) +
-#   theme_ng1
-# real.walk.means
-# 
-# real.walk.means + geom_point(data = sgv.plot, aes(x = X, y = Y, colour = gen), alpha = 0.1)
-# 
-# real.walk <- ggplot(na.omit(sgv.plot), aes(x = X, y= Y, colour = gen)) +
-#  geom_point(aes(colour = gen), alpha = 0.2) + #colour by generation; lighter are later on
-#  stat_summary(fun.y=mean, geom = "line", aes(group =factor(gen))) +
-#  labs(x = "Trait 1", y = "Trait 2") +
-#  theme_ng1
-# real.walk
-
-
-
-### Fig. 1. SGV with increasing burn-in
-
-sgv.100 <- read.csv('data/ancestor_pop_K1000_n2_B2_u0.001_alpha0.02_gens100_burn.csv', header = F, check.names = F)
-
-sgv.1000 <- read.csv('data/ancestor_pop_K1000_n2_B2_u0.001_alpha0.02_gens1000_burn.csv', header = F, check.names = F)
-
-sgv.5000 <- read.csv('data/ancestor_pop_K1000_n2_B2_u0.001_alpha0.02_gens5000_burn.csv', header = F, check.names = F)
-
-sgv.10000 <- read.csv('data/ancestor_pop_K1000_n2_B2_u0.001_alpha0.02_gens10000_burn.csv', header = F, check.names = F)
-
-sgv.20000 <- read.csv('data/ancestor_pop_K1000_n2_B2_u0.001_alpha0.02_gens20000_burn.csv', header = F, check.names = F)
-
-#Within population diversity function returns the mean euclidean distance between individuals in a population
-within.pop.diversity <- function(x) {
-  dist.mat <- as.matrix(dist(x, method = "euclidean"))
-  dist.mat[upper.tri(dist.mat)] <- NA
-  pairwise.dist <- as.data.frame(cbind(which(!is.na(dist.mat),arr.ind = TRUE),na.omit(as.vector(dist.mat))))
-  pairwise.dist.new <- pairwise.dist %>% 
-    mutate(same.ind = row - col) %>% 
-    filter(same.ind != 0) %>% 
-    select(-same.ind) 
-  return(mean(pairwise.dist.new$V3))
-}
 
 # Figure 2: Adaptive walks with hybrids from DNM only (A-B) and DNM + SGV
-
-## Dependent functions
-
-## Function to convert numpy array to long format
-numpy.as.long <- function(x) {
-  gen <- 1:nrow(x) ## Create variable with 'generation' number
-  phenos.gen <- cbind(gen, x) ## Add generation number to numpy array
-  phenos.tidy <- phenos.gen %>% 
-    gather(key = individual, value = pheno, 2:ncol(x)) %>% #convert to long format
-    mutate(pheno = gsub("\\[|\\]","", pheno)) 
-  phenos.tidy.split <- cSplit(phenos.tidy, splitCols = "pheno", sep = " ") #use cSplit to get X and Y
-  return(phenos.tidy.split)
-}
-
-#Create function that joins the two 'adaptive walk' datasets 
-join.and.group <- function(x, y){
-  data1 <- numpy.as.long(x)
-  data2 <- numpy.as.long(y)
-  data1$group <- rep("A", nrow(data1)) #this and below assigns each a unique group identifier
-  data2$group <- rep("B", nrow(data1))
-  plot.data <- rbind(data1, data2) %>% #combine the two datasets
-    rename(X = pheno_1) %>%  #rename the phenotypes to x and Y
-    rename(Y = pheno_2)
-  plot.data$group <- as.factor(plot.data$group) # make sure 'group' is coded as a factor
-  return(plot.data)
-}
 
 ## Load data
 ### DNM only
@@ -244,15 +302,7 @@ SGV1neg <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_o
 SGV1pos.muts <- read.csv('data/parent_pop_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.51-0.51.csv', header = F, check.names = F, na.strings = c("[", "]"))
 SGV2pos.muts <- read.csv('data/parent_pop_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.49-0.49.csv', header = F, check.names = F, na.strings = c("[", "]"))
 
-mutation.matrices <- function(x) { #this function works with lapply to take all the list items (generations) and make them into 'nice' matrices. 
-  cleaned.matrix <- t(as.data.frame(x))
-  fin.matrix <- data.frame(cleaned.matrix) %>% 
-    gather(key = individual, value = locus, 1:ncol(cleaned.matrix)) %>% #convert to long format
-    mutate(locus = gsub("\\[|\\]","", locus)) %>% #lose the square brackets, they suck!
-    cSplit(splitCols = "locus", sep = " ") %>%  #use cSplit to get all loci in unique columns
-    select(-individual) 
-  return(fin.matrix)
-}
+
 
 # Make each generation an item in a list
 matrix.list.SGV1pos.muts <- as.list(data.frame(t(SGV1pos.muts)))
@@ -266,51 +316,35 @@ clean.list.SGV2pos.muts <- lapply(matrix.list.SGV2pos.muts, mutation.matrices) #
 # mutations for each array, need to get a column that contains their pairwise euclidean
 # distance at each generation. I.e., 'dist2' for each pair of list items in corresponding dataset
 
-# Create function that calculates pairwise distance
-between.pop.diversity <- function(x, y){
-  ##first thing's first: delete 'locus 1' which is not useful information here because it is an automatic fixed difference that is a neutral mutation.
-  x %>% select(-1)
-  y %>% select(-1)
-  #Block of code to append loci with all zeroes to 'sister' population
-  ## first population
-  zeroes.1 <- matrix(0L, nrow(x), ncol(y))
-  homologs.1 <- as.data.frame(zeroes.1)
-  pop.w.homologs.1 <- cbind(x, homologs.1)
-  ## second population
-  zeroes.2 <- matrix(0L, nrow(y), ncol(x))
-  homologs.2 <- as.data.frame(zeroes.2)
-  pop.w.homologs.2 <- cbind(homologs.2, y) #do this in opposite order as above so that loci are 'aligned'
-  ## Get the pairwise euclidean distances between the matrices
-  dist.mat <- as.matrix(dist2(pop.w.homologs.1, pop.w.homologs.2, method = "euclidean")) #dist2 calculates for all pairs of rows across datasets
-  dist.mat[upper.tri(dist.mat)] <- NA
-  pairwise.dist <- as.data.frame(cbind(which(!is.na(dist.mat),arr.ind = TRUE),na.omit(as.vector(dist.mat))))
-  return(mean(pairwise.dist$V3))
-}
 
-mapply(between.pop.diversity, x = clean.list.SGV1pos.muts, y =  clean.list.SGV2pos.muts) #use 'mapply' to iterate the calculation over between all elements of the lists. 
 
-# also need to fix the hybid code because it always
+Fig.2A.Divergence <- data.frame(mapply(between.pop.diversity, x = clean.list.SGV1pos.muts, y =  clean.list.SGV2pos.muts)) #use 'mapply' to iterate the calculation over between all elements of the lists. 
+
+# also need to fix the hybid code because it always loads the most recent one
 
 # Fig. 2A Adaptation to parallel optima with only DNM
 Parallel.DNM.Data <- join.and.group(DNM1pos, DNM2pos)
 Fig2A.Hybrids <- as.data.frame(read.csv('data/hybrid_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500.csv',header = F, col.names = c("X", "Y")))
 
 # 'Genomic divergence'
-mapply(between.pop.diversity, x = clean.list.SGV1pos.muts, y =  clean.list.SGV2pos.muts) #use 'mapply' to iterate the calculation over between all elements of the lists. 
-
+Fig2A.Divergence <- data.frame(mapply(between.pop.diversity, x = clean.list.SGV1pos.muts, y =  clean.list.SGV2pos.muts)) #use 'mapply' to iterate the calculation over between all elements of the lists. 
 
 ## Create data for Fig 2A
-Fig.2A.Data <- Parallel.DNM.Data %>% 
+###Should make these functions if there's time
+Fig.2A.Data <- Parallel.DNM.Data %>%
   group_by(group, gen) %>% 
   summarise(meanX = mean(X), meanY = mean(Y)) %>% 
   as.data.frame() %>% 
-  add_row(group = "A", gen = 0, meanX = 0, meanY = 0) %>% #ancestor
-  add_row(group = "B", gen = 0, meanX = 0, meanY = 0) %>%  #ancestor
+  mutate(divergence = c(Fig2A.Divergence[,1], Fig2A.Divergence[,1])) %>% 
+  add_row(group = "A", gen = 0, meanX = 0, meanY = 0, divergence = 0) %>% #ancestor
+  add_row(group = "B", gen = 0, meanX = 0, meanY = 0, divergence = 0) %>%  #ancestor
   arrange(group, gen)
 
-Fig.2A <- ggplot(Fig.2A.Data, aes(x = meanX, y= meanY, colour = group)) +
+Fig.2A <- ggplot(Fig.2A.Data, aes(x = meanX, y= meanY, colour = divergence)) +
+  # scale_colour_gradientn(colours = rainbow(7)) +
+  scale_colour_gradient(low = 'red', high = 'blue') +
   geom_point() + 
-  geom_point(data = Fig2A.Hybrids, aes(x = X, y = Y, colour = NULL), alpha = 0.2) +
+  geom_point(data = Fig2A.Hybrids, aes(x = X, y = Y, colour = NULL), alpha = 0.1) +
   labs(x = "Trait 1", y = "Trait 2") +
   geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
                arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2A.Data[1:16,]) +
