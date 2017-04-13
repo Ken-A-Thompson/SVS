@@ -55,8 +55,8 @@ n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per genome (0<u<1)
 alpha = 0.02 #mutation SD
-# maxgen = 10000 #SGV number of gens in burn-in (positive integer)
-maxgen = 1 #DNM number of gens in burn-in (positive integer)
+maxgen = 2000 #SGV number of gens in burn-in (positive integer)
+# maxgen = 1 #DNM number of gens in burn-in (positive integer) 
 
 
 sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn' %(K,n,B,u,alpha,maxgen)
@@ -85,22 +85,22 @@ while 1:
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-maxgen = 1500 #maximum number of generations (positive integer)
+maxgen = 5000 #maximum number of generations (positive integer)
 KAdapt = 1000 # maximum population size of adapting populations
 N0 = B*K #initial population size (DNM)
 
 # opt1 = [0] * n #optimum phenotype 
 # opt1 = [0.51] * n #optimum phenotype 
-# opt1 = [-0.51] * n #optimum phenotype 
-opt1 = [0.49] * n #optimum phenotype 
+opt1 = [-0.51] * n #optimum phenotype 
+# opt1 = [0.49] * n #optimum phenotype 
 # opt1 = [-0.5] * n #optimum phenotype 
 
-# nfounders = len(popall[-1]) #size of founding population (on for SGV)
-nfounders = 0
+nfounders = len(popall[-1]) #size of founding population (on for SGV)
+# nfounders = 0
 
 outputFreq = 100 #record and print update this many generations
 
-remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
+remove_lost = False #If true, remove mutations that are lost (0 for all individuals)
 
 ######################################################################
 ##SIMULATION##

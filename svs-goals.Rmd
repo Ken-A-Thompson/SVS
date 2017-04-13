@@ -1,12 +1,12 @@
 # Goals for SVS Project
 
 ## Short term
-1. Plot accumulation of SGV with time in ancestral population. (Fig. 1)
-    + Implement fluctuating adaptive peak.
-    + Print mutation matrix at different time points in a given simulation.
-    + Calculate π in R from mutation matrix.
-2. Plot adaptive walks in R to parallel & divergent optima with and without SGV (i.e., burn-in), and hybrids.
-    + Figure out how to do 'parallelism' metric and colour arrows by that metric.
+1. ~~Plot accumulation of SGV with time in ancestral population. (Fig. 1)~~ (is this really what we want as fig 1?)
+    + ~~Implement fluctuating adaptive peak.~~
+    + ~~Print mutation matrix at different time points in a given simulation.~~
+    + ~~Calculate π in R from mutation matrix.~~
+2. ~~Plot adaptive walks in R to parallel & divergent optima with and without SGV (i.e., burn-in), and hybrids.~~
+    + ~~Figure out how to do 'parallelism' metric and colour arrows by that metric.~~
 3. Plot parallelism with initial maladaptation for varying initial size
 4. Plot hybrid load with increasing maladptation. 
     + Figure out how to calculate hybrid load.
