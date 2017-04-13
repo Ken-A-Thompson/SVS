@@ -10,97 +10,132 @@ import pickle
 ##HELPER FUNCTIONS##
 ######################################################################
 
-def open_output_files(K, n, B, u, alpha, maxgen, nfounders, opt1):
-    """
-    This function opens the output files and returns file
-    handles to each.
-    """
+def open_output_files(K, n, B, u, alpha, maxgenAdapt, nfounders, opt1, style):
+	"""
+	This function opens the output files and returns file
+	handles to each.
+	"""
 
-    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%d_founders%d_opt%s_adapt_DNM' %(KAdapt,n,B,u,alpha,maxgen,nfounders,'-'.join(str(e) for e in opt1))
-    data_dir = 'data'
+	sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%d_founders%d_opt%s_adapt_%s' %(KAdapt,n,B,u,alpha,maxgenAdapt,nfounders,'-'.join(str(e) for e in opt1),style)
+	data_dir = 'data'
 
-    outfile_A = open("%s/pop_%s.pkl" %(data_dir,sim_id),"ab")
-    outfile_B = open("%s/mut_%s.pkl" %(data_dir,sim_id),"ab")
-    outfile_C = open("%s/gen_%s.pkl" %(data_dir,sim_id),"ab")
+	outfile_A = open("%s/pop_%s.pkl" %(data_dir,sim_id),"ab")
+	outfile_B = open("%s/mut_%s.pkl" %(data_dir,sim_id),"ab")
+	outfile_C = open("%s/gen_%s.pkl" %(data_dir,sim_id),"ab")
 
-    return [outfile_A, outfile_B, outfile_C]
+	return [outfile_A, outfile_B, outfile_C]
 
 def write_data_to_output(fileHandles, data):
-    """
-    This function writes a (time, data) pair to the
-    corresponding output file. We write densities
-    not abundances.
-    """
+	"""
+	This function writes a (time, data) pair to the
+	corresponding output file. We write densities
+	not abundances.
+	"""
 	
-    for i in range(0,len(fileHandles)):
-        pickle.dump(data[i],fileHandles[i])
+	for i in range(0,len(fileHandles)):
+		pickle.dump(data[i],fileHandles[i])
 
 	# for i in range(0,len(fileHandles)):
-	# 	pickle.dump(data[i],fileHandles[i])
+	#   pickle.dump(data[i],fileHandles[i])
 
 def close_output_files(fileHandles):
-    """
-    This function closes all output files.
-    """
+	"""
+	This function closes all output files.
+	"""
 
-    for i in range(0,len(fileHandles)):
-        fileHandles[i].close()
+	for i in range(0,len(fileHandles)):
+		fileHandles[i].close()
 
-######################################################################
-##LOAD DATA FROM BURN_IN##
-######################################################################
-
-K = 10000 #max number of parents (positive integer)
-n = 2 #number of traits (positive integer)
-B = 2 #number of offspring per generation per parent (positive integer)
-u = 0.001 #mutation probability per genome (0<u<1)
-alpha = 0.02 #mutation SD
-# maxgen = 10000 #SGV number of gens in burn-in (positive integer)
-maxgen = 1 #DNM number of gens in burn-in (positive integer)
-
-
-sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn' %(K,n,B,u,alpha,maxgen)
-
-data_dir = 'data'
-
-# load pop data
-f = open('%s/pop_%s.pkl' %(data_dir,sim_id), 'rb')
-popall = []
-while 1:
-    try:
-        popall.append(pickle.load(f))
-    except EOFError:
-        break
-
-# load mut data
-g = open('%s/mut_%s.pkl' %(data_dir,sim_id), 'rb')
-mutall = []
-while 1:
-    try:
-        mutall.append(pickle.load(g))
-    except EOFError:
-        break
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-maxgen = 1500 #maximum number of generations (positive integer)
+maxgenAdapt = 1000 #maximum number of generations (positive integer)
 KAdapt = 1000 # maximum population size of adapting populations
-N0 = B*K #initial population size (DNM)
-
-# opt1 = [0] * n #optimum phenotype 
-# opt1 = [0.51] * n #optimum phenotype 
-# opt1 = [-0.51] * n #optimum phenotype 
-opt1 = [0.49] * n #optimum phenotype 
-# opt1 = [-0.5] * n #optimum phenotype 
-
-# nfounders = len(popall[-1]) #size of founding population (on for SGV)
-nfounders = 0
 
 outputFreq = 100 #record and print update this many generations
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
+# remove_lost = False
+#if remove_lost = True, remove...
+# remove = 'any' #... any mutation that is lost
+remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
+
+style = 'sgv' #standing genetic variance and de novo mutation
+# style = 'dnm' #de novo mutation only
+
+######################################################################
+##SGV (and DNM)##
+######################################################################
+
+if style == 'sgv':
+
+	# which ancestor (burn-in) to get data from
+	K = 1000 #max number of parents (positive integer)
+	n = 2 #number of traits (positive integer)
+	B = 2 #number of offspring per generation per parent (positive integer)
+	u = 0.001 #mutation probability per genome (0<u<1)
+	alpha = 0.02 #mutation SD
+	maxgen = 1000 #SGV number of gens in burn-in (positive integer)
+
+	sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn' %(K,n,B,u,alpha,maxgen)
+	data_dir = 'data'
+
+	# load pop data
+	f = open('%s/pop_%s.pkl' %(data_dir,sim_id), 'rb')
+	popall = []
+	while 1:
+		try:
+			popall.append(pickle.load(f))
+		except EOFError:
+			break
+
+	# load mut data
+	g = open('%s/mut_%s.pkl' %(data_dir,sim_id), 'rb')
+	mutall = []
+	while 1:
+		try:
+			mutall.append(pickle.load(g))
+		except EOFError:
+			break
+
+	# choose founding population from ancestor
+	nfounders = min(KAdapt,len(popall[-1])) #size of founding population
+	# nfounders = len(popall[-1])
+	whofounds = np.random.choice(len(popall[-1]),size=nfounders) #random choice of nfounders from ancestral population 
+	popfound = popall[-1][whofounds] #list of mutations held by each founding individual
+	if remove_lost and remove == 'any': #if removing ancestral mutations when lost
+		mutfound = np.delete(mutall[-1], np.where(~popfound.any(axis=0))[0], axis=0) #remove lost mutation effects (from random choice of founders)
+		popfound = popfound[:, ~np.all(popfound==0, axis=0)] #remove lost loci
+	else:
+		mutfound = mutall[-1]
+
+######################################################################
+##DNM only##
+######################################################################
+
+if style == 'dnm':
+
+	#choose parameters
+	n = 2 #number of traits (positive integer)
+	B = 2 #number of offspring per generation per parent (positive integer)
+	u = 0.001 #mutation probability per genome (0<u<1)
+	alpha = 0.02 #mutation SD
+
+	nfounders = KAdapt #initial population size
+	popfound = np.array([[1]] * nfounders) #list of mutations held by each individual (all start with same mutation at first locus)
+	mutfound = np.array([[0] * n]) #list of phenotypic effect of initial mutations (mutation at first locus puts all individuals at origin)
+
+######################################################################
+##NEW OPTIMUM##
+######################################################################
+
+opt1 = [0] * n #optimum phenotype 
+# opt1 = [0.51] * n #optimum phenotype 
+# opt1 = [-0.51] * n #optimum phenotype 
+# opt1 = [0.49] * n #optimum phenotype 
+# opt1 = [-0.5] * n #optimum phenotype 
 
 ######################################################################
 ##SIMULATION##
@@ -108,23 +143,17 @@ remove_lost = True #If true, remove mutations that are lost (0 for all individua
 
 def main():
 
-	# # intialize pops with SGV
-	# np.random.choice(len(popall[-1]),size=nfounders)
-	# pop = popall[-1] #list of mutations held by each individual (all start with same mutation at first locus)
-	# mut = mutall[-1] #list of phenotypic effect of initial mutations (mutation at first locus puts all individuals at origin)
-
-	#initialize pops with no SGV (only DNM)
-	pop = np.array([[1]] * N0) #list of mutations held by each individual (all start with same mutation at first locus)
-	mut = np.array([[0] * n]) #list of phenotypic effect of initial mutations (mutation at first locus puts all individuals at origin)
+	pop = popfound
+	mut = mutfound
 		
 	# open output files
-	fileHandles = open_output_files(K, n, B, u, alpha, maxgen, nfounders, opt1) 
+	fileHandles = open_output_files(KAdapt, n, B, u, alpha, maxgenAdapt, nfounders, opt1, style) 
 	
 	# optimum phenotype
 	opt = opt1
 
 	gen = 1 #generation
-	while gen < maxgen + 1:
+	while gen < maxgenAdapt + 1:
 
 		# genotype to phenotype
 		phenos = np.dot(pop,mut) #sum mutations held by each individual
@@ -141,10 +170,10 @@ def main():
 		if len(surv) == 0: 
 			print("Extinct")              
 			break 
-            
-        #otherwise continue
-        # dump data every outputFreq iteration
-        # also print a short progess message (generation and number of parents)
+			
+		#otherwise continue
+		# dump data every outputFreq iteration
+		# also print a short progess message (generation and number of parents)
 		if gen > 0 and (gen % outputFreq) == 0:
 			write_data_to_output(fileHandles, [surv,mut,gen])
 			print("gen %d    N %d" %(gen, len(surv)))  
@@ -170,10 +199,16 @@ def main():
 		pop = np.append(off, np.transpose(np.identity(len(off),dtype=int)[whomuts[0]]), axis=1) #add new loci and identify mutants
 		mut = np.append(mut,newmuts,axis=0) #append effect of new mutations to mutation list
 
-		# remove lost mutations (all zero columns)
+		# remove lost mutations (all zero columns in pop)
 		if remove_lost:
-			mut = np.delete(mut, np.where(~pop.any(axis=0))[0], axis=0)
-			pop = pop[:, ~np.all(pop==0, axis=0)] 
+			if remove == 'any':
+				keep = pop.any(axis=0)
+				mut = mut[keep]
+				pop = pop[:, keep]
+			if remove == 'derived':
+				keep = pop.any(axis=0) | np.array(range(len(mut))) < len(mutfound) #keep mutation if not lost or ancestral 
+				mut = mut[keep]
+				pop = pop[:, keep]
 		
 		# go to next generation
 		gen += 1
@@ -184,7 +219,7 @@ def main():
 ######################################################################
 ##RUNNING##
 ######################################################################    
-    
+	
 #run (with timer)
 start = time.time()
 main()
