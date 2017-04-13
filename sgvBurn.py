@@ -52,15 +52,14 @@ def close_output_files(fileHandles):
 ##PARAMETERS##
 ######################################################################
 
-K = 10000 #max number of parents (positive integer)
+K = 1000 #max number of parents (positive integer)
 n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per genome (0<u<1)
 alpha = 0.02 #mutational sd (positive real number)
 
-N0 = B*K #initial population size
-# maxgen = 10000 #SGV maximum number of generations (positive integer)
-maxgen = 1 #DNM maximum number of generations (positive integer)
+N0 = K #initial population size
+maxgen = 1000 #maximum number of generations (positive integer)
 
 opt0 = [0] * n #average optimum phenotype during burn in
 
@@ -133,8 +132,9 @@ def main():
 
 		# remove lost mutations (all zero columns)
 		if remove_lost:
-			mut = np.delete(mut, np.where(~pop.any(axis=0))[0], axis=0)
-			pop = pop[:, ~np.all(pop==0, axis=0)]
+				keep = pop.any(axis=0)
+				mut = mut[keep]
+				pop = pop[:, keep]
 		
 		# go to next generation
 		gen += 1
