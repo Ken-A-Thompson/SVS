@@ -108,7 +108,6 @@ mutation.matrices <- function(x) { #this function works with lapply to take all 
   return(fin.matrix)
 }
 
-
 # Function to convert numpy array to long format
 numpy.as.long <- function(x) {
   gen <- 1:nrow(x) ## Create variable with 'generation' number
@@ -136,6 +135,40 @@ remove_zero_cols <- function(x) {
   df <- df[,-rem_ind]
   return(df)
 }
+
+#can probably delete this block if Matt's revised code works.
+
+# test <-  remove_zero_cols.sgv(clean.list.Fig3.Pos1.Muts$X1)
+# # need to get rid of the 'df' column if there is one... figure it out!
+# 
+# # Modify remove_zero_cols for preserving ancestral SGV but removing DNM
+# remove_zero_cols.sgv <- function(x) {
+#   dnm.cols <- x[,dnm.start:ncol(x)]
+#   sgv.cols <- x[,1:sgv.end]
+#   df <- as.data.frame(dnm.cols)
+#   rem_vec <- NULL
+#   for(i in 1:ncol(df)){
+#     this_sum <- summary(df[,i])
+#     zero_test <- length(which(this_sum == 0))
+#     if(zero_test == 6) {
+#       rem_vec[i] <- names(df)[i]
+#     }
+#   }
+#   features_to_remove <- rem_vec[!is.na(rem_vec)]
+#   rem_ind <- which(names(df) %in% features_to_remove)
+#   df <- df[,-rem_ind]
+#   joint.data <- cbind(sgv.cols, df)
+#   if('df' %in% colnames(joint.data)) {
+#     jd2 <- select(joint.data, -df)
+#   }
+#   return(joint.data)
+# }
+# 
+# #if there is a column called 'df' then just give me sgvcols
+# #if there is no column called df then give me the cbind.
+
+
+
 
 #Within population diversity function returns the mean euclidean distance between individuals (rows) in a population
 within.pop.diversity <- function(x) {
@@ -235,8 +268,11 @@ Fig1A.Data$SGV <- Fig1.SGV$sapply.Fig1.CleanList..within.pop.diversity. #Bring i
 Fig1A.Data$Generation <- as.vector(1:nrow(Fig1.SGV) * 100) #The second number is the frequency with which the data were sampled
 Fig.1A.Data.Sorted <- Fig1A.Data[order(Fig1B.Data$Generation),]
 
-#Create dataset to point at 'burn-in' arrow
-Fig1A.Arrow <- data.frame(x1 = last(Fig.1A.Data.Sorted$Generation), x2 = last(Fig.1A.Data.Sorted$Generation), y1 = 0.65*last(Fig.1A.Data.Sorted$SGV), y2 = 0.8*last(Fig.1A.Data.Sorted$SGV))
+#Create datasets to point at 'burn-in' arrow
+Fig1A.Vert.Arrow <- data.frame(x1 = last(Fig.1A.Data.Sorted$Generation), x2 = last(Fig.1A.Data.Sorted$Generation), y1 = 0.65*last(Fig.1A.Data.Sorted$SGV), y2 = 0.8*last(Fig.1A.Data.Sorted$SGV))
+
+Fig1A.Hor.Arrow <- data.frame(x1 = 0.35*last(Fig.1A.Data.Sorted$Generation), x2 = 0.2*last(Fig.1A.Data.Sorted$Generation), y1 = first(Fig.1A.Data.Sorted$SGV), y2 = first(Fig.1A.Data.Sorted$SGV))
+
 
 #Plot figure 1A
 Fig.1A <- ggplot(Fig.1A.Data.Sorted, aes(x = Generation, y = SGV)) +
@@ -244,7 +280,8 @@ Fig.1A <- ggplot(Fig.1A.Data.Sorted, aes(x = Generation, y = SGV)) +
   labs(x = "Generation #",
        y = "Within-population genetic diversity") +
   geom_smooth() + 
-  geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2), arrow=arrow(length=unit(0.3,"cm"), type = "open"), size = 1, data = Fig1A.Arrow) +
+  geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2), arrow=arrow(length=unit(0.3,"cm"), type = "open"), size = 1, data = Fig1A.Vert.Arrow) +
+  geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2), arrow=arrow(length=unit(0.3,"cm"), type = "open"), size = 1, data = Fig1A.Hor.Arrow) +
   theme_ng1
 Fig.1A
 
@@ -267,14 +304,16 @@ Fig1B.Data <- add_row(Fig1B.Data, Generation = 0, Nmuts = 1) #Root at 1 (start w
 Fig.1B.Data.Sorted <- Fig1B.Data[order(Fig1B.Data$Generation),]
 
 #Create dataset to point at 'burn-in' arrow
-Fig1B.Arrow <- data.frame(x1 = last(Fig.1B.Data.Sorted$Generation), x2 = last(Fig.1B.Data.Sorted$Generation), y1 = 0.65*last(Fig.1B.Data.Sorted$Nmuts), y2 = 0.8*last(Fig.1B.Data.Sorted$Nmuts))
+Fig1B.Vert.Arrow <- data.frame(x1 = last(Fig.1B.Data.Sorted$Generation), x2 = last(Fig.1B.Data.Sorted$Generation), y1 = 0.65*last(Fig.1B.Data.Sorted$Nmuts), y2 = 0.8*last(Fig.1B.Data.Sorted$Nmuts))
+Fig1B.Hor.Arrow <- data.frame(x1 = 0.35*last(Fig.1B.Data.Sorted$Generation), x2 = 0.2*last(Fig.1B.Data.Sorted$Generation), y1 = first(Fig.1B.Data.Sorted$Nmuts), y2 = first(Fig.1B.Data.Sorted$Nmuts))
 
 Fig.1B <- ggplot(Fig.1B.Data.Sorted, aes(x = Generation, y = Nmuts)) +
   geom_point() + 
   labs(x = "Generation #",
        y = "Number of mutations in population") +
   geom_smooth() + 
-  geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2), arrow=arrow(length=unit(0.3,"cm"), type = "open"), size = 1, data = Fig1B.Arrow) +
+  geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2), arrow=arrow(length=unit(0.3,"cm"), type = "open"), size = 1, data = Fig1B.Vert.Arrow) +
+  geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2), arrow=arrow(length=unit(0.3,"cm"), type = "open"), size = 1, data = Fig1A.Hor.Arrow) +
   theme_ng1
 Fig.1B
 
@@ -315,8 +354,6 @@ clean.list.SGV2pos.muts <- lapply(matrix.list.SGV2pos.muts, mutation.matrices) #
 # Now that we have a list item with a clean matrix representing each population's 
 # mutations for each array, need to get a column that contains their pairwise euclidean
 # distance at each generation. I.e., 'dist2' for each pair of list items in corresponding dataset
-
-
 
 Fig.2A.Divergence <- data.frame(mapply(between.pop.diversity, x = clean.list.SGV1pos.muts, y =  clean.list.SGV2pos.muts)) #use 'mapply' to iterate the calculation over between all elements of the lists. 
 
@@ -436,6 +473,130 @@ Fig.2D
 #Create multipanel figure
 Fig.2 <- plot_grid(Fig.2A, Fig.2B, Fig.2C, Fig.2D, labels = c("A", "B", "C", "D"))
 
+# Figure 3: Genomic parallelism
+
+## need to sample populations at several timepoints during parallel and divergent evolution to look at genomic divergence. Plot it... A--phenotypes; B--euclid distance.
+
+##First load in some data on phenotypes... plot X and Y walk for divergent and parallel evolution for two pops (not a 'walk' but just lines). THEN plot 'genomic divergence'. Allow both to reach optimum.
+
+## run sims with 5k gens; allow pops to go parallel and also divergent...
+
+### Phenotypes
+Fig3.Pos1 <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens5000_opt0.51-0.51-fig3preserve.csv', header = F, check.names = F, na.strings = c("[", "]"))
+Fig3.Pos2 <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens5000_opt0.49-0.49-fig3preserve.csv', header = F, check.names = F, na.strings = c("[", "]"))
+Fig3.Neg1 <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens5000_opt-0.51--0.51.csv', header = F, check.names = F, na.strings = c("[", "]"))
+
+# Use 'join and group' function to put them into the same database.
+Fig3.Parallel.Phenos <- join.and.group(Fig3.Pos1, Fig3.Pos2)
+Fig3.Divergent.Phenos <- join.and.group(Fig3.Pos1, Fig3.Neg1)
+
+#Create summary dataset of each group's phenotypic evolution
+Fig.3A.Data <- Fig3.Parallel.Phenos %>%
+  group_by(group, gen) %>% 
+  summarise(meanX = mean(X), meanY = mean(Y)) %>% 
+  as.data.frame() %>% 
+  add_row(group = "A", gen = 0, meanX = 0, meanY = 0) %>% # starting phenotype
+  add_row(group = "B", gen = 0, meanX = 0, meanY = 0)  %>% # starting phenotype
+  arrange(group, gen) %>% 
+  rowwise() %>% 
+  mutate(TraitMean = mean(c(meanX, meanY), na.rm=T))  #calculate a 'trait mean' of X and Y.
+
+#Plot each 'adaptive walk' on X and Y as a smooth regression, versus GEN.
+#Fig.3A Parallel
+Fig.3A <- ggplot(Fig.3A.Data, aes(x = gen, y= TraitMean, colour = group)) +
+  geom_point() + 
+  labs(x = "Generation #",
+       y = "Mean phenotype (X + Y)/2") +
+  geom_smooth() + 
+  theme_ng1
+Fig.3A
+
+#Fig.3B Divergent
+Fig.3B.Data <- Fig3.Divergent.Phenos %>%
+  group_by(group, gen) %>% 
+  summarise(meanX = mean(X), meanY = mean(Y)) %>% 
+  as.data.frame() %>% 
+  add_row(group = "A", gen = 0, meanX = 0, meanY = 0) %>% # starting phenotype
+  add_row(group = "B", gen = 0, meanX = 0, meanY = 0)  %>% # starting phenotype
+  arrange(group, gen) %>% 
+  rowwise() %>% 
+  mutate(TraitMean = mean(c(meanX, meanY), na.rm=T))  #calculate a 'trait mean' of X and Y.
+
+Fig.3B <- ggplot(Fig.3B.Data, aes(x = gen, y= TraitMean, colour = group)) +
+  geom_point() + 
+  labs(x = "Generation #",
+       y = "Mean phenotype (X + Y)/2") +
+  geom_smooth() + 
+  theme_ng1
+Fig.3B
+
+#Fig 3C genomic divergence (should be cool!)
+Fig3.Pos1.Muts <- fread('data/parent_pop_K10000_n2_B2_u0.001_alpha0.02_gens5000_opt0.51-0.51.csv', header = F, check.names = F, na.strings = c("[", "]"))
+Fig3.Pos2.Muts <- fread('data/parent_pop_K10000_n2_B2_u0.001_alpha0.02_gens5000_opt0.49-0.49.csv', header = F, check.names = F, na.strings = c("[", "]"))
+Fig3.Neg1.Muts <- read.csv('data/parent_pop_K10000_n2_B2_u0.001_alpha0.02_gens5000_opt-0.51--0.51.csv', header = F, check.names = F, na.strings = c("[", "]"))
+
+# Make each generation an item in a list
+matrix.list.Fig3.Pos1.Muts <- as.list(data.frame(t(Fig3.Pos1.Muts)))
+matrix.list.Fig3.Pos2.Muts <- as.list(data.frame(t(Fig3.Pos2.Muts)))
+matrix.list.Fig3.Neg1.Muts <- as.list(data.frame(t(Fig3.Neg1.Muts)))
+
+#use the 'mutation.matrices' function to make each item in a list a matrix that can be used to calculate Euclidean distance
+# Takes about 10 mins for long ones...
+clean.list.Fig3.Pos1.Muts <- lapply(matrix.list.Fig3.Pos1.Muts, mutation.matrices) #next get everything into a 'good' list.
+clean.list.Fig3.Pos2.Muts <- lapply(matrix.list.Fig3.Pos2.Muts, mutation.matrices) #next get everything into a 'good' list.
+clean.list.Fig3.Neg1.Muts <- lapply(matrix.list.Fig3.Neg1.Muts, mutation.matrices) #next get everything into a 'good' list.
+
+# Between population divergence for each generation
+# Make sure hybrid was run with 'founders' not = 0.
+sgv.end <-  ncol(last(Fig1.CleanList))
+dnm.start <- 1 + ncol(last(Fig1.CleanList)) # is the number of cols that EVERYBODY has (i.e., the ancestral state) (can probably sample every 2 or 5 hundred instead of 1 hundred)
+
+# Remove columns with all zeros from ONLY new mutation columns
+Fig3.Pos1.Muts.NoDNMzeroes <- lapply(clean.list.Fig3.Pos1.Muts, remove_zero_cols.sgv)
+Fig3.Pos2.Muts.NoDNMzeroes <- lapply(clean.list.Fig3.Pos2.Muts, remove_zero_cols.sgv)
+
+#Create homologs and orthologs etc for new mutation but not SGV columns, then calculate between pop divergence
+
+#below is the one for dnm need to change to preserve ancestor stuff and do orthologs or wtv they are called for the DNM. shouldnt be too hard.
+
+Pop1 <- Fig3.Pos1.Muts.NoDNMzeroes$X1
+Pop2 <- Fig3.Pos2.Muts.NoDNMzeroes$X1
 
 
+# Create function that calculates pairwise distance
+between.pop.diversity <- function(x, y){
+  ##first thing's first: delete 'locus 1' which is not useful information here because it is an automatic fixed difference that is a neutral mutation.
+  x %>% select(-1)
+  y %>% select(-1)
+  #Block of code to append loci with all zeroes to 'sister' population
+  ## first population
+  zeroes.1 <- matrix(0L, nrow(x), ncol(y))
+  homologs.1 <- as.data.frame(zeroes.1)
+  pop.w.homologs.1 <- cbind(x, homologs.1)
+  ## second population
+  zeroes.2 <- matrix(0L, nrow(y), ncol(x))
+  homologs.2 <- as.data.frame(zeroes.2)
+  pop.w.homologs.2 <- cbind(homologs.2, y) #do this in opposite order as above so that loci are 'aligned'
+  ## Get the pairwise euclidean distances between the matrices
+  dist.mat <- as.matrix(dist2(pop.w.homologs.1, pop.w.homologs.2, method = "euclidean")) #dist2 calculates for all pairs of rows across datasets
+  dist.mat[upper.tri(dist.mat)] <- NA
+  pairwise.dist <- as.data.frame(cbind(which(!is.na(dist.mat),arr.ind = TRUE),na.omit(as.vector(dist.mat))))
+  return(mean(pairwise.dist$V3))
+}
+
+
+
+#Should have a lot because I told it not to get rid of the lost ones...
+
+## Need to have it 'track' ancestral mutations (keep lost), but not derived
+
+# Need to keep mutations that are lost.... make sure populations that have the same ancestor have the same mutations...
+#gotta check the ancestor... for the NUMBER of mutations (ncol), then make sure that is kept steady for both groups.
+
+
+
+Fig.3C.Parallel.Divergence <- data.frame(mapply(between.pop.diversity, x = clean.list.Fig3.Pos1.Muts, y =  clean.list.Fig3.Pos2.Muts))
+Fig.3C.Divergent.Divergence <- data.frame(mapply(between.pop.diversity, x = clean.list.Fig3.Neg1.Muts, y =  clean.list.Fig3.Pos2.Muts))
+
+Fig.3C.Parallel.Divergence$mapply.between.pop.diversity..x...clean.list.Fig3.Pos1.Muts.. - Fig.3C.Divergent.Divergence$mapply.between.pop.diversity..x...clean.list.Fig3.Neg1.Muts..
 

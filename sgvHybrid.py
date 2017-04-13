@@ -17,8 +17,8 @@ n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per genome (0<u<1)
 alpha = 0.02 #mutation SD
-# maxgen = 10000 #SGV number of gens in burn-in (positive integer)
-maxgen = 1 #DNM number of gens in burn-in (positive integer)
+maxgen = 2000 #SGV number of gens in burn-in (positive integer)
+# maxgen = 1 #DNM number of gens in burn-in (positive integer)
 
 sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn' %(K,n,B,u,alpha,maxgen)
 
@@ -42,25 +42,25 @@ while 1:
     except EOFError:
         break
 
-# make csv of last time point of population list (mutations in each individual)
-with open("%s/ancestor_pop_%s.csv" %(data_dir,sim_id), "w") as f:
-    writer = csv.writer(f)
-    writer.writerows(popall) #write for all timepoints
-    #writer.writerows(popall[-1]) #write for just last timepoint
+# # make csv of last time point of population list (mutations in each individual)
+# with open("%s/ancestor_pop_%s.csv" %(data_dir,sim_id), "w") as f:
+#     writer = csv.writer(f)
+#     writer.writerows(popall) #write for all timepoints
+#     #writer.writerows(popall[-1]) #write for just last timepoint
 
 
 ######################################################################
 ##LOAD DATA FROM PARENTAL POPNS##
 ######################################################################
 
-maxgen = 1500 #number of generations during parent adaptation post-burnin (positive integer)
+maxgen = 5000 #number of generations during parent adaptation post-burnin (positive integer)
 Kadapt = 1000 # carrying capacity of adapting populations
 
-# nfounders = len(popall[-1]) #size of founding population (on for SGV)
-nfounders = 0 # opt1s = [[0.5] * n, [-0.5] * n] #simulations to load
+nfounders = len(popall[-1]) #size of founding population (on for SGV)
+# nfounders = 0 # opt1s = [[0.5] * n, [-0.5] * n] #simulations to load
 
-# opt1s = [[0.49] * n, [0.51] * n] #which parental optima to use (Parallel)
-opt1s = [[-0.51] * n, [0.51] * n] #which parental optima to use (Divergent)
+opt1s = [[0.49] * n, [0.51] * n] #which parental optima to use (Parallel)
+# opt1s = [[-0.51] * n, [0.51] * n] #which parental optima to use (Divergent)
 
 data_dir = 'data'
 
@@ -92,12 +92,13 @@ for i in range(len(opt1s)):
             break
     muts[i] = mut
 
-# make csv
-for i in range(len(pops)):
-    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_opt%s' %(K,n,B,u,alpha,maxgen,'-'.join(str(e) for e in opt1s[i]))
-    with open("%s/parent_pop_%s.csv" %(data_dir,sim_id), "w") as f:
-        writer = csv.writer(f)
-        writer.writerows(pops[i])
+# # make of parental chromosomes
+# np.set_printoptions(threshold=np.inf) #trying this to print whole mutational arrays
+# for i in range(len(pops)):
+#     sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_opt%s' %(K,n,B,u,alpha,maxgen,'-'.join(str(e) for e in opt1s[i]))
+#     with open("%s/parent_pop_%s.csv" %(data_dir,sim_id), "w") as f:
+#         writer = csv.writer(f)
+#         writer.writerows(pops[i])
 
 ######################################################################
 ##PARENTAL PHENOTYPES##
