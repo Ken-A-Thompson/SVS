@@ -70,7 +70,7 @@ style = 'sgv' #standing genetic variance and de novo mutation
 ######################################################################
 
 if style == 'sgv':
-
+#
 	# which ancestor (burn-in) to get data from
 	K = 1000 #max number of parents (positive integer)
 	n = 2 #number of traits (positive integer)
@@ -78,10 +78,10 @@ if style == 'sgv':
 	u = 0.001 #mutation probability per genome (0<u<1)
 	alpha = 0.02 #mutation SD
 	maxgen = 1000 #SGV number of gens in burn-in (positive integer)
-
+#
 	sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn' %(K,n,B,u,alpha,maxgen)
 	data_dir = 'data'
-
+#
 	# load pop data
 	f = open('%s/pop_%s.pkl' %(data_dir,sim_id), 'rb')
 	popall = []
@@ -90,7 +90,7 @@ if style == 'sgv':
 			popall.append(pickle.load(f))
 		except EOFError:
 			break
-
+#
 	# load mut data
 	g = open('%s/mut_%s.pkl' %(data_dir,sim_id), 'rb')
 	mutall = []
@@ -99,15 +99,16 @@ if style == 'sgv':
 			mutall.append(pickle.load(g))
 		except EOFError:
 			break
-
+#
 	# choose founding population from ancestor
 	nfounders = min(KAdapt,len(popall[-1])) #size of founding population
 	# nfounders = len(popall[-1])
 	whofounds = np.random.choice(len(popall[-1]),size=nfounders) #random choice of nfounders from ancestral population 
 	popfound = popall[-1][whofounds] #list of mutations held by each founding individual
 	if remove_lost and remove == 'any': #if removing ancestral mutations when lost
-		mutfound = np.delete(mutall[-1], np.where(~popfound.any(axis=0))[0], axis=0) #remove lost mutation effects (from random choice of founders)
-		popfound = popfound[:, ~np.all(popfound==0, axis=0)] #remove lost loci
+		keep = popfound.any(axis=0)
+		mutfound = mutall[-1][keep]
+		popfound = popfound[:, keep]
 	else:
 		mutfound = mutall[-1]
 
@@ -131,11 +132,12 @@ if style == 'dnm':
 ##NEW OPTIMUM##
 ######################################################################
 
-opt1 = [0] * n #optimum phenotype 
+# opt1 = [0] * n #optimum phenotype 
+# opt1 = [0.5] * n #optimum phenotype 
+opt1 = [-0.5] * n #optimum phenotype 
 # opt1 = [0.51] * n #optimum phenotype 
 # opt1 = [-0.51] * n #optimum phenotype 
 # opt1 = [0.49] * n #optimum phenotype 
-# opt1 = [-0.5] * n #optimum phenotype 
 
 ######################################################################
 ##SIMULATION##
@@ -165,7 +167,7 @@ def main():
 		surv = pop[rand1 < w] #survivors
 		if len(surv) > KAdapt:
 			surv = surv[np.random.randint(len(surv), size = KAdapt)] #randomly choose KAdapt individuals if more than KAdapt
-		
+				
 		#end simulation if extinct        
 		if len(surv) == 0: 
 			print("Extinct")              
@@ -206,7 +208,9 @@ def main():
 				mut = mut[keep]
 				pop = pop[:, keep]
 			if remove == 'derived':
-				keep = pop.any(axis=0) | np.array(range(len(mut))) < len(mutfound) #keep mutation if not lost or ancestral 
+				segregating = pop.any(axis=0)
+				ancestral = np.array(range(len(mut))) < len(mutfound)
+				keep = np.add(segregating,ancestral)
 				mut = mut[keep]
 				pop = pop[:, keep]
 		

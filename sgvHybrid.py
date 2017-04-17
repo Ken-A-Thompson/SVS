@@ -72,7 +72,8 @@ nfounders = KAdapt
 
 # opt1s = [[0.49] * n, [0.51] * n] #which parental optima to use (Parallel)
 # opt1s = [[-0.51] * n, [0.51] * n] #which parental optima to use (Divergent)
-opt1s = [[-0.5] * n, [0.5] * n, [0] * n]
+# opt1s = [[-0.5] * n, [0.5] * n, [0] * n]
+opt1s = [[-0.5] * n, [0.5] * n]
 
 data_dir = 'data'
 
@@ -138,12 +139,14 @@ for i in range(len(phenos)):
 ###MAKE HYBRIDS##
 #######################################################################
 
-nHybrids = 1000 #number of hybrids to make in crosses between each pair of parent populations
+nHybrids = 100 #number of hybrids to make in crosses between each pair of parent populations
 
+offphenos = dict()
+mean_offphenos = dict()
 pairs = list(itertools.combinations(range(len(pops)),2)) #all parent population combinations
 for h in range(len(pairs)):
     i, j = pairs[h]
-    offphenos = []
+    offpheno = []
     for k in range(nHybrids):
         # random parents
         randpari = pops[i][-1][np.random.choice(len(pops[i][-1]))] 
@@ -166,37 +169,42 @@ for h in range(len(pairs)):
         if len(offmuts) < 1:
             offmuts = np.array([[0]*n]) #give something in case empty
         # offspring phenotype
-        offphenos.append(sum(np.append(sharedmuts,offmuts,axis=0)))
+        offpheno.append(sum(np.append(sharedmuts,offmuts,axis=0)))
 #
-    offphenos = np.array(offphenos) #reformat correctly
-    mean_offpheno = np.mean(offphenos,axis=0) #mean
+    offpheno = np.array(offpheno) #reformat correctly
+    mean_offpheno = np.mean(offpheno,axis=0) #mean
 
     # save as csv
     sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_opt1_%s_opt2_%s' %(K,n,B,u,alpha,maxgen,'-'.join(str(e) for e in opt1s[i]),'-'.join(str(e) for e in opt1s[j]))
     with open("%s/hybrid_phenos_%s_%s.csv" %(data_dir,sim_id,style), "w") as f:
         writer = csv.writer(f)
-        writer.writerows(offphenos)
+        writer.writerows(offpheno)
+
+    #save for plotting in python
+    # offphenos[h] = offpheno
+    # mean_offphenos[h] = mean_offpheno
 
 ########################################################################
 ####PLOT##
 ########################################################################
 
-# # plot all phenotypes in parental populations
+# plot all phenotypes in parental populations
 # for i in range(len(phenos)):
 # 	colors = cm.rainbow(np.linspace(0, 1, len(phenos[i])))
 # 	for j, c in zip(range(len(phenos[i])), colors):
 # 		plt.scatter(phenos[i][j][:,0],phenos[i][j][:,1], color=c)
 
 # # plot mean phenotypes of parental population
-# for i in range(len(phenos)):
+# for i in range(len(mean_phenos)):
 #     plt.scatter(mean_phenos[i][:,0],mean_phenos[i][:,1], color='black')
 
 # # plot hybrid phenos
-# plt.scatter(offphenos01[:,0],offphenos01[:,1], color='gray')
-# plt.scatter(mean_offpheno01[0],mean_offpheno01[1], color='black')
+# for i in range(len(pairs)):
+#     plt.scatter(offphenos[i][:,0],offphenos[i][:,1], color='gray')
+#     plt.scatter(mean_offphenos[i][0],mean_offphenos[i][1], color='black')
 
-# # # show plot
-# # plt.show()
+# # show plot
+# plt.show()
 
-# # # save plot
+# save plot
 # plt.savefig('%s/plot_%s_hybrids.png' %(data_dir,sim_id))
