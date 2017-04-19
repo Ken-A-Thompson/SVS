@@ -117,10 +117,10 @@ between.pop.diversity.SGV <- function(x, y, sgv.end){
 
 
 #Mean hybrid fitness for two traits at optimum of 0.5
-hybrid.fitness.n2.opt <- function(x,y, opt, sigma.seln){ 
+hybrid.fitness.n2.opt <- function(x,y, opt, sigma.seln = 1){ 
   euclid <- (sqrt((x - opt)^2 + (y - opt)^2))^2
   fitness <- exp(-1 * sigma.seln * euclid)
-  return(mean(fitness))
+  return(fitness)
 }
 
 #Create function that joins the two 'adaptive walk' datasets 
@@ -262,6 +262,7 @@ Fig1A.Vert.Arrow <- data.frame(x1 = last(Fig.1A.Data.Sorted$Generation), x2 = la
 
 Fig1A.Hor.Arrow <- data.frame(x1 = 0.35*last(Fig.1A.Data.Sorted$Generation), x2 = 0.2*last(Fig.1A.Data.Sorted$Generation), y1 = first(Fig.1A.Data.Sorted$SGV), y2 = first(Fig.1A.Data.Sorted$SGV))
 
+## Print ancestor less often.
 
 #Plot figure 1A
 Fig.1A <- ggplot(Fig.1A.Data.Sorted, aes(x = Generation, y = SGV)) +
@@ -279,6 +280,8 @@ Fig.1A
 
 # Need to count length of mutations (non-empty) in each generation... plot that
 # Remove columns that have only zeros; these mutations were present before selection but not after (i.e., they were just lost)
+# Choose more founders; higher carrying capacity.
+
 Muts.No.Zeros <- lapply(Fig1.CleanList, remove_zero_cols)
 
 #Count ncols of each 'generation'
@@ -508,7 +511,7 @@ Fig.3A
 Fig3.Neg1.SGVDNM <- read.csv('data/parent_phenos_K1000_n2_B2_u0.001_alpha0.02_gens5000_opt-0.249--0.249_sgv.csv', header = F, check.names = F, na.strings = c("[", "]"))
 
 #Join the two datasets being compared
-Fig3B.SGVDNM.Divergent.Phenos <- join.and.group(Fig3.Pos1.SGVDNM, Fig3B.Neg1.SGVDNM)
+Fig3B.SGVDNM.Divergent.Phenos <- join.and.group(Fig3.Pos1.SGVDNM, Fig3.Neg1.SGVDNM)
 
 Fig.3B.Data <- Fig3B.SGVDNM.Divergent.Phenos %>%
   group_by(group, gen) %>% 
@@ -592,7 +595,6 @@ Fig3.Pos2.Muts.SGVDNM <- fread('data/parent_pop_K1000_n2_B2_u0.001_alpha0.02_gen
 # Make each generation an item in a list
 MatrixList.Fig3.Pos1.Muts.SGVDNM <- as.list(data.frame(t(Fig3.Pos1.Muts.SGVDNM)))
 MatrixList.Fig3.Pos2.Muts.SGVDNM <- as.list(data.frame(t(Fig3.Pos2.Muts.SGVDNM)))
-# matrix.list.Fig3.Neg1.Muts <- as.list(data.frame(t(Fig3.Neg1.Muts)))
 
 #Use 'mutation.matrices' function to make each item in a list a matrix that can be used to calculate Euclidean distance
 CleanList.Fig3E.Pos1.Muts.SGVDNM <- lapply(MatrixList.Fig3.Pos1.Muts.SGVDNM, mutation.matrices) 
@@ -626,8 +628,6 @@ Fig.3E.Data <- rbind(
   data.frame(Gen = c(1:50), 
              Dist = Fig.3E.Parallel.Divergence.DNM$mapply.between.pop.diversity..x...CleanList.Fig3E.Pos1.Muts.DNM.., 
              Group = rep("DNM", 50)))
-
-# (force thru origin?)
 
 Fig.3E <- ggplot(Fig.3E.Data, aes(x = 100*Gen, y= Dist, colour = Group)) +
   geom_point() + 
@@ -698,6 +698,27 @@ Fig.3F
 
 Fig.3 <- plot_grid(Fig.3A, Fig.3B, Fig.3C, Fig.3D, Fig.3E, Fig.3F, ncol = 2, labels = c("a", "b", "c", "d", "e", "f"))
 
+############################
+##Figure 4: Hybrid Fitness##
+############################
+
+##Currently not as big of a difference as I'd like between SGV / DNM sims in parallel... it's probably because there is lower parallelism than expected...
+
+Fig4.Parallel.SGVDNM.Hybrids <- read.csv('data/hybrid_phenos_K1000_n2_B2_u0.001_alpha0.02_gens5000_opt1_0.249-0.249_opt2_0.251-0.251_sgv.csv', header = F, col.names = c("X", "Y"))
+Fig4.Parallel.DNM.Hybrids <- read.csv('data/hybrid_phenos_K1000_n2_B2_u0.001_alpha0.02_gens5000_opt1_0.249-0.249_opt2_0.251-0.251_dnm.csv', header = F, col.names = c("X", "Y"))
+Fig4.Divergent.SGVDNM.Hybrids <- read.csv('data/hybrid_phenos_K1000_n2_B2_u0.001_alpha0.02_gens5000_opt1_-0.249--0.249_opt2_0.251-0.251_sgv.csv', header = F, col.names = c("X", "Y"))
+Fig4.Divergent.DNM.Hybrids <- read.csv('data/hybrid_phenos_K1000_n2_B2_u0.001_alpha0.02_gens5000_opt1_-0.249--0.249_opt2_0.251-0.251_dnm.csv', header = F, col.names = c("X", "Y"))
+
+#Calculate hybrid fitness
+Fig4.Parallel.SGVDNM.Hybrid.Fitness <- hybrid.fitness.n2.opt(Fig4.Parallel.SGVDNM.Hybrids$X, Fig4.Parallel.SGVDNM.Hybrids$Y, opt = 0.25)
+Fig4.Parallel.DNM.Hybrid.Fitness <- hybrid.fitness.n2.opt(Fig4.Parallel.DNM.Hybrids$X, Fig4.Parallel.DNM.Hybrids$Y, opt = 0.25)
+
+#Parallel hybrids
+
+plot(Fig4.Parallel.SGVDNM.Hybrids$X, Fig4.Parallel.SGVDNM.Hybrids$Y, col = "red")
+points(Fig4.Parallel.DNM.Hybrids$X, Fig4.Parallel.DNM.Hybrids$Y, col = "green")
+
+sd(Fig4.Parallel.DNM.Hybrids$Y)
 
 ######################################################################
 ##SUPPLEMENTARY FIGURES##
