@@ -13,14 +13,14 @@ import itertools
 ##SGV (and DNM) or DNM##
 ######################################################################
 
-style = 'sgv' #standing genetic variance and de novo mutation
-# style = 'dnm' #de novo mutation only
+# style = 'sgv' #standing genetic variance and de novo mutation
+style = 'dnm' #de novo mutation only
 
 ######################################################################
 ##ANCESTOR DATA##
 ######################################################################
 
-K = 1000 #max number of parents (positive integer)
+K = 10000 #max number of parents (positive integer)
 n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per genome (0<u<1)
@@ -29,7 +29,7 @@ alpha = 0.02 #mutation SD
 if style == 'sgv':
 #
     # which ancestral population
-    maxgen = 1000 #SGV number of gens in burn-in (positive integer)
+    maxgen = 2000 #SGV number of gens in burn-in (positive integer)
     sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn' %(K,n,B,u,alpha,maxgen)
     data_dir = 'data'
 #
@@ -56,24 +56,24 @@ if style == 'dnm':
     popall = np.array([[1]] * K)
     # mutfound = np.array([[0] * n])
 
-# make csv of population list (mutations in each individual)
-with open("%s/ancestor_pop_%s_%s.csv" %(data_dir,sim_id,style), "w") as f:
-    writer = csv.writer(f)
-    writer.writerows(popall) #write for all timepoints
-    # writer.writerows(popall[-1]) #write for just last timepoint
+# # make csv of population list (mutations in each individual)
+# with open("%s/ancestor_pop_%s_%s.csv" %(data_dir,sim_id,style), "w") as f:
+#     writer = csv.writer(f)
+#     writer.writerows(popall) #write for all timepoints
+#     # writer.writerows(popall[-1]) #write for just last timepoint
 
 ######################################################################
 ##PARENT DATA##
 ######################################################################
 
-maxgenAdapt = 1000 #number of generations during parent adaptation post-burnin (positive integer)
+maxgenAdapt = 5000 #number of generations during parent adaptation post-burnin (positive integer)
 KAdapt = 1000 # carrying capacity of adapting populations
 nfounders = KAdapt
 
-# opt1s = [[0.49] * n, [0.51] * n] #which parental optima to use (Parallel)
-# opt1s = [[-0.51] * n, [0.51] * n] #which parental optima to use (Divergent)
+# opt1s = [[0.249] * n, [0.251] * n] #which parental optima to use (Parallel)
+opt1s = [[-0.249] * n, [0.251] * n] #which parental optima to use (Divergent)
 # opt1s = [[-0.5] * n, [0.5] * n, [0] * n]
-opt1s = [[-0.5] * n, [0.5] * n]
+# opt1s = [[-0.5] * n, [0.5] * n]
 
 data_dir = 'data'
 
@@ -82,7 +82,7 @@ muts = dict()
 for i in range(len(opt1s)):
 #    
     # filename of data
-    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_founders%d_opt%s_adapt_%s' %(KAdapt,n,B,u,alpha,maxgen,nfounders,'-'.join(str(e) for e in opt1s[i]),style)
+    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_founders%d_opt%s_adapt_%s' %(KAdapt,n,B,u,alpha,maxgenAdapt,nfounders,'-'.join(str(e) for e in opt1s[i]),style)
 #
     # load pop data
     pop = []
@@ -106,7 +106,7 @@ for i in range(len(opt1s)):
 
 # make csv of parent chromosomes
 for i in range(len(pops)):
-    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_founders%d_opt%s' %(KAdapt,n,B,u,alpha,maxgen,nfounders,'-'.join(str(e) for e in opt1s[i]))
+    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_founders%d_opt%s' %(KAdapt,n,B,u,alpha,maxgenAdapt,nfounders,'-'.join(str(e) for e in opt1s[i]))
     with open("%s/parent_pop_%s_%s.csv" %(data_dir,sim_id,style), "w") as f:
         writer = csv.writer(f)
         writer.writerows(pops[i])
@@ -130,7 +130,7 @@ for i in range(len(phenos)):
 
 # make csv of parent phenotypes
 for i in range(len(phenos)):
-	sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_opt%s' %(K,n,B,u,alpha,maxgen,'-'.join(str(e) for e in opt1s[i]))
+	sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_opt%s' %(KAdapt,n,B,u,alpha,maxgenAdapt,'-'.join(str(e) for e in opt1s[i]))
 	with open("%s/parent_phenos_%s_%s.csv" %(data_dir,sim_id,style), "w") as f:
 		writer = csv.writer(f)
 		writer.writerows(phenos[i])
@@ -175,7 +175,7 @@ for h in range(len(pairs)):
     mean_offpheno = np.mean(offpheno,axis=0) #mean
 
     # save as csv
-    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_opt1_%s_opt2_%s' %(K,n,B,u,alpha,maxgen,'-'.join(str(e) for e in opt1s[i]),'-'.join(str(e) for e in opt1s[j]))
+    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_opt1_%s_opt2_%s' %(KAdapt,n,B,u,alpha,maxgenAdapt,'-'.join(str(e) for e in opt1s[i]),'-'.join(str(e) for e in opt1s[j]))
     with open("%s/hybrid_phenos_%s_%s.csv" %(data_dir,sim_id,style), "w") as f:
         writer = csv.writer(f)
         writer.writerows(offpheno)
