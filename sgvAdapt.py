@@ -61,8 +61,8 @@ remove_lost = True #If true, remove mutations that are lost (0 for all individua
 
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
 
-# style = 'sgv' #standing genetic variance and de novo mutation
-style = 'dnm' #de novo mutation only
+style = 'sgv' #standing genetic variance and de novo mutation
+# style = 'dnm' #de novo mutation only
 
 ######################################################################
 ##SGV (and DNM)##
@@ -123,7 +123,7 @@ if style == 'dnm':
 	u = 0.001 #mutation probability per genome (0<u<1)
 	alpha = 0.02 #mutation SD
 
-	nfounders = KAdapt #initial population size
+	nfounders = K #initial population size
 	popfound = np.array([[1]] * nfounders) #list of mutations held by each individual (all start with same mutation at first locus)
 	mutfound = np.array([[0] * n]) #list of phenotypic effect of initial mutations (mutation at first locus puts all individuals at origin)
 

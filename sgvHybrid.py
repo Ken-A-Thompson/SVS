@@ -139,7 +139,7 @@ for i in range(len(phenos)):
 ###MAKE HYBRIDS##
 #######################################################################
 
-nHybrids = 100 #number of hybrids to make in crosses between each pair of parent populations
+nHybrids = 1000 #number of hybrids to make in crosses between each pair of parent populations
 
 offphenos = dict()
 mean_offphenos = dict()
