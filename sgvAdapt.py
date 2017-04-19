@@ -51,19 +51,18 @@ def close_output_files(fileHandles):
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-maxgenAdapt = 1000 #maximum number of generations (positive integer)
+maxgenAdapt = 5000 #maximum number of generations (positive integer)
 KAdapt = 1000 # maximum population size of adapting populations
 
 outputFreq = 100 #record and print update this many generations
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 # remove_lost = False
-#if remove_lost = True, remove...
-# remove = 'any' #... any mutation that is lost
+
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
 
-style = 'sgv' #standing genetic variance and de novo mutation
-# style = 'dnm' #de novo mutation only
+# style = 'sgv' #standing genetic variance and de novo mutation
+style = 'dnm' #de novo mutation only
 
 ######################################################################
 ##SGV (and DNM)##
@@ -72,12 +71,12 @@ style = 'sgv' #standing genetic variance and de novo mutation
 if style == 'sgv':
 #
 	# which ancestor (burn-in) to get data from
-	K = 1000 #max number of parents (positive integer)
+	K = 10000 #max number of parents (positive integer)
 	n = 2 #number of traits (positive integer)
 	B = 2 #number of offspring per generation per parent (positive integer)
 	u = 0.001 #mutation probability per genome (0<u<1)
 	alpha = 0.02 #mutation SD
-	maxgen = 1000 #SGV number of gens in burn-in (positive integer)
+	maxgen = 2000 #SGV number of gens in burn-in (positive integer)
 #
 	sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn' %(K,n,B,u,alpha,maxgen)
 	data_dir = 'data'
@@ -134,9 +133,9 @@ if style == 'dnm':
 
 # opt1 = [0] * n #optimum phenotype 
 # opt1 = [0.5] * n #optimum phenotype 
-opt1 = [-0.5] * n #optimum phenotype 
-# opt1 = [0.51] * n #optimum phenotype 
-# opt1 = [-0.51] * n #optimum phenotype 
+# opt1 = [0.251] * n #optimum phenotype 
+# opt1 = [0.249] * n #optimum phenotype 
+opt1 = [-0.249] * n #optimum phenotype 
 # opt1 = [0.49] * n #optimum phenotype 
 
 ######################################################################
