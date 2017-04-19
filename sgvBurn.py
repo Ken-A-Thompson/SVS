@@ -21,9 +21,9 @@ def open_output_files(K, n, B, u, alpha, maxgen):
     sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn' %(K,n,B,u,alpha,maxgen)
     data_dir = 'data'
 
-    outfile_A = open("%s/pop_%s.pkl" %(data_dir,sim_id),"ab")
-    outfile_B = open("%s/mut_%s.pkl" %(data_dir,sim_id),"ab")
-    outfile_C = open("%s/gen_%s.pkl" %(data_dir,sim_id),"ab")
+    outfile_A = open("%s/pop_%s.pkl" %(data_dir,sim_id),"wb")
+    outfile_B = open("%s/mut_%s.pkl" %(data_dir,sim_id),"wb")
+    outfile_C = open("%s/gen_%s.pkl" %(data_dir,sim_id),"wb")
 
     return [outfile_A, outfile_B, outfile_C]
 
