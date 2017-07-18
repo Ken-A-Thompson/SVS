@@ -25,12 +25,13 @@ n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per genome (0<u<1)
 alpha = 0.02 #mutation SD
+rep = 1
 
 if style == 'sgv':
 #
     # which ancestral population
-    maxgen = 2000 #SGV number of gens in burn-in (positive integer)
-    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn' %(K,n,B,u,alpha,maxgen)
+    maxgen = 5000 #SGV number of gens in burn-in (positive integer)
+    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn_rep%d' %(K,n,B,u,alpha,maxgen,rep)
     data_dir = 'data'
 #
     # load pop data
@@ -67,13 +68,12 @@ if style == 'dnm':
 ######################################################################
 
 maxgenAdapt = 5000 #number of generations during parent adaptation post-burnin (positive integer)
-KAdapt = 1000 # carrying capacity of adapting populations
+KAdapt = 2000 # carrying capacity of adapting populations
 nfounders = KAdapt
+rep = 1
 
 # opt1s = [[0.249] * n, [0.251] * n] #which parental optima to use (Parallel)
 opt1s = [[-0.249] * n, [0.251] * n] #which parental optima to use (Divergent)
-# opt1s = [[-0.5] * n, [0.5] * n, [0] * n]
-# opt1s = [[-0.5] * n, [0.5] * n]
 
 data_dir = 'data'
 
@@ -82,7 +82,7 @@ muts = dict()
 for i in range(len(opt1s)):
 #    
     # filename of data
-    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_founders%d_opt%s_adapt_%s' %(KAdapt,n,B,u,alpha,maxgenAdapt,nfounders,'-'.join(str(e) for e in opt1s[i]),style)
+    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%d_founders%d_opt%s_adapt_%s_rep%d' %(KAdapt,n,B,u,alpha,maxgenAdapt,nfounders,'-'.join(str(e) for e in opt1s[i]),style,rep)
 #
     # load pop data
     pop = []

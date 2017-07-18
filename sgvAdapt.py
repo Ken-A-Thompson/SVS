@@ -51,8 +51,8 @@ def close_output_files(fileHandles):
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-maxgenAdapt = 200 #maximum number of generations (positive integer)
-KAdapt = 1000 # maximum population size of adapting populations
+maxgenAdapt = 5000 #maximum number of generations (positive integer)
+KAdapt = 2000 # maximum population size of adapting populations
 
 outputFreq = 100 #record and print update this many generations
 
@@ -61,24 +61,73 @@ remove_lost = True #If true, remove mutations that are lost (0 for all individua
 
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
 
-style = 'sgv' #standing genetic variance and de novo mutation
+# style = 'both' #standing genetic variance and de novo mutation
+style = 'sgv' #standing genetic variation only
 # style = 'dnm' #de novo mutation only
 
-nReps = 3
+nReps = 1
 
 ######################################################################
 ##SGV (and DNM)##
 ######################################################################
 
-if style == 'sgv':
+if style == 'both':
 #
 	# which ancestor (burn-in) to get data from
-	K = 1000 #max number of parents (positive integer)
+	K = 10000 #max number of parents (positive integer)
 	n = 2 #number of traits (positive integer)
 	B = 2 #number of offspring per generation per parent (positive integer)
 	u = 0.001 #mutation probability per genome (0<u<1)
 	alpha = 0.02 #mutation SD
-	maxgen = 200 #SGV number of gens in burn-in (positive integer)
+	maxgen = 5000 #SGV number of gens in burn-in (positive integer)
+	rep = 1
+#
+	sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn_rep%d' %(K,n,B,u,alpha,maxgen,rep)
+	data_dir = 'data'
+#
+	# load pop data
+	f = open('%s/pop_%s.pkl' %(data_dir,sim_id), 'rb')
+	popall = []
+	while 1:
+		try:
+			popall.append(pickle.load(f))
+		except EOFError:
+			break
+#
+	# load mut data
+	g = open('%s/mut_%s.pkl' %(data_dir,sim_id), 'rb')
+	mutall = []
+	while 1:
+		try:
+			mutall.append(pickle.load(g))
+		except EOFError:
+			break
+#
+	# choose founding population from ancestor
+	nfounders = min(KAdapt,len(popall[-1])) #size of founding population
+	# nfounders = len(popall[-1])
+	whofounds = np.random.choice(len(popall[-1]),size=nfounders) #random choice of nfounders from ancestral population 
+	popfound = popall[-1][whofounds] #list of mutations held by each founding individual
+	if remove_lost and remove == 'any': #if removing ancestral mutations when lost
+		keep = popfound.any(axis=0)
+		mutfound = mutall[-1][keep]
+		popfound = popfound[:, keep]
+	else:
+		mutfound = mutall[-1]
+
+######################################################################
+##SGV only##
+######################################################################
+
+if style == 'sgv':
+#
+	# which ancestor (burn-in) to get data from
+	K = 10000 #max number of parents (positive integer)
+	n = 2 #number of traits (positive integer)
+	B = 2 #number of offspring per generation per parent (positive integer)
+	u = 0 #mutation probability per genome (0<u<1)
+	alpha = 0 #mutation SD
+	maxgen = 5000 #SGV number of gens in burn-in (positive integer)
 	rep = 1
 #
 	sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn_rep%d' %(K,n,B,u,alpha,maxgen,rep)
@@ -126,7 +175,7 @@ if style == 'dnm':
 	u = 0.001 #mutation probability per genome (0<u<1)
 	alpha = 0.02 #mutation SD
 
-	nfounders = K #initial population size
+	nfounders = KAdapt #initial population size
 	popfound = np.array([[1]] * nfounders) #list of mutations held by each individual (all start with same mutation at first locus)
 	mutfound = np.array([[0] * n]) #list of phenotypic effect of initial mutations (mutation at first locus puts all individuals at origin)
 
@@ -134,12 +183,9 @@ if style == 'dnm':
 ##NEW OPTIMUM##
 ######################################################################
 
-# opt1 = [0] * n #optimum phenotype 
-# opt1 = [0.5] * n #optimum phenotype 
 # opt1 = [0.251] * n #optimum phenotype 
 # opt1 = [0.249] * n #optimum phenotype 
 opt1 = [-0.249] * n #optimum phenotype 
-# opt1 = [0.49] * n #optimum phenotype 
 
 ######################################################################
 ##SIMULATION##
