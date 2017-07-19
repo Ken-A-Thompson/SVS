@@ -1,4 +1,4 @@
-#Author: Matthew Osmond <mmosmond@zoology.ubc.ca>
+#Author: Matthew Osmond <mmosmond@zoology.ubc.ca> & Ken A. Thompson <ken.thompson@zoology.ubc.ca>
 #Description: Adaptation from standing genetic variance (SGV) in Fisher's geometric model, implications for hybrids
 #Adapt using standing genetic variance from burn-in as well as new mutations
 
@@ -51,19 +51,24 @@ def close_output_files(fileHandles):
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-maxgenAdapt = 5000 #maximum number of generations (positive integer)
+maxgenAdapt = 2000 #maximum number of generations (positive integer)
 KAdapt = 2000 # maximum population size of adapting populations
+sigmaAdapt = 2 #strength of selection
 
-outputFreq = 100 #record and print update this many generations
+outputFreq = 500 #record and print update this many generations
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 # remove_lost = False
 
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
 
-# style = 'both' #standing genetic variance and de novo mutation
-style = 'sgv' #standing genetic variation only
-# style = 'dnm' #de novo mutation only
+######################################################################
+##SIMULATION GENETICS##
+######################################################################
+
+# style = 'both' #standing genetic variation and de novo mutation
+# style = 'sgv' #standing genetic variation only
+style = 'dnm' #de novo mutation only
 
 nReps = 1
 
@@ -78,11 +83,12 @@ if style == 'both':
 	n = 2 #number of traits (positive integer)
 	B = 2 #number of offspring per generation per parent (positive integer)
 	u = 0.001 #mutation probability per genome (0<u<1)
+	sigma = 0.1
 	alpha = 0.02 #mutation SD
-	maxgen = 5000 #SGV number of gens in burn-in (positive integer)
+	maxgen = 5000 #number of gens in ancestral burn-in (positive integer)
 	rep = 1
 #
-	sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn_rep%d' %(K,n,B,u,alpha,maxgen,rep)
+	sim_id = 'K%d_n%d_B%d_u%r_sigma%r_alpha%r_gens%r_burn_rep%d' %(K,n,B,u,sigma,alpha,maxgen,rep)
 	data_dir = 'data'
 #
 	# load pop data
@@ -125,12 +131,17 @@ if style == 'sgv':
 	K = 10000 #max number of parents (positive integer)
 	n = 2 #number of traits (positive integer)
 	B = 2 #number of offspring per generation per parent (positive integer)
-	u = 0 #mutation probability per genome (0<u<1)
-	alpha = 0 #mutation SD
+	u = 0 #mutation probability per genome (0 because SGV only)
+	uburn = 0.001 #ancestral mutation probability per genome (0<u<1)
+	sigma = 0.1 #ancestral strength of selection
+	alpha = 0.02 #mutation SD
+	alphaburn = 0.02 #ancestral mutation SD
 	maxgen = 5000 #SGV number of gens in burn-in (positive integer)
 	rep = 1
+
+
 #
-	sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn_rep%d' %(K,n,B,u,alpha,maxgen,rep)
+	sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn_rep%d' %(K,n,B,uburn,alphaburn,maxgen,rep)
 	data_dir = 'data'
 #
 	# load pop data
@@ -183,9 +194,14 @@ if style == 'dnm':
 ##NEW OPTIMUM##
 ######################################################################
 
-# opt1 = [0.251] * n #optimum phenotype 
+# opt1 = [0.1] * n #optimum phenotype 
 # opt1 = [0.249] * n #optimum phenotype 
-opt1 = [-0.249] * n #optimum phenotype 
+# opt1 = [0.25] * n #optimum phenotype
+# opt1 = [0.251] * n #optimum phenotype
+opt1 = [0.100] * n #optimum phenotype 
+# opt1 = [0.101] * n #optimum phenotype 
+# opt1 = [-0.100] * n #optimum phenotype
+
 
 ######################################################################
 ##SIMULATION##
@@ -213,7 +229,7 @@ def main():
 
 			# viability selection
 			dist = np.linalg.norm(phenos - opt, axis=1) #phenotypic distance from optimum
-			w = np.exp(-dist**2) #probability of survival
+			w = np.exp(-sigmaAdapt*dist**2) #probability of survival
 			rand1 = np.random.uniform(size = len(pop)) #random uniform number in [0,1] for each individual
 			surv = pop[rand1 < w] #survivors
 			if len(surv) > KAdapt:

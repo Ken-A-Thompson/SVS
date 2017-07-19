@@ -13,7 +13,8 @@ import itertools
 ##SGV (and DNM) or DNM##
 ######################################################################
 
-# style = 'sgv' #standing genetic variance and de novo mutation
+# style = 'both' #standing genetic variation and de novo mutation
+# style = 'sgv' #standing genetic variation only
 style = 'dnm' #de novo mutation only
 
 ######################################################################
@@ -25,13 +26,14 @@ n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per genome (0<u<1)
 alpha = 0.02 #mutation SD
+sigma = 0.1
 rep = 1
 
-if style == 'sgv':
+if style == 'both' or 'sgv':
 #
     # which ancestral population
     maxgen = 5000 #SGV number of gens in burn-in (positive integer)
-    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn_rep%d' %(K,n,B,u,alpha,maxgen,rep)
+    sim_id = 'K%d_n%d_B%d_u%r_sigma%r_alpha%r_gens%r_burn_rep%d' %(K,n,B,u,sigma,alpha,maxgen,rep)
     data_dir = 'data'
 #
     # load pop data
@@ -57,23 +59,28 @@ if style == 'dnm':
     popall = np.array([[1]] * K)
     # mutfound = np.array([[0] * n])
 
-# # make csv of population list (mutations in each individual)
-# with open("%s/ancestor_pop_%s_%s.csv" %(data_dir,sim_id,style), "w") as f:
-#     writer = csv.writer(f)
-#     writer.writerows(popall) #write for all timepoints
-#     # writer.writerows(popall[-1]) #write for just last timepoint
+# make csv of population list (mutations in each individual)
+with open("%s/ancestor_pop_%s_%s.csv" %(data_dir,sim_id,style), "w") as f:
+    writer = csv.writer(f)
+    writer.writerows(popall) #write for all timepoints
+    # writer.writerows(popall[-1]) #write for just last timepoint
 
 ######################################################################
 ##PARENT DATA##
 ######################################################################
 
-maxgenAdapt = 5000 #number of generations during parent adaptation post-burnin (positive integer)
-KAdapt = 2000 # carrying capacity of adapting populations
+maxgenAdapt = 2000 #number of generations during parent adaptation post-burnin (positive integer)
+KAdapt = 2000 # carrying capacity of adapting populations (positive integer)
 nfounders = KAdapt
 rep = 1
+uadapt = 0.001
+alpha = 0.02
+#sigma = 0.1
 
-# opt1s = [[0.249] * n, [0.251] * n] #which parental optima to use (Parallel)
-opt1s = [[-0.249] * n, [0.251] * n] #which parental optima to use (Divergent)
+opt1s = [[0.100] * n, [0.101] * n] #which parental optima to use (Parallel Near)
+# opt1s = [[0.100] * n, [-0.100] * n] #which parental optima to use (Parallel Near)
+# opt1s = [[0.25] * n, [0.251] * n] #which parental optima to use (Parallel Near)
+# opt1s = [[-0.249] * n, [0.251] * n] #which parental optima to use (Divergent)
 
 data_dir = 'data'
 
@@ -82,7 +89,7 @@ muts = dict()
 for i in range(len(opt1s)):
 #    
     # filename of data
-    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%d_founders%d_opt%s_adapt_%s_rep%d' %(KAdapt,n,B,u,alpha,maxgenAdapt,nfounders,'-'.join(str(e) for e in opt1s[i]),style,rep)
+    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%d_founders%d_opt%s_adapt_%s_rep%d' %(KAdapt,n,B,uadapt,alpha,maxgenAdapt,nfounders,'-'.join(str(e) for e in opt1s[i]),style,rep)
 #
     # load pop data
     pop = []

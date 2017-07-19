@@ -5,6 +5,7 @@
 import numpy as np
 import time
 import pickle
+import csv
 
 #np.set_printoptions(threshold=np.inf) #to write all of the entries in a large numpy array to file
 
@@ -18,7 +19,7 @@ def open_output_files(K, n, B, u, alpha, maxgen, rep):
     handles to each.
     """
 
-    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_burn_rep%d' %(K,n,B,u,alpha,maxgen,rep)
+    sim_id = 'K%d_n%d_B%d_u%r_sigma%r_alpha%r_gens%r_burn_rep%d' %(K,n,B,u,sigma,alpha,maxgen,rep)
     data_dir = 'data'
 
     outfile_A = open("%s/pop_%s.pkl" %(data_dir,sim_id),"wb")
@@ -52,18 +53,19 @@ def close_output_files(fileHandles):
 ##PARAMETERS##
 ######################################################################
 
-K = 10000 #max number of parents (positive integer)
+K = 2000 #max number of parents (positive integer)
 n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
-u = 0.001 #mutation probability per genome (0<u<1)
+u = 0.01 #mutation probability per genome (0<u<1)
 alpha = 0.02 #mutational sd (positive real number)
+sigma = 0.1 #strength of selection
 
 N0 = K #initial population size
-maxgen = 5000 #maximum number of generations (positive integer)
+maxgen = 2000 #maximum number of generations (positive integer)
 
 opt0 = [0] * n #average optimum phenotype during burn in
 
-outputFreq = 100 #record and print update this many generations
+outputFreq = 200 #record and print update this many generations
 
 remove_lost = True #remove mutations that are lost?
 
@@ -75,6 +77,7 @@ nReps = 1
 
 def main():
 
+	opt0 = np.array([0]*n)
 	rep = 1
 	while rep < nReps + 1:
 
@@ -85,6 +88,7 @@ def main():
 		# open output files
 		fileHandles = open_output_files(K, n, B, u, alpha, maxgen, rep) 
 
+		opt = opt0
 		gen = 1 #generation
 		while gen < maxgen + 1:
 
@@ -92,12 +96,15 @@ def main():
 			phenos = np.dot(pop,mut) #sum mutations held by each individual
 
 			# optimum phenotype
-			#width = 0.1 
-			opt = opt0 #+ np.random.uniform(size=n)*width - [width*0.5]*n #choose optimum for generation from random uniform distribution in [-0.1,0.1] for each dimension 
+			# width = 0.1 
+			# opt = opt0 + np.random.uniform(size=n)*width - [width*0.5]*n #choose optimum for generation from random uniform distribution in [-0.1,0.1] for each dimension 
+			sigma_opt = 0.01
+			theta = 0.1
+			opt = opt + theta * (opt0 - opt) + sigma_opt * np.random.normal(size=n) # allow optimum to change by Ornstein-Uhlenbeck process, always pulled back toward 0
 
 			# viability selection
 			dist = np.linalg.norm(phenos - opt, axis=1) #phenotypic distance from optimum
-			w = np.exp(-0.1*dist**2) #probability of survival (first number is 'sigma' from Fraise 2016)
+			w = np.exp(-sigma*dist**2) #probability of survival
 			rand1 = np.random.uniform(size = len(pop)) #random uniform number in [0,1] for each individual
 			surv = pop[rand1 < w] #survivors
 			if len(surv) > K:
@@ -112,7 +119,7 @@ def main():
 	        # also print a short progess message (generation and number of parents)
 			if gen > 0 and (gen % outputFreq) == 0:
 				write_data_to_output(fileHandles, [surv,mut,gen])
-				print("rep %d    gen %d    N %d" %(rep, gen, len(surv)))   
+				print("rep %d    gen %d    N %d    n_muts %d    mean_muts %.2f" %(rep, gen, len(surv), len(mut), np.mean(np.sum(pop,axis=1))))
 
 			# birth
 			# off = np.repeat(surv, B, axis=0) #offspring of survivors (asexual)
@@ -159,3 +166,26 @@ start = time.time()
 main()
 end = time.time()
 print(end-start)
+
+######################################################################
+##MAKE CSV OF MUTATIONS
+######################################################################   
+
+# rep=1
+# sim_id = 'K%d_n%d_B%d_u%r_sigma%r_alpha%r_gens%r_burn_rep%d' %(K,n,B,u,sigma,alpha,maxgen,rep)
+# data_dir = 'data'
+
+# # load pop data
+# f = open('%s/pop_%s.pkl' %(data_dir,sim_id), 'rb')
+# popall = []
+# while 1:
+#     try:
+#         popall.append(pickle.load(f))
+#     except EOFError:
+#         break
+
+# # make csv of population list (mutations in each individual)
+# with open("%s/pop_%s.csv" %(data_dir,sim_id), "w") as f:
+#     writer = csv.writer(f)
+#     writer.writerows(popall) #write for all timepoints
+#     # writer.writerows(popall[-1]) #write for just last timepoint
