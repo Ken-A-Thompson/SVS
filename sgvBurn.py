@@ -121,6 +121,7 @@ def main():
 				write_data_to_output(fileHandles, [surv,mut,gen])
 				print("rep %d    gen %d    N %d    n_muts %d    mean_muts %.2f" %(rep, gen, len(surv), len(mut), np.mean(np.sum(pop,axis=1))))
 
+
 			# birth
 			# off = np.repeat(surv, B, axis=0) #offspring of survivors (asexual)
 			# sex: i.e., make diploid from random haploid parents then segregate to haploid offspring
@@ -189,3 +190,4 @@ print(end-start)
 #     writer = csv.writer(f)
 #     writer.writerows(popall) #write for all timepoints
 #     # writer.writerows(popall[-1]) #write for just last timepoint
+

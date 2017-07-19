@@ -60,11 +60,10 @@ if style == 'dnm':
     # mutfound = np.array([[0] * n])
 
 # make csv of population list (mutations in each individual)
-with open("%s/ancestor_pop_%s_%s.csv" %(data_dir,sim_id,style), "w") as f:
+with open("%s/pop_%s.csv" %(data_dir,sim_id), "w") as f:
     writer = csv.writer(f)
     writer.writerows(popall) #write for all timepoints
     # writer.writerows(popall[-1]) #write for just last timepoint
-
 ######################################################################
 ##PARENT DATA##
 ######################################################################

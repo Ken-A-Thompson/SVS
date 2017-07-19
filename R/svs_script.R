@@ -263,10 +263,10 @@ Fig1.RawData <- fread('data/ancestor_pop_K10000_n2_B2_u0.001_alpha0.02_gens5000_
 # Make each generation a list item
 Fig1.List <- as.list(data.frame(t(Fig1.RawData)))
 
-# Make each item in the list a matrix that can be used to calculate Euclidean distance (takes a few mins)
+# Use the 'mutation.matrices' function to make each item in a list a matrix that can be used to calculate Euclidean distance (takes about a minute)
 Fig1.CleanList <- lapply(Fig1.List, mutation.matrices) 
 
-# Calculate within population diversity for every generation (redcan take a while, but currently am sampling just 1000 individuals from the 10000-long data)
+# Calculate within population diversity for every generation (can take a while, but currently am sampling just 1000 individuals from the 10000-long data)
 Fig1.SGV <- data.frame(sapply(Fig1.CleanList, within.pop.diversity))
 
 #Make data for Fig 1A
@@ -463,6 +463,84 @@ Fig.2B.Data.Full <- Divergent.DNM.Data %>%
   summarise(meanX = mean(X), meanY = mean(Y)) %>% 
   as.data.frame() %>% 
 #  mutate(divergence = c(Fig.2B.Divergence[,1], Fig.2B.Divergence[,1])) %>% 
+
+# Figure 2: Adaptive walks with hybrids from DNM only (A-B) and DNM + SGV
+
+## Load data
+### DNM only
+DNM1pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.51-0.51_DNM.csv', header = F, check.names = F, na.strings = c("[", "]"))
+DNM2pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.49-0.49_DNM.csv', header = F, check.names = F, na.strings = c("[", "]"))
+DNM2neg <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt-0.51--0.51_DNM.csv', header = F, check.names = F, na.strings = c("[", "]"))
+
+###SGV + DNM
+SGV1pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.51-0.51.csv', header = F, check.names = F, na.strings = c("[", "]"))
+SGV2pos <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.49-0.49.csv', header = F, check.names = F, na.strings = c("[", "]"))
+SGV1neg <- read.csv('data/parent_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt-0.51--0.51.csv', header = F, check.names = F, na.strings = c("[", "]"))
+
+## Euclidean distance between populations
+### Load in the mutation matrices
+SGV1pos.muts <- read.csv('data/parent_pop_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.51-0.51.csv', header = F, check.names = F, na.strings = c("[", "]"))
+SGV2pos.muts <- read.csv('data/parent_pop_K10000_n2_B2_u0.001_alpha0.02_gens1500_opt0.49-0.49.csv', header = F, check.names = F, na.strings = c("[", "]"))
+
+
+
+# Make each generation an item in a list
+matrix.list.SGV1pos.muts <- as.list(data.frame(t(SGV1pos.muts)))
+matrix.list.SGV2pos.muts <- as.list(data.frame(t(SGV2pos.muts)))
+
+#use the 'mutation.matrices' function to make each item in a list a matrix that can be used to calculate Euclidean distance
+clean.list.SGV1pos.muts <- lapply(matrix.list.SGV1pos.muts, mutation.matrices) #next get everything into a 'good' list.
+clean.list.SGV2pos.muts <- lapply(matrix.list.SGV2pos.muts, mutation.matrices) #next get everything into a 'good' list.
+
+# Now that we have a list item with a clean matrix representing each population's 
+# mutations for each array, need to get a column that contains their pairwise euclidean
+# distance at each generation. I.e., 'dist2' for each pair of list items in corresponding dataset
+
+Fig.2A.Divergence <- data.frame(mapply(between.pop.diversity, x = clean.list.SGV1pos.muts, y =  clean.list.SGV2pos.muts)) #use 'mapply' to iterate the calculation over between all elements of the lists. 
+
+# also need to fix the hybid code because it always loads the most recent one
+
+# Fig. 2A Adaptation to parallel optima with only DNM
+Parallel.DNM.Data <- join.and.group(DNM1pos, DNM2pos)
+Fig2A.Hybrids <- as.data.frame(read.csv('data/hybrid_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500.csv',header = F, col.names = c("X", "Y")))
+
+# 'Genomic divergence'
+Fig2A.Divergence <- data.frame(mapply(between.pop.diversity, x = clean.list.SGV1pos.muts, y =  clean.list.SGV2pos.muts)) #use 'mapply' to iterate the calculation over between all elements of the lists. 
+
+## Create data for Fig 2A
+###Should make these functions if there's time
+Fig.2A.Data <- Parallel.DNM.Data %>%
+  group_by(group, gen) %>% 
+  summarise(meanX = mean(X), meanY = mean(Y)) %>% 
+  as.data.frame() %>% 
+  mutate(divergence = c(Fig2A.Divergence[,1], Fig2A.Divergence[,1])) %>% 
+  add_row(group = "A", gen = 0, meanX = 0, meanY = 0, divergence = 0) %>% #ancestor
+  add_row(group = "B", gen = 0, meanX = 0, meanY = 0, divergence = 0) %>%  #ancestor
+  arrange(group, gen)
+
+Fig.2A <- ggplot(Fig.2A.Data, aes(x = meanX, y= meanY, colour = divergence)) +
+  # scale_colour_gradientn(colours = rainbow(7)) +
+  scale_colour_gradient(low = 'red', high = 'blue') +
+  geom_point() + 
+  geom_point(data = Fig2A.Hybrids, aes(x = X, y = Y, colour = NULL), alpha = 0.1) +
+  labs(x = "Trait 1", y = "Trait 2") +
+  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2A.Data[1:16,]) +
+  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2A.Data[17:32,]) +
+  xlim(-0.6,0.6) +
+  ylim(-0.6,0.6) +
+  theme_fig2
+Fig.2A
+ 
+# Fig. 2B Adaptation to parallel optima with only DNM
+Divergent.DNM.Data <- join.and.group(DNM1pos, DNM2neg)
+Fig2B.Hybrids <- as.data.frame(read.csv('data/hybrid_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500.csv',header = F, col.names = c("X", "Y")))
+
+Fig.2B.Data <- Divergent.DNM.Data %>%  #can make this a function a bit later on if need be...
+  group_by(group, gen) %>% 
+  summarise(meanX = mean(X), meanY = mean(Y)) %>% 
+  as.data.frame() %>% 
   add_row(group = "A", gen = 0, meanX = 0, meanY = 0) %>% #ancestor
   add_row(group = "B", gen = 0, meanX = 0, meanY = 0) %>%  #ancestor
   arrange(group, gen)
@@ -580,6 +658,74 @@ ggsave(filename = '/Users/Ken/Dropbox/!Ph.D./!SVS_Standing-Variation-Speciation/
 ggsave(filename = '/Users/Ken/Dropbox/!Ph.D./!SVS_Standing-Variation-Speciation/SVS_Poster/SVS_poster_figs/Fig1B.pdf' , plot = Fig2B.Poster)
 ggsave(filename = '/Users/Ken/Dropbox/!Ph.D./!SVS_Standing-Variation-Speciation/SVS_Poster/SVS_poster_figs/Fig1C.pdf' , plot = Fig2C.Poster)
 ggsave(filename = '/Users/Ken/Dropbox/!Ph.D./!SVS_Standing-Variation-Speciation/SVS_Poster/SVS_poster_figs/Fig1D.pdf' , plot = Fig2D.Poster)
+Fig.2B <- ggplot(Fig.2B.Data, aes(x = meanX, y= meanY, colour = group)) +
+  geom_point() + 
+  geom_point(data = Fig2B.Hybrids, aes(x = X, y = Y, colour = NULL), alpha = 0.2) +
+  labs(x = "Trait 1", y = "Trait 2") +
+  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2B.Data[1:16,]) +
+  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2B.Data[17:32,]) +
+  xlim(-0.6,0.6) +
+  ylim(-0.6,0.6) +
+  theme_fig2
+Fig.2B
+
+## Fig. 2C - Adaptation to parallel optima from both SGV and DNM
+Parallel.SGV.Data <- join.and.group(SGV1pos, SGV2pos)
+Fig2C.Hybrids <- as.data.frame(read.csv('data/hybrid_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500.csv',header = F, col.names = c("X", "Y")))
+
+Fig.2C.Data <- Parallel.SGV.Data %>% 
+  group_by(group, gen) %>% 
+  summarise(meanX = mean(X), meanY = mean(Y)) %>% 
+  as.data.frame() %>% 
+  add_row(group = "A", gen = 0, meanX = 0, meanY = 0) %>% #ancestor
+  add_row(group = "B", gen = 0, meanX = 0, meanY = 0) %>%  #ancestor
+  arrange(group, gen)
+  
+Fig.2C <- ggplot(Fig.2C.Data, aes(x = meanX, y= meanY, colour = group)) +
+  geom_point() + 
+  geom_point(data = Fig2C.Hybrids, aes(x = X, y = Y, colour = NULL), alpha = 0.2) +
+  labs(x = "Trait 1", y = "Trait 2") +
+  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2C.Data[1:16,]) +
+  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2C.Data[17:32,]) +
+  xlim(-0.6,0.6) +
+  ylim(-0.6,0.6) +
+  theme_fig2
+Fig.2C
+
+#Fig. 2D Adaptation to divergent optima from both SGV and DNM
+Divergent.SGV.Data <- join.and.group(SGV1pos, SGV1neg)
+Fig2D.Hybrids <- as.data.frame(read.csv('data/hybrid_phenos_K10000_n2_B2_u0.001_alpha0.02_gens1500.csv',header = F, col.names = c("X", "Y"))) # load hybrid data (need to make it so it's unique)
+
+Fig.2D.Data <- Divergent.SGV.Data %>%
+  group_by(group, gen) %>% 
+  summarise(meanX = mean(X), meanY = mean(Y)) %>% 
+  as.data.frame() %>% 
+  add_row(group = "A", gen = 0, meanX = 0, meanY = 0) %>% #ancestor
+  add_row(group = "B", gen = 0, meanX = 0, meanY = 0)  %>% #ancestor
+  arrange(group, gen)
+
+Fig.2D <- ggplot(Fig.2D.Data, aes(x = meanX, y= meanY, colour = group)) +
+  geom_point() + 
+  geom_point(data = Fig2D.Hybrids, aes(x = X, y = Y, colour = NULL), alpha = 0.2) +
+ # geom_point(data = Fig2C.Hybrids, aes(x = X, y = Y, colour = NULL), alpha = 0.2) +
+  labs(x = "Trait 1", y = "Trait 2") +
+  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2D.Data[1:16,]) +
+  geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+               arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2D.Data[17:32,]) +
+  # geom_segment(aes(xend=c(tail(meanX, n=-1), NA), yend=c(tail(meanY, n=-1), NA)),
+  #              arrow=arrow(length=unit(0.3,"cm"), type = "open"), data = Fig.2C.Data[17:32,]) + #plots parallal and divergent this and above)
+  xlim(-0.6,0.6) +
+  ylim(-0.6,0.6) +
+  theme_fig2
+Fig.2D
+
+#Create multipanel figure
+Fig.2 <- plot_grid(Fig.2A, Fig.2B, Fig.2C, Fig.2D, labels = c("A", "B", "C", "D"))
 
 #################################
 ##Figure 3: Genomic parallelism##
@@ -592,6 +738,8 @@ ggsave(filename = '/Users/Ken/Dropbox/!Ph.D./!SVS_Standing-Variation-Speciation/
 ### Phenotypes
 Fig3.Pos1.SGVDNM <- read.csv('data/parent_phenos_K2000_n2_B2_u0.001_alpha0.02_gens5000_opt0.251-0.251_sgv.csv', header = F, check.names = F, na.strings = c("[", "]"))
 Fig3.Pos2.SGVDNM <- read.csv('data/parent_phenos_K2000_n2_B2_u0.001_alpha0.02_gens5000_opt0.249-0.249_sgv.csv', header = F, check.names = F, na.strings = c("[", "]"))
+Fig3.Pos1.SGVDNM <- read.csv('data/parent_phenos_K1000_n2_B2_u0.001_alpha0.02_gens5000_opt0.251-0.251_sgv.csv', header = F, check.names = F, na.strings = c("[", "]"))
+Fig3.Pos2.SGVDNM <- read.csv('data/parent_phenos_K1000_n2_B2_u0.001_alpha0.02_gens5000_opt0.249-0.249_sgv.csv', header = F, check.names = F, na.strings = c("[", "]"))
 
 # Use 'join and group' function to put them into the same database.
 Fig3.SGVDNM.Parallel.Phenos <- join.and.group(Fig3.Pos1.SGVDNM, Fig3.Pos2.SGVDNM)
@@ -625,6 +773,7 @@ Fig.3A
 #Fig.3B Divergent
 #Load in divergent data
 Fig3.Neg1.SGVDNM <- read.csv('data/parent_phenos_K2000_n2_B2_u0.001_alpha0.02_gens5000_opt-0.249--0.249_sgv.csv', header = F, check.names = F, na.strings = c("[", "]"))
+Fig3.Neg1.SGVDNM <- read.csv('data/parent_phenos_K1000_n2_B2_u0.001_alpha0.02_gens5000_opt-0.249--0.249_sgv.csv', header = F, check.names = F, na.strings = c("[", "]"))
 
 #Join the two datasets being compared
 Fig3B.SGVDNM.Divergent.Phenos <- join.and.group(Fig3.Pos1.SGVDNM, Fig3.Neg1.SGVDNM)
@@ -659,6 +808,11 @@ Fig3.Pos2.DNM <- read.csv('data/parent_phenos_K2000_n2_B2_u0.001_alpha0.02_gens5
 
 # Use 'join and group' function to put them into the same database.
 Fig3C.SGV.Parallel.Phenos <- join.and.group(Fig3.Pos1.DNM, Fig3.Pos2.DNM)
+Fig3C.Pos1.DNM <- read.csv('data/parent_phenos_K1000_n2_B2_u0.001_alpha0.02_gens5000_opt0.251-0.251_dnm.csv', header = F, check.names = F, na.strings = c("[", "]"))
+Fig3C.Pos2.DNM <- read.csv('data/parent_phenos_K1000_n2_B2_u0.001_alpha0.02_gens5000_opt0.249-0.249_dnm.csv', header = F, check.names = F, na.strings = c("[", "]"))
+
+# Use 'join and group' function to put them into the same database.
+Fig3C.SGV.Parallel.Phenos <- join.and.group(Fig3C.Pos1.DNM, Fig3C.Pos2.DNM)
 
 #Create summary dataset of each group's phenotypic evolution
 Fig.3C.Data <- phenotype.summary(Fig3C.SGV.Parallel.Phenos)
@@ -683,6 +837,10 @@ Fig3.Neg1.DNM <- read.csv('data/parent_phenos_K2000_n2_B2_u0.001_alpha0.02_gens5
 
 # Use 'join and group' function to put them into the same database.
 Fig3D.DNM.Divergent.Phenos <- join.and.group(Fig3.Pos1.DNM, Fig3.Neg1.DNM)
+Fig3D.Neg1.DNM <- read.csv('data/parent_phenos_K1000_n2_B2_u0.001_alpha0.02_gens5000_opt-0.249--0.249_dnm.csv', header = F, check.names = F, na.strings = c("[", "]"))
+
+# Use 'join and group' function to put them into the same database.
+Fig3D.DNM.Divergent.Phenos <- join.and.group(Fig3D.Pos1.DNM, Fig3D.Neg1.DNM)
 
 #Create summary dataset of each group's phenotypic evolution
 Fig.3D.Data <- phenotype.summary(Fig3D.DNM.Divergent.Phenos)
@@ -874,6 +1032,145 @@ Fig4 <- ggplot(Fig4.Data.Plot, aes(group = ParDiv, x= factor(Class, labels=c("DN
 Fig4
 
 ggsave(filename = '/Users/Ken/Dropbox/!Ph.D./!SVS_Standing-Variation-Speciation/SVS_Poster/SVS_poster_figs/Fig2.pdf' , plot = Fig4)
+  theme_ng1
+Fig.3D
+
+#########
+##FIG3E##
+#########
+
+#Fig 3E genomic divergence in parallel with SGV+DNM or just DNM
+Fig3.Pos1.Muts.SGVDNM <- fread('data/parent_pop_K1000_n2_B2_u0.001_alpha0.02_gens5000_founders1000_opt0.251-0.251_sgv.csv', header = F, check.names = F, na.strings = c("[", "]"))
+Fig3.Pos2.Muts.SGVDNM <- fread('data/parent_pop_K1000_n2_B2_u0.001_alpha0.02_gens5000_founders1000_opt0.249-0.249_sgv.csv', header = F, check.names = F, na.strings = c("[", "]"))
+# Fig3.Neg1.Muts <- read.csv('data/parent_pop_K10000_n2_B2_u0.001_alpha0.02_gens5000_opt-0.51--0.51.csv', header = F, check.names = F, na.strings = c("[", "]"))
+
+# Make each generation an item in a list
+MatrixList.Fig3.Pos1.Muts.SGVDNM <- as.list(data.frame(t(Fig3.Pos1.Muts.SGVDNM)))
+MatrixList.Fig3.Pos2.Muts.SGVDNM <- as.list(data.frame(t(Fig3.Pos2.Muts.SGVDNM)))
+
+#Use 'mutation.matrices' function to make each item in a list a matrix that can be used to calculate Euclidean distance
+CleanList.Fig3E.Pos1.Muts.SGVDNM <- lapply(MatrixList.Fig3.Pos1.Muts.SGVDNM, mutation.matrices) 
+CleanList.Fig3E.Pos2.Muts.SGVDNM <- lapply(MatrixList.Fig3.Pos2.Muts.SGVDNM, mutation.matrices) 
+
+# Determine between population diversity (takes a few minutes)
+Fig.3E.Parallel.Divergence.SGVDNM <- data.frame(mapply(between.pop.diversity.SGV, x = CleanList.Fig3.Pos1.Muts.SGVDNM, y = CleanList.Fig3.Pos1.Muts.SGVDNM, sgv.end = 145))
+
+## Fig 3E DNM 
+#Fig 3E genomic divergence in parallel with SGV+DNM or just DNM
+Fig3.Pos1.Muts.DNM <- fread('data/parent_pop_K1000_n2_B2_u0.001_alpha0.02_gens5000_founders1000_opt0.251-0.251_dnm.csv', header = F, check.names = F, na.strings = c("[", "]"))
+Fig3.Pos2.Muts.DNM <- fread('data/parent_pop_K1000_n2_B2_u0.001_alpha0.02_gens5000_founders1000_opt0.249-0.249_dnm.csv', header = F, check.names = F, na.strings = c("[", "]"))
+
+# Make each generation an item in a list
+MatrixList.Fig3.Pos1.Muts.DNM <- as.list(data.frame(t(Fig3.Pos1.Muts.DNM)))
+MatrixList.Fig3.Pos2.Muts.DNM <- as.list(data.frame(t(Fig3.Pos2.Muts.DNM)))
+
+#Use 'mutation.matrices' function to make each item in a list a matrix that can be used to calculate Euclidean distance
+CleanList.Fig3E.Pos1.Muts.DNM <- lapply(MatrixList.Fig3.Pos1.Muts.DNM, mutation.matrices) 
+CleanList.Fig3E.Pos2.Muts.DNM <- lapply(MatrixList.Fig3.Pos2.Muts.DNM, mutation.matrices) 
+
+# Determine between population diversity (takes a few minutes)
+Fig.3E.Parallel.Divergence.DNM <- data.frame(mapply(between.pop.diversity, x = CleanList.Fig3E.Pos1.Muts.DNM, y = CleanList.Fig3E.Pos2.Muts.DNM))
+
+## Make Fig 3E by plotting both manhattan distances...
+
+Fig.3E.Data <- rbind(
+  data.frame(Gen = c(1:50), 
+             Dist = Fig.3E.Parallel.Divergence.SGVDNM$mapply.between.pop.diversity.SGV..x...CleanList.Fig3.Pos1.Muts.SGVDNM.., 
+             Group = rep("SGVDNM", 50)),
+  data.frame(Gen = c(1:50), 
+             Dist = Fig.3E.Parallel.Divergence.DNM$mapply.between.pop.diversity..x...CleanList.Fig3E.Pos1.Muts.DNM.., 
+             Group = rep("DNM", 50)))
+
+Fig.3E <- ggplot(Fig.3E.Data, aes(x = 100*Gen, y= Dist, colour = Group)) +
+  geom_point() + 
+  labs(x = "Generation #",
+       y = "Genetic divergence") +
+  geom_smooth() + 
+  xlim(0,5000) +
+  ylim(0, 38) +
+  theme_ng1
+Fig.3E
+
+#########
+##FIG3F##
+#########
+
+#Fig 3F SGVDNM
+Fig3.Neg1.Muts.SGVDNM <- fread('data/parent_pop_K1000_n2_B2_u0.001_alpha0.02_gens5000_founders1000_opt-0.249--0.249_sgv.csv', header = F, check.names = F, na.strings = c("[", "]"))
+
+# Make each generation an item in a list
+MatrixList.Fig3.Pos1.Muts.SGVDNM <- as.list(data.frame(t(Fig3.Pos1.Muts.SGVDNM)))
+MatrixList.Fig3.Neg1.Muts.SGVDNM <- as.list(data.frame(t(Fig3.Neg1.Muts.SGVDNM)))
+# matrix.list.Fig3.Neg1.Muts <- as.list(data.frame(t(Fig3.Neg1.Muts)))
+
+#Use 'mutation.matrices' function to make each item in a list a matrix that can be used to calculate Euclidean distance
+CleanList.Fig3.Pos1.Muts.SGVDNM <- lapply(MatrixList.Fig3.Pos1.Muts.SGVDNM, mutation.matrices) 
+CleanList.Fig3.Neg1.Muts.SGVDNM <- lapply(MatrixList.Fig3.Neg1.Muts.SGVDNM, mutation.matrices) 
+
+# Determine between population diversity (takes a few minutes)
+Fig.3F.Parallel.Divergence.SGVDNM <- data.frame(mapply(between.pop.diversity.SGV, x = CleanList.Fig3.Pos1.Muts.SGVDNM, y = CleanList.Fig3.Neg1.Muts.SGVDNM, sgv.end = 145))
+
+## Fig 3F DNM 
+#Fig 3F genomic divergence in divergent evolution with SGV+DNM or just DNM
+Fig3.Pos1.Muts.DNM <- fread('data/parent_pop_K1000_n2_B2_u0.001_alpha0.02_gens5000_founders1000_opt0.251-0.251_dnm.csv', header = F, check.names = F, na.strings = c("[", "]"))
+Fig3.Neg1.Muts.DNM <- fread('data/parent_pop_K1000_n2_B2_u0.001_alpha0.02_gens5000_founders1000_opt-0.249--0.249_dnm.csv', header = F, check.names = F, na.strings = c("[", "]"))
+
+# Make each generation an item in a list
+MatrixList.Fig3.Neg1.Muts.DNM <- as.list(data.frame(t(Fig3.Neg1.Muts.DNM)))
+
+#Use 'mutation.matrices' function to make each item in a list a matrix that can be used to calculate Euclidean distance
+CleanList.Fig3F.Neg1.Muts.DNM <- lapply(MatrixList.Fig3.Neg1.Muts.DNM, mutation.matrices) 
+
+# Determine between population diversity (takes a few minutes)
+Fig.3F.Parallel.Divergence.DNM <- data.frame(mapply(between.pop.diversity, x = CleanList.Fig3F.Pos1.Muts.DNM, y = CleanList.Fig3F.Neg1.Muts.DNM))
+
+## Make Fig 3F by plotting both manhattan distances...
+
+Fig.3F.Data <- rbind(
+  data.frame(Gen = c(1:50), 
+             Dist = Fig.3F.Parallel.Divergence.SGVDNM$mapply.between.pop.diversity.SGV..x...CleanList.Fig3.Pos1.Muts.SGVDNM.., 
+             Group = rep("SGVDNM", 50)),
+  data.frame(Gen = c(1:50), 
+             Dist = Fig.3F.Parallel.Divergence.DNM$mapply.between.pop.diversity..x...CleanList.Fig3F.Pos1.Muts.DNM.., 
+             Group = rep("DNM", 50)))
+
+# (force thru origin?)
+
+Fig.3F <- ggplot(Fig.3F.Data, aes(x = 100*Gen, y= Dist, colour = Group)) +
+  geom_point() + 
+  labs(x = "Generation #",
+       y = "Genetic divergence") +
+  geom_smooth() + 
+  xlim(0,5000) +
+  ylim(0, 38) +
+  theme_ng1
+Fig.3F
+
+## Create multi-panel grid
+
+Fig.3 <- plot_grid(Fig.3A, Fig.3B, Fig.3C, Fig.3D, Fig.3E, Fig.3F, ncol = 2, labels = c("a", "b", "c", "d", "e", "f"))
+
+############################
+##Figure 4: Hybrid Fitness##
+############################
+
+##Currently not as big of a difference as I'd like between SGV / DNM sims in parallel... it's probably because there is lower parallelism than expected...
+
+Fig4.Parallel.SGVDNM.Hybrids <- read.csv('data/hybrid_phenos_K1000_n2_B2_u0.001_alpha0.02_gens5000_opt1_0.249-0.249_opt2_0.251-0.251_sgv.csv', header = F, col.names = c("X", "Y"))
+Fig4.Parallel.DNM.Hybrids <- read.csv('data/hybrid_phenos_K1000_n2_B2_u0.001_alpha0.02_gens5000_opt1_0.249-0.249_opt2_0.251-0.251_dnm.csv', header = F, col.names = c("X", "Y"))
+Fig4.Divergent.SGVDNM.Hybrids <- read.csv('data/hybrid_phenos_K1000_n2_B2_u0.001_alpha0.02_gens5000_opt1_-0.249--0.249_opt2_0.251-0.251_sgv.csv', header = F, col.names = c("X", "Y"))
+Fig4.Divergent.DNM.Hybrids <- read.csv('data/hybrid_phenos_K1000_n2_B2_u0.001_alpha0.02_gens5000_opt1_-0.249--0.249_opt2_0.251-0.251_dnm.csv', header = F, col.names = c("X", "Y"))
+
+#Calculate hybrid fitness
+Fig4.Parallel.SGVDNM.Hybrid.Fitness <- hybrid.fitness.n2.opt(Fig4.Parallel.SGVDNM.Hybrids$X, Fig4.Parallel.SGVDNM.Hybrids$Y, opt = 0.25)
+Fig4.Parallel.DNM.Hybrid.Fitness <- hybrid.fitness.n2.opt(Fig4.Parallel.DNM.Hybrids$X, Fig4.Parallel.DNM.Hybrids$Y, opt = 0.25)
+
+#Parallel hybrids
+
+plot(Fig4.Parallel.SGVDNM.Hybrids$X, Fig4.Parallel.SGVDNM.Hybrids$Y, col = "red")
+points(Fig4.Parallel.DNM.Hybrids$X, Fig4.Parallel.DNM.Hybrids$Y, col = "green")
+
+sd(Fig4.Parallel.DNM.Hybrids$Y)
 
 ######################################################################
 ##SUPPLEMENTARY FIGURES##
