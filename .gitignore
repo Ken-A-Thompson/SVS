@@ -1,3 +1,5 @@
+*.pkl
+*.csv
 .Rproj.user
 .Rhistory
 .RData
