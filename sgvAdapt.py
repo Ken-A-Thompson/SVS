@@ -53,7 +53,7 @@ def close_output_files(fileHandles):
 ######################################################################
 
 maxgenAdapt = 2000 #maximum number of generations (positive integer)
-KAdapt = 2000 # maximum population size of adapting populations
+KAdapt = 1000 # maximum population size of adapting populations
 sigmaAdapt = 2 #strength of selection
 
 outputFreq = 500 #record and print update this many generations
