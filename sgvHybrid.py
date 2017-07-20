@@ -21,18 +21,18 @@ style = 'dnm' #de novo mutation only
 ##ANCESTOR DATA##
 ######################################################################
 
-K = 10000 #max number of parents (positive integer)
+K = 2000 #max number of parents (positive integer)
 n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
-u = 0.001 #mutation probability per genome (0<u<1)
+u = 0.01 #mutation probability per genome (0<u<1)
 alpha = 0.02 #mutation SD
-sigma = 0.1
+sigma = 1e-7
 rep = 1
 
 if style == 'both' or 'sgv':
 #
     # which ancestral population
-    maxgen = 5000 #SGV number of gens in burn-in (positive integer)
+    maxgen = 10000 #SGV number of gens in burn-in (positive integer)
     sim_id = 'K%d_n%d_B%d_u%r_sigma%r_alpha%r_gens%r_burn_rep%d' %(K,n,B,u,sigma,alpha,maxgen,rep)
     data_dir = 'data'
 #

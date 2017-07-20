@@ -58,14 +58,14 @@ n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.01 #mutation probability per genome (0<u<1)
 alpha = 0.02 #mutational sd (positive real number)
-sigma = 0.1 #strength of selection
+sigma = 0.0000001 #strength of selection
 
 N0 = K #initial population size
-maxgen = 2000 #maximum number of generations (positive integer)
+maxgen = 10000 #maximum number of generations (positive integer)
 
 opt0 = [0] * n #average optimum phenotype during burn in
 
-outputFreq = 200 #record and print update this many generations
+outputFreq = 1000 #record and print update this many generations
 
 remove_lost = True #remove mutations that are lost?
 
