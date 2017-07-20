@@ -1,4 +1,4 @@
-#Author: Matthew Osmond <mmosmond@zoology.ubc.ca>
+#Author: Matthew Osmond <mmosmond@zoology.ubc.ca> & Ken A. Thompson <ken.thompson@zoology.ubc.ca>
 #Description: Adaptation from standing genetic variance (SGV) in Fisher's geometric model, implications for hybrids
 #Make hybrids from populations that have adapted
 
@@ -10,32 +10,66 @@ import csv
 import itertools
 
 ######################################################################
-##SGV (and DNM) or DNM##
+##PARAMETERS##
 ######################################################################
 
-# style = 'both' #standing genetic variation and de novo mutation
-# style = 'sgv' #standing genetic variation only
+# style = 'both' #standing genetic variation and de novo mutation (if u_adapt > 0)
+# style = 'sgv' #standing genetic variation only (no mutation)
 style = 'dnm' #de novo mutation only
 
+nHybrids = 1000 #number of hybrids to make in crosses between each pair of parent populations
+
+save_CSVs = False #save CSVs?
+
+data_dir = 'data' #where parental and common ancestor data is, and where this data will be deposited
+
 ######################################################################
-##ANCESTOR DATA##
+##COMMON ANCESTOR PARAMETERS##
 ######################################################################
 
-K = 2000 #max number of parents (positive integer)
+K = 1000 #max number of parents (positive integer)
 n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.01 #mutation probability per genome (0<u<1)
-alpha = 0.02 #mutation SD
-sigma = 1e-7
-rep = 1
+alpha = 0.02 #mutational sd (positive real number)
+sigma = 1 #strength of selection (positive real number)
+theta = 1 #drift parameter in Ornstein-Uhlenbeck movement of the phenotypic optimum (positive real number; setting to zero makes Brownian motion)
+sigma_opt = 0.1 #diffusion parameter in Ornstein-Uhlenbeck movement of the phenotypic optimum (positive real number; setting to zero makes constant optimum at opt0)
 
-if style == 'both' or 'sgv':
-#
-    # which ancestral population
-    maxgen = 10000 #SGV number of gens in burn-in (positive integer)
-    sim_id = 'K%d_n%d_B%d_u%r_sigma%r_alpha%r_gens%r_burn_rep%d' %(K,n,B,u,sigma,alpha,maxgen,rep)
-    data_dir = 'data'
-#
+#meta-parameters
+maxgen = 1000 #number of gens in ancestral burn-in (positive integer)
+rep = 1 #which replicate
+
+######################################################################
+##PARENTAL PARAMETERS##
+######################################################################
+
+K_adapt = K #max number of parents (positive integer)
+n_adapt = n #number of traits (positive integer)
+B_adapt = B #number of offspring per generation per parent (positive integer)
+u_adapt = u #mutation probability per genome (0<u<1) (set to zero for sgv only)
+alpha_adapt = alpha #mutational sd (positive real number)
+sigma_adapt = sigma #strength of selection (positive real number)
+theta_adapt = 0 #drift parameter in Ornstein-Uhlenbeck movement of the phenotypic optimum (positive real number; setting to zero makes Brownian motion)
+sigma_opt_adapt = 0 #diffusion parameter in Ornstein-Uhlenbeck movement of the phenotypic optimum (positive real number; setting to zero makes constant optimum at opt0)
+
+#meta-parameters
+maxgen_adapt = 1000 #maximum number of generations (positive integer)
+rep = 1 #which replicate?
+
+#optima of parental populations
+# opt1s = [[0.1] * n, [0.1] * n] #which parental optima to use (Parallel)
+opt1s = [[0.1] * n, [-0.1] * n] #which parental optima to use (Divergent)
+
+######################################################################
+##COMMON ANCESTOR DATA##
+######################################################################
+
+if style == 'both':
+
+    #file to load
+    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_sigma%r_theta_%r_sigmaopt%r_gens%r_burn_rep%d' %(K,n,B,u,alpha,sigma,theta,sigma_opt,maxgen,rep)
+
     # load pop data
     f = open('%s/pop_%s.pkl' %(data_dir,sim_id), 'rb')
     popall = []
@@ -44,52 +78,35 @@ if style == 'both' or 'sgv':
             popall.append(pickle.load(f))
         except EOFError:
             break
+    nfounders = min(K_adapt,len(popall[-1]))
 
-    # # load mut data
-    # g = open('%s/mut_%s.pkl' %(data_dir,sim_id), 'rb')
-    # mutall = []
-    # while 1:
-    #     try:
-    #         mutall.append(pickle.load(g))
-    #     except EOFError:
-    #         break
+    # load mut data
+    g = open('%s/mut_%s.pkl' %(data_dir,sim_id), 'rb')
+    mutall = []
+    while 1:
+        try:
+            mutall.append(pickle.load(g))
+        except EOFError:
+            break
 
 if style == 'dnm':
-#
+
     popall = np.array([[1]] * K)
     # mutfound = np.array([[0] * n])
+    nfounders = min(K_adapt,len(popall))
 
-# make csv of population list (mutations in each individual)
-with open("%s/pop_%s.csv" %(data_dir,sim_id), "w") as f:
-    writer = csv.writer(f)
-    writer.writerows(popall) #write for all timepoints
-    # writer.writerows(popall[-1]) #write for just last timepoint
 ######################################################################
-##PARENT DATA##
+##PARENTAL DATA##
 ######################################################################
 
-maxgenAdapt = 2000 #number of generations during parent adaptation post-burnin (positive integer)
-KAdapt = 2000 # carrying capacity of adapting populations (positive integer)
-nfounders = KAdapt
-rep = 1
-uadapt = 0.001
-alpha = 0.02
-#sigma = 0.1
-
-opt1s = [[0.100] * n, [0.101] * n] #which parental optima to use (Parallel Near)
-# opt1s = [[0.100] * n, [-0.100] * n] #which parental optima to use (Parallel Near)
-# opt1s = [[0.25] * n, [0.251] * n] #which parental optima to use (Parallel Near)
-# opt1s = [[-0.249] * n, [0.251] * n] #which parental optima to use (Divergent)
-
-data_dir = 'data'
-
+#get parental data
 pops = dict()
 muts = dict()
 for i in range(len(opt1s)):
-#    
+    
     # filename of data
-    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%d_founders%d_opt%s_adapt_%s_rep%d' %(KAdapt,n,B,uadapt,alpha,maxgenAdapt,nfounders,'-'.join(str(e) for e in opt1s[i]),style,rep)
-#
+    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_sigma%r_theta%r_sigmaopt%r_gens%d_founders%d_opt%s_adapt_%s_rep%d' %(K_adapt, n_adapt, B_adapt, u_adapt, alpha_adapt, sigma_adapt, theta_adapt, sigma_opt_adapt, maxgen_adapt, nfounders,'-'.join(str(e) for e in opt1s[i]), style, rep)
+    
     # load pop data
     pop = []
     f = open('%s/pop_%s.pkl' %(data_dir,sim_id), 'rb')
@@ -99,7 +116,7 @@ for i in range(len(opt1s)):
         except EOFError:
             break
     pops[i] = pop
-#    
+    
     # load mut data
     mut = []
     g = open('%s/mut_%s.pkl' %(data_dir,sim_id), 'rb')
@@ -110,12 +127,14 @@ for i in range(len(opt1s)):
             break
     muts[i] = mut
 
-# make csv of parent chromosomes
-for i in range(len(pops)):
-    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_founders%d_opt%s' %(KAdapt,n,B,u,alpha,maxgenAdapt,nfounders,'-'.join(str(e) for e in opt1s[i]))
-    with open("%s/parent_pop_%s_%s.csv" %(data_dir,sim_id,style), "w") as f:
-        writer = csv.writer(f)
-        writer.writerows(pops[i])
+if save_CSVs == True:
+    
+    # make csv of parent chromosomes
+    for i in range(len(pops)):
+        sim_id = 'K%d_n%d_B%d_u%r_alpha%r_sigma%r_theta%r_sigmaopt%r_gens%d_founders%d_opt%s_adapt_%s_rep%d' %(K_adapt, n_adapt, B_adapt, u_adapt, alpha_adapt, sigma_adapt, theta_adapt, sigma_opt_adapt, maxgen_adapt, nfounders,'-'.join(str(e) for e in opt1s[i]), style, rep)
+        with open("%s/parent_pop_%s.csv" %(data_dir,sim_id), "w") as f:
+            writer = csv.writer(f)
+            writer.writerows(pops[i])
 
 ######################################################################
 ##PARENTAL PHENOTYPES##
@@ -132,20 +151,20 @@ for i in range(len(pops)):
 # mean parental phenotypes
 mean_phenos = dict()
 for i in range(len(phenos)):
-    mean_phenos[i] = np.mean(phenos[i], axis=1)
+    mean_phenos[i] = [np.mean(j) for j in phenos[i]]
 
-# make csv of parent phenotypes
-for i in range(len(phenos)):
-	sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_opt%s' %(KAdapt,n,B,u,alpha,maxgenAdapt,'-'.join(str(e) for e in opt1s[i]))
-	with open("%s/parent_phenos_%s_%s.csv" %(data_dir,sim_id,style), "w") as f:
-		writer = csv.writer(f)
-		writer.writerows(phenos[i])
+if save_CSVs == True:
+
+    # make csv of parent phenotypes
+    for i in range(len(phenos)):
+        sim_id = 'K%d_n%d_B%d_u%r_alpha%r_sigma%r_theta%r_sigmaopt%r_gens%d_founders%d_opt%s_adapt_%s_rep%d' %(K_adapt, n_adapt, B_adapt, u_adapt, alpha_adapt, sigma_adapt, theta_adapt, sigma_opt_adapt, maxgen_adapt, nfounders,'-'.join(str(e) for e in opt1s[i]), style, rep)
+        with open("%s/parent_phenos_%s.csv" %(data_dir,sim_id), "w") as f:
+            writer = csv.writer(f)
+            writer.writerows(phenos[i])
 
 #######################################################################
 ###MAKE HYBRIDS##
 #######################################################################
-
-nHybrids = 1000 #number of hybrids to make in crosses between each pair of parent populations
 
 offphenos = dict()
 mean_offphenos = dict()
@@ -180,8 +199,12 @@ for h in range(len(pairs)):
     offpheno = np.array(offpheno) #reformat correctly
     mean_offpheno = np.mean(offpheno,axis=0) #mean
 
+print(mean_offpheno)
+
+if save_CSVs == True:
+
     # save as csv
-    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_opt1_%s_opt2_%s' %(KAdapt,n,B,u,alpha,maxgenAdapt,'-'.join(str(e) for e in opt1s[i]),'-'.join(str(e) for e in opt1s[j]))
+    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_gens%r_opt1_%s_opt2_%s' %(K_adapt,n,B,u,alpha,maxgen_adapt,'-'.join(str(e) for e in opt1s[i]),'-'.join(str(e) for e in opt1s[j]))
     with open("%s/hybrid_phenos_%s_%s.csv" %(data_dir,sim_id,style), "w") as f:
         writer = csv.writer(f)
         writer.writerows(offpheno)
