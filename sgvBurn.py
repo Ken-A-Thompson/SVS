@@ -71,8 +71,8 @@ outputFreq = 1000 #record and print update this many generations
 nReps = 1 #number of replicates to run
 
 remove_lost = True #remove mutations that are lost?
-make_CSV = False #make a CSV of output?
 run = True #run simulation?
+make_CSV = False #make a CSV of output?
 
 ######################################################################
 ##SIMULATION##
