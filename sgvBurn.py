@@ -1,4 +1,4 @@
-#Author: Matthew Osmond <mmosmond@zoology.ubc.ca>
+#Author: Matthew Osmond <mmosmond@zoology.ubc.ca> & Ken A. Thompson <ken.thompson@zoology.ubc.ca>
 #Description: Adaptation from standing genetic variance (SGV) in Fisher's geometric model, implications for hybrids
 #Burn-in to create standing genetic variance
 
@@ -7,19 +7,17 @@ import time
 import pickle
 import csv
 
-#np.set_printoptions(threshold=np.inf) #to write all of the entries in a large numpy array to file
-
 ######################################################################
 ##HELPER FUNCTIONS##
 ######################################################################
 
-def open_output_files(K, n, B, u, alpha, maxgen, rep):
+def open_output_files(K, n, B, u, alpha, sigma, theta, sigma_opt, maxgen, rep):
     """
     This function opens the output files and returns file
     handles to each.
     """
 
-    sim_id = 'K%d_n%d_B%d_u%r_sigma%r_alpha%r_gens%r_burn_rep%d' %(K,n,B,u,sigma,alpha,maxgen,rep)
+    sim_id = 'K%d_n%d_B%d_u%r_alpha%r_sigma%r_theta_%r_sigmaopt%r_gens%r_burn_rep%d' %(K,n,B,u,alpha,sigma,theta,sigma_opt,maxgen,rep)
     data_dir = 'data'
 
     outfile_A = open("%s/pop_%s.pkl" %(data_dir,sim_id),"wb")
@@ -53,23 +51,27 @@ def close_output_files(fileHandles):
 ##PARAMETERS##
 ######################################################################
 
-K = 2000 #max number of parents (positive integer)
+K = 1000 #max number of parents (positive integer)
 n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.01 #mutation probability per genome (0<u<1)
 alpha = 0.02 #mutational sd (positive real number)
-sigma = 0.1 #strength of selection
+sigma = 1 #strength of selection (positive real number)
+theta = 1 #drift parameter in Ornstein-Uhlenbeck movement of the phenotypic optimum (positive real number; setting to zero makes Brownian motion)
+sigma_opt = 0.1 #diffusion parameter in Ornstein-Uhlenbeck movement of the phenotypic optimum (positive real number; setting to zero makes constant optimum at opt0)
 
+#initial state
 N0 = K #initial population size
-maxgen = 2000 #maximum number of generations (positive integer)
+opt0 = np.array([0] * n) #expected (and initial) phenotypic optimum
 
-opt0 = [0] * n #average optimum phenotype during burn in
-
-outputFreq = 200 #record and print update this many generations
+#meta-parameters
+maxgen = 1000 #maximum number of generations (positive integer)
+outputFreq = 100 #record and print update this many generations
+nReps = 1 #number of replicates to run
 
 remove_lost = True #remove mutations that are lost?
-
-nReps = 1
+make_CSV = False #make a CSV of output?
+run = True #run simulation?
 
 ######################################################################
 ##SIMULATION##
@@ -77,29 +79,26 @@ nReps = 1
 
 def main():
 
-	opt0 = np.array([0]*n)
 	rep = 1
 	while rep < nReps + 1:
 
 		# intialize
 		pop = np.array([[1]] * N0) #list of mutations held by each individual (all start with same mutation at first locus)
 		mut = np.array([[0] * n]) #list of phenotypic effect of initial mutations (mutation at first locus puts all individuals at origin)
-			
-		# open output files
-		fileHandles = open_output_files(K, n, B, u, alpha, maxgen, rep) 
+		opt = opt0 #optimum
 
-		opt = opt0
-		gen = 1 #generation
+		# open output files
+		fileHandles = open_output_files(K, n, B, u, alpha, sigma, theta, sigma_opt, maxgen, rep) 
+		
+		gen = 0 #generation
 		while gen < maxgen + 1:
 
 			# genotype to phenotype
-			phenos = np.dot(pop,mut) #sum mutations held by each individual
+			phenos = np.dot(pop,mut) #phenotype of each individual
 
 			# optimum phenotype
 			# width = 0.1 
 			# opt = opt0 + np.random.uniform(size=n)*width - [width*0.5]*n #choose optimum for generation from random uniform distribution in [-0.1,0.1] for each dimension 
-			sigma_opt = 0.01
-			theta = 0.1
 			opt = opt + theta * (opt0 - opt) + sigma_opt * np.random.normal(size=n) # allow optimum to change by Ornstein-Uhlenbeck process, always pulled back toward 0
 
 			# viability selection
@@ -117,10 +116,9 @@ def main():
 	            
 	        # dump data every outputFreq iteration
 	        # also print a short progess message (generation and number of parents)
-			if gen > 0 and (gen % outputFreq) == 0:
+			if gen % outputFreq == 0:
 				write_data_to_output(fileHandles, [surv,mut,gen])
-				print("rep %d    gen %d    N %d    n_muts %d    mean_muts %.2f" %(rep, gen, len(surv), len(mut), np.mean(np.sum(pop,axis=1))))
-
+				print("rep %d    gen %d    N %d    n_muts %d    mean_muts %.2f    mean_pheno [%.2f, %.2f]" %(rep, gen, len(surv), len(mut), np.mean(np.sum(pop,axis=1)), np.mean(phenos,axis=0)[0], np.mean(phenos,axis=0)[1]))
 
 			# birth
 			# off = np.repeat(surv, B, axis=0) #offspring of survivors (asexual)
@@ -161,33 +159,36 @@ def main():
 ######################################################################
 ##RUNNING##
 ######################################################################    
-    
-#run (with timer)
-start = time.time()
-main()
-end = time.time()
-print(end-start)
+
+if run == True:    
+	#run (with timer)
+	start = time.time()
+	main()
+	end = time.time()
+	print(end-start)
 
 ######################################################################
 ##MAKE CSV OF MUTATIONS
 ######################################################################   
 
-# rep=1
-# sim_id = 'K%d_n%d_B%d_u%r_sigma%r_alpha%r_gens%r_burn_rep%d' %(K,n,B,u,sigma,alpha,maxgen,rep)
-# data_dir = 'data'
+if make_CSV == True: 
 
-# # load pop data
-# f = open('%s/pop_%s.pkl' %(data_dir,sim_id), 'rb')
-# popall = []
-# while 1:
-#     try:
-#         popall.append(pickle.load(f))
-#     except EOFError:
-#         break
+	rep=1
+	sim_id = 'K%d_n%d_B%d_u%r_alpha%r_sigma%r_theta_%r_sigmaopt%r_gens%r_burn_rep%d' %(K,n,B,u,alpha,sigma,theta,sigma_opt,maxgen,rep)
+	data_dir = 'data'
 
-# # make csv of population list (mutations in each individual)
-# with open("%s/pop_%s.csv" %(data_dir,sim_id), "w") as f:
-#     writer = csv.writer(f)
-#     writer.writerows(popall) #write for all timepoints
-#     # writer.writerows(popall[-1]) #write for just last timepoint
+	# load pop data
+	f = open('%s/pop_%s.pkl' %(data_dir,sim_id), 'rb')
+	popall = []
+	while 1:
+	    try:
+	        popall.append(pickle.load(f))
+	    except EOFError:
+	        break
+
+	# make csv of population list (mutations in each individual)
+	with open("%s/pop_%s.csv" %(data_dir,sim_id), "w") as f:
+	    writer = csv.writer(f)
+	    # writer.writerows(popall) #write for all timepoints
+	    writer.writerows(popall[-1]) #write just last timepoint
 
