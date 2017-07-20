@@ -56,8 +56,8 @@ n = 2 #number of traits (positive integer)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.01 #mutation probability per genome (0<u<1)
 alpha = 0.02 #mutational sd (positive real number)
-sigma = 0.00001 #strength of selection (positive real number)
-theta = 1 #drift parameter in Ornstein-Uhlenbeck movement of the phenotypic optimum (positive real number; setting to zero makes Brownian motion)
+sigma = 1 #strength of selection (positive real number)
+theta = 0.9 #drift parameter in Ornstein-Uhlenbeck movement of the phenotypic optimum (positive real number; setting to zero makes Brownian motion)
 sigma_opt = 0.1 #diffusion parameter in Ornstein-Uhlenbeck movement of the phenotypic optimum (positive real number; setting to zero makes constant optimum at opt0)
 
 #initial state
@@ -66,8 +66,8 @@ N0 = K #initial population size
 opt0 = np.array([0] * n) #expected (and initial) phenotypic optimum
 
 #meta-parameters
-maxgen = 1000 #maximum number of generations (positive integer)
-outputFreq = 100 #record and print update this many generations
+maxgen = 10000 #maximum number of generations (positive integer)
+outputFreq = 1000 #record and print update this many generations
 nReps = 1 #number of replicates to run
 
 remove_lost = True #remove mutations that are lost?
