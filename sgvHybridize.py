@@ -64,7 +64,7 @@ style2 = 'art' #artificially created ancestor
 
 data_dir = 'data' #where parental and common ancestor data is, and where hybrid data will be deposited
 
-save_CSV = False #save CSV of hybrids?
+save_CSV = True #save CSV of hybrids?
 
 ######################################################################
 ##PARENTAL PARAMETERS##
@@ -73,9 +73,9 @@ save_CSV = False #save CSV of hybrids?
 K_adapt = 1000 #max number of parents (positive integer)
 n_adapt = 2 #number of traits (positive integer)
 B_adapt = 2 #number of offspring per generation per parent (positive integer)
-u_adapt = 0.01 #mutation probability per genome (0<u<1) (set to zero for sgv only)
+u_adapt = 0.001 #mutation probability per genome (0<u<1) (set to zero for sgv only)
 alpha_adapt = 0.02 #mutational sd (positive real number)
-sigma_adapt = 1 #strength of selection (positive real number)
+sigma_adapt = 10 #strength of selection (positive real number)
 theta_adapt = 0 #drift parameter in Ornstein-Uhlenbeck movement of the phenotypic optimum (positive real number; setting to zero makes Brownian motion)
 sigma_opt_adapt = 0 #diffusion parameter in Ornstein-Uhlenbeck movement of the phenotypic optimum (positive real number; setting to zero makes constant optimum at opt0)
 nfounders = K_adapt
@@ -85,8 +85,8 @@ maxgen_adapt = 1000 #maximum number of generations (positive integer)
 rep = 1 #which replicate? (positive integer)
 
 #change in optima that parental populations experienced
-# opt1s = [[0.1] * n, [0.1] * n] #which parental optima to use (Parallel)
-opt1s = [[0.1] * n_adapt, [-0.1] * n_adapt] #which parental optima to use (Divergent)
+opt1s = [[0.1] * n_adapt, [0.101] * n_adapt] #which parental optima to use (Parallel)
+# opt1s = [[0.1] * n_adapt, [-0.1] * n_adapt] #which parental optima to use (Divergent)
 
 ######################################################################
 ##PARENTAL DATA##
@@ -167,7 +167,7 @@ for h in range(len(pairs)):
         randmuts = np.random.randint(2, size=(len(unsharedmuts)))
         offmuts = unsharedmuts * randmuts[:,None]
         if len(offmuts) < 1:
-            offmuts = np.array([[0]*n]) #give something in case empty
+            offmuts = np.array([[0]*n_adapt]) #give something in case empty
         # offspring phenotype
         offpheno.append(sum(np.append(sharedmuts,offmuts,axis=0)))
 
