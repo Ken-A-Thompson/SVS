@@ -57,7 +57,7 @@ K = 1000 #number of individuals (positive integer)
 n = 2 #phenotypic dimensions (positive integer)
 alpha = 0.02 #mutational sd (positive real number)
 n_muts = 30 #number of mutations (positive integer)
-p_mut = 0.5 #probability of having mutation at any one locus (0<p<1)
+p_mut = 0.1 #probability of having mutation at any one locus (0<p<1)
 
 #meta-parameters
 nReps = 1 #number of replicates to run (postitive integer)

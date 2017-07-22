@@ -111,7 +111,7 @@ if style == 'both' or 'sgv':
 	if style2 == 'art':
 
 		n_muts = 30 #number of mutations (positive integer)
-		p_mut = 0.5	 #probability of having mutation at any one locus (0<p<1)
+		p_mut = 0.1	 #probability of having mutation at any one locus (0<p<1)
 		
 		#file to load
 		sim_id = 'K%d_n%d_alpha%r_nmuts%r_pmut%r_create_rep%d' %(K, n, alpha, n_muts, p_mut, rep)

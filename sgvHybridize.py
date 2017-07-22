@@ -54,9 +54,9 @@ def close_output_files(fileHandles):
 nHybrids = 1000 #number of hybrids to make in crosses between each pair of parent populations
 
 #style of parental adaptation
-style = 'both' #standing genetic variation and de novo mutation (if u_adapt > 0)
+# style = 'both' #standing genetic variation and de novo mutation (if u_adapt > 0)
 # style = 'sgv' #standing genetic variation only (no mutation)
-# style = 'dnm' #de novo mutation only
+style = 'dnm' #de novo mutation only
 
 #style of ancestor creation
 # style2 = 'burn' #ancestor created by burn-in
@@ -64,7 +64,8 @@ style2 = 'art' #artificially created ancestor
 
 data_dir = 'data' #where parental and common ancestor data is, and where hybrid data will be deposited
 
-save_CSV = True #save CSV of hybrids?
+save_CSV = False #save CSV of hybrids?
+calc_fitness = True #calculate fitness of hybrids
 
 ######################################################################
 ##PARENTAL PARAMETERS##
@@ -79,6 +80,7 @@ sigma_adapt = 10 #strength of selection (positive real number)
 theta_adapt = 0 #drift parameter in Ornstein-Uhlenbeck movement of the phenotypic optimum (positive real number; setting to zero makes Brownian motion)
 sigma_opt_adapt = 0 #diffusion parameter in Ornstein-Uhlenbeck movement of the phenotypic optimum (positive real number; setting to zero makes constant optimum at opt0)
 nfounders = K_adapt
+opt_adapt = np.array([0.1] * n_adapt) #general target in parental population
 
 #meta-parameters
 maxgen_adapt = 1000 #maximum number of generations (positive integer)
@@ -185,3 +187,10 @@ if save_CSV == True:
     with open("%s/hybrid_%s.csv" %(data_dir,sim_id), "w") as f:
         writer = csv.writer(f)
         writer.writerows(offpheno)
+
+if calc_fitness == True: 
+
+    dist = np.linalg.norm(offpheno - opt_adapt, axis=1) #phenotypic distance from optimum
+    for h in range(len(offpheno)):
+        hybridfit = np.exp(-sigma_adapt*dist**2) #fitness of each hybrid
+    print(np.mean(hybridfit, axis = 0))
