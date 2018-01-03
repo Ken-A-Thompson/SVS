@@ -1,5 +1,5 @@
 #Authors: Matthew Osmond <mmosmond@zoology.ubc.ca> & Ken A. Thompson <ken.thompson@zoology.ubc.ca>
-#Description: The role of standing genetic variance in hybrid load
+#Description: The role of standing genetic variance in speciation
 
 import numpy as np
 import time
@@ -16,7 +16,7 @@ n = 2 #phenotypic dimensions (positive integer)
 ######################################################################
 
 K = 1000 #number of individuals (positive integer)
-n_muts = 10 #number of mutations (positive integer)
+n_muts = 0 #number of mutations (positive integer)
 p_mut = 0.1 #probability of having mutation at any one locus (0<p<1) #set this to zero for de novo only
 alpha = 0.1 #mutational sd (positive real number)
 
@@ -40,7 +40,7 @@ theta1 = np.array([0.5] * n) #optimum phenotype for population 1
 theta2 = np.array([-0.5] * n) #optimum phenotype for population 2
 
 maxgen = 1000 #total number of generations populations adapt for
-outputFreq = 10 #generation interval between plotting
+outputFreq = 100 #generation interval between plotting
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
@@ -73,7 +73,7 @@ else:
 ##PARAMETERS FOR HYBRIDS##
 ######################################################################
 
-nHybrids = 10
+nHybrids = 50
 
 ######################################################################
 ##FUNCTION FOR POPULATIONS TO ADAPT##
@@ -128,7 +128,7 @@ def main():
 			hyload = np.log(1*B) - np.mean(np.log(w*B)) #hybrid load as defined by Chevin et al 2014
 			
 			#print some data (gen, pheno var in each dimension, hybrid load)
-			print(gen, np.var(offpheno, axis=0), hyload)
+			print(gen,  np.mean(phenpar1,axis=0), np.mean(phenpar2,axis=0), np.var(offpheno, axis=0), hyload)
 			
 			#plot hybrid load
 			plt.axis([0, maxgen, 0, 0.2])
