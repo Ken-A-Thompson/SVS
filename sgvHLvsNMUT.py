@@ -86,6 +86,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
+nreps = 10 #number of replicates for each set of parameters
 n = 2 #phenotypic dimensions (positive integer >=1)
 
 ######################################################################
@@ -93,16 +94,9 @@ n = 2 #phenotypic dimensions (positive integer >=1)
 ######################################################################
 
 K = 1000 #number of individuals (positive integer >=1)
-n_muts = 1 #number of mutations (positive integer >=1)
+n_mut_list = [0, 10, 20, 30, 40, 50] #number of mutations (positive integer >=1)
 p_mut = 0.1 #probability of having mutation at any one locus (0<=p<=1) #set this to zero for de novo only
 alpha = 0.1 #mutational sd (positive real number)
-
-######################################################################
-##MAKE ANCESTOR##
-######################################################################
-
-pop = np.random.binomial(1, p_mut, (K, n_muts)) #p_mut chance of having each of n_muts mutations, for all K individuals
-mut = np.random.normal(0, alpha, (n_muts, n)) #create n_muts mutations, each with a random normal phenotypic effect in each n dimension with mean 0 and sd alpha
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATIONS##
@@ -113,30 +107,19 @@ alpha_adapt = alpha #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 
-theta1 = np.array([1/2] * n) #optimum phenotype for population 1
-theta2 = np.array([-1/2] * n) #optimum phenotype for population 2
+theta1 = np.array([1,1]) #optimum phenotype for population 1
+theta2 = np.array([-1,-1]) #optimum phenotype for population 2
 
 maxgen = 1000 #total number of generations populations adapt for
-outputFreq = 100 #generation interval between plotting
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
 
 ######################################################################
-##FOUND ADAPTING POPULATIONS FROM ANCESTOR##
-######################################################################
-
-#population 1
-[popfound1, mutfound1] = found(K, K_adapt, pop, mut, remove_lost, remove)
-
-#population 2
-[popfound2, mutfound2] = found(K, K_adapt, pop, mut, remove_lost, remove)
-
-######################################################################
 ##PARAMETERS FOR HYBRIDS##
 ######################################################################
 
-nHybrids = 50
+nHybrids = 100 #number of hybrids to make at end of each replicate
 
 ######################################################################
 ##FUNCTION FOR POPULATIONS TO ADAPT##
@@ -144,18 +127,73 @@ nHybrids = 50
 
 def main():
 
-	#initialize adapting populations
-	[pop1, mut1] = [popfound1, mutfound1]
-	[pop2, mut2] = [popfound2, mutfound2]
+	#set up plot of hybrid load versus number of ancestral mutations (n_muts)
+	plt.axis([0, max(n_mut_list)+1, 0, 0.1])
+	plt.ylabel('hybrid load at generation %d (mean $\pm$ SD of %d replicates)' %(maxgen,nreps))
+	plt.xlabel('number of ancestral mutations')
+	plt.ion()
 
-	#intitialize generation
-	gen = 0
+	#loop over all n_muts values
+	i = 0
+	while i < len(n_mut_list):
 
-	#run until maxgen
-	while gen < maxgen + 1:
+		n_muts = n_mut_list[i] #set number of mutations in ancestor (ie how much SGV)
 
-		# make hybrids every outputFreq generations
-		if gen % outputFreq == 0:
+		hyloads = [0] * nreps #initialize vector to store hybrid loads in from each replicate
+
+		#loop over all replicates
+		rep = 0
+		while rep < nreps:
+
+			#make ancestor
+			if n_muts > 0:
+				pop = np.random.binomial(1, p_mut, (K, n_muts)) #p_mut chance of having each of n_muts mutations, for all K individuals
+				mut = np.random.normal(0, alpha, (n_muts, n)) #create n_muts mutations, each with a random normal phenotypic effect in each n dimension with mean 0 and sd alpha
+			else: #de novo only, even if p_mut>0
+				pop = np.array([[1]] * K)
+				mut = np.array([[0] * n])
+
+			#found adapting populations
+			[popfound1, mutfound1] = found(K, K_adapt, pop, mut, remove_lost, remove)
+			[popfound2, mutfound2] = found(K, K_adapt, pop, mut, remove_lost, remove)
+
+			#initialize adapting populations
+			[pop1, mut1] = [popfound1, mutfound1]
+			[pop2, mut2] = [popfound2, mutfound2]
+
+			#intitialize generation counter
+			gen = 0
+
+			#run until maxgen
+			while gen < maxgen + 1:
+
+				# genotype to phenotype
+				phenos1 = np.dot(pop1, mut1) #sum mutations held by each individual
+				phenos2 = np.dot(pop2, mut2) #sum mutations held by each individual
+
+				# viability selection
+				surv1 = viability(phenos1, theta1, pop1, K_adapt)
+				surv2 = viability(phenos2, theta2, pop2, K_adapt)
+
+				#end simulation if either population extinct (or unable to produce offspring)        
+				if len(surv1) < 2 or len(surv2) < 2: 
+					print("Extinct")              
+					break 
+					
+				# meiosis
+				off1 = recomb(surv1, B)
+				off2 = recomb(surv2, B)
+
+				# mutation and population update
+				[pop1, mut1] = mutate(off1, u, alpha, n, mut1)
+				[pop2, mut2] = mutate(off2, u, alpha, n, mut2)
+
+				# remove lost mutations (all zero columns in pop)
+				[pop1, mut1] = remove_muts(remove, remove_lost, pop1, mut1, mutfound1)
+				[pop2, mut2] = remove_muts(remove, remove_lost, pop2, mut2, mutfound2)
+
+				# go to next generation
+				gen += 1
 
 			#make variables to hold offspring phenotypes
 			offphenos = dict()
@@ -192,49 +230,24 @@ def main():
 			dist = np.linalg.norm(offpheno - np.mean(offpheno, axis=0), axis=1) #phenotypic distance from mean hybrid
 			hyload = np.log(1*B) - np.mean(np.log(survival(dist)*B)) #hybrid load as defined by Chevin et al 2014
 			
-			#print some data (gen, pheno var in each dimension, hybrid load)
-			print(gen, np.mean(phenpar1, axis=0), np.mean(phenpar2, axis=0), np.var(offpheno, axis=0), hyload)
+			#print an update
+			print('n_muts=%d rep=%d hybrid load=%.3f' %(n_mut_list[i], rep+1, hyload)) 
 			
-			#plot hybrid load
-			plt.axis([0, maxgen, 0, 0.2])
-			plt.ion()
-			if gen > 0:
-				plt.plot([gen - outputFreq, gen], [hyload_old, hyload], '-o', color='k')
-			else:
-				plt.scatter(gen, hyload)
-			plt.pause(0.01)
-			hyload_old = hyload
+			hyloads[rep] = hyload #save hybrid load for this replicate
 
-			# while True:
-			# 	plt.pause(0.05)
+			# go to next rep
+			rep += 1
 
-		# genotype to phenotype for adapting populations
-		phenos1 = np.dot(pop1, mut1) #sum mutations held by each individual
-		phenos2 = np.dot(pop2, mut2) #sum mutations held by each individual
+		#plot mean and SD hybrid load over all replicates for this n_muts value
+		plt.errorbar(n_mut_list[i], np.mean(hyloads), yerr=np.var(hyloads)**0.5, fmt='o', color='k')
+		plt.pause(0.01)
 
-		# viability selection for adapting populations
-		surv1 = viability(phenos1, theta1, pop1, K_adapt)
-		surv2 = viability(phenos2, theta2, pop2, K_adapt)
+		#go to next n_muts value
+		i += 1
 
-		#end simulation if either adapting population extinct (or unable to produce offspring)        
-		if len(surv1) < 2 or len(surv2) < 2: 
-			print("Extinct")              
-			break 
-			
-		# birth for adapting populations	
-		off1 = recomb(surv1, B)
-		off2 = recomb(surv2, B)
+	plt.pause(1) #pause on finished plot for a second
+	plt.savefig('Figs/HLvsNMUT.png') #save finished plot
 
-		# mutation and update adapting populations
-		[pop1, mut1] = mutate(off1, u, alpha, n, mut1)
-		[pop2, mut2] = mutate(off2, u, alpha, n, mut2)
-
-		# remove lost mutations (all zero columns in pop)
-		[pop1, mut1] = remove_muts(remove, remove_lost, pop1, mut1, mutfound1)
-		[pop2, mut2] = remove_muts(remove, remove_lost, pop2, mut2, mutfound2)
-
-		# go to next generation
-		gen += 1
 
 ######################################################################
 ##RUNNING ADAPTATION FUNCTION##
