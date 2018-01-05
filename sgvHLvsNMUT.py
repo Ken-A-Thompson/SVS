@@ -107,8 +107,8 @@ alpha_adapt = alpha #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 
-theta1 = np.array([0.5,0.5]) #optimum phenotype for population 1
-theta2 = np.array([-0.5,-0.5]) #optimum phenotype for population 2
+theta1 = np.array([0.75,0.75]) #optimum phenotype for population 1
+theta2 = np.array([0.75,0.75]) #optimum phenotype for population 2
 
 maxgen = 1000 #total number of generations populations adapt for
 
