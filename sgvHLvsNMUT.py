@@ -94,7 +94,7 @@ n = 2 #phenotypic dimensions (positive integer >=1)
 ######################################################################
 
 K = 1000 #number of individuals (positive integer >=1)
-n_mut_list = [0, 10, 20, 30, 40, 50] #number of mutations (positive integer >=1)
+n_mut_list = [0, 20, 40, 60, 80, 100] #number of mutations (positive integer >=1)
 p_mut = 0.1 #probability of having mutation at any one locus (0<=p<=1) #set this to zero for de novo only
 alpha = 0.1 #mutational sd (positive real number)
 
@@ -107,8 +107,8 @@ alpha_adapt = alpha #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 
-theta1 = np.array([1,1]) #optimum phenotype for population 1
-theta2 = np.array([-1,-1]) #optimum phenotype for population 2
+theta1 = np.array([0.5,0.5]) #optimum phenotype for population 1
+theta2 = np.array([-0.5,-0.5]) #optimum phenotype for population 2
 
 maxgen = 1000 #total number of generations populations adapt for
 
