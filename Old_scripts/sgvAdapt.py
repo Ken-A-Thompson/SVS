@@ -54,17 +54,17 @@ def close_output_files(fileHandles):
 K_adapt = 1000 #max number of parents (positive integer)
 n_adapt = 2 #number of traits (positive integer)
 B_adapt = 2 #number of offspring per generation per parent (positive integer)
-u_adapt = 0.01 #mutation probability per genome (0<u<1) (set to zero for sgv only)
+u_adapt = 0.001 #mutation probability per genome (0<u<1) (set to zero for sgv only)
 alpha_adapt = 0.02 #mutational sd (positive real number)
-sigma_adapt = 1 #strength of selection (positive real number)
+sigma_adapt = 10 #strength of selection (positive real number)
 theta_adapt = 0 #drift parameter in Ornstein-Uhlenbeck movement of the phenotypic optimum (positive real number; setting to zero makes Brownian motion)
 sigma_opt_adapt = 0 #diffusion parameter in Ornstein-Uhlenbeck movement of the phenotypic optimum (positive real number; setting to zero makes constant optimum at opt0)
-opt1 = np.array([0.1] * n_adapt) #optimum phenotype 
+opt1 = np.array([0.101] * n_adapt) #optimum phenotype 
 # opt1 = np.array([-0.1] * n_adapt)
 
 #meta-parameters
 maxgen_adapt = 1000 #maximum number of generations (positive integer)
-outputFreq = 100 #record and print update this many generations
+outputFreq = 200 #record and print update this many generations
 nReps = 1 #number of replicates
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
@@ -103,15 +103,15 @@ if style == 'both' or 'sgv':
 		sigma_opt = 0.1 #diffusion parameter in Ornstein-Uhlenbeck movement of the phenotypic optimum (positive real number; setting to zero makes constant optimum at opt0)
 
 		#meta-parameters
-		maxgen = 1000 #number of gens in ancestral burn-in (positive integer)
+		maxgen = 10000 #number of gens in ancestral burn-in (positive integer)
 
 		#file to load
 		sim_id = 'K%d_n%d_B%d_u%r_alpha%r_sigma%r_theta_%r_sigmaopt%r_gens%r_burn_rep%d' %(K,n,B,u,alpha,sigma,theta,sigma_opt,maxgen,rep)
 
 	if style2 == 'art':
 
-		n_muts = 1000 #number of mutations (positive integer)
-		p_mut = 0.5 #probability of having mutation at any one locus (0<p<1)
+		n_muts = 30 #number of mutations (positive integer)
+		p_mut = 0.1	 #probability of having mutation at any one locus (0<p<1)
 		
 		#file to load
 		sim_id = 'K%d_n%d_alpha%r_nmuts%r_pmut%r_create_rep%d' %(K, n, alpha, n_muts, p_mut, rep)
@@ -195,7 +195,7 @@ if style == 'sgv':
 
 if style == 'dnm':
 
-	nfounders = K_adapt #initial population size
+	nfounders = K #initial population size
 	popfound = np.array([[1]] * nfounders) #list of mutations held by each individual (all start with same mutation at first locus and no others)
 	mutfound = np.array([[0] * n_adapt]) #list of phenotypic effect of initial mutations (mutation at first locus puts all individuals at origin)
 
@@ -223,7 +223,7 @@ def main():
 			phenos = np.dot(pop,mut) #sum mutations held by each individual
 
 			#optimum
-			opt = opt + theta_adapt * (opt1 - opt) + sigma_opt_adapt * np.random.normal(size=n_adapt) # allow optimum to change by Ornstein-Uhlenbeck process, always pulled back toward 0
+			opt = opt + theta_adapt * (opt1 - opt) + sigma_opt_adapt * np.random.normal(size=n_adapt) # allow optimum to change by Ornstein-Uhlenbeck process
 
 			# viability selection
 			dist = np.linalg.norm(phenos - opt, axis=1) #phenotypic distance from optimum
