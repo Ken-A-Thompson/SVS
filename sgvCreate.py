@@ -53,7 +53,7 @@ def close_output_files(fileHandles):
 K = 1000 #number of individuals (positive integer)
 n = 2 #phenotypic dimensions (positive integer)
 alpha = 0.02 #mutational sd (positive real number)
-n_muts = 1000 #number of mutations (positive integer)
+n_muts = 100 #number of mutations (positive integer)
 p_mut = 0.5 #probability of having mutation at any one locus (0<p<1)
 
 #meta-parameters
@@ -76,6 +76,7 @@ def main():
 		#create ancestor chromosomes and mutation effects
 		pop = np.random.binomial(1, p_mut, (K, n_muts)) #p_mut chance of having each of n_muts mutations, for all K individuals
 		mut = np.random.normal(0, alpha, (n_muts,n)) #create n_muts mutations, each with a random normal phenotypic effect in each n dimension with mean 0 and sd alpha
+		print(np.mean(np.dot(pop,mut),axis=0))
 
 		#write and close
 		write_data_to_output(fileHandles, [pop,mut])
