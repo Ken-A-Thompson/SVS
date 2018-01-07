@@ -133,8 +133,10 @@ alpha_adapt = alpha #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 
-theta1 = np.array([1,0]) #optimum phenotype for population 1
-theta2_list = [[1, 0], [0.5**0.5, 0.5**0.5], [0, 1], [-0.5**0.5, 0.5**0.5], [-1, 0]] #optimum phenotypes for population 2 (here we go from completely parallel to completely divergent while keeping the distance from optimum constant --we're on the unit circle)
+thetas_list = np.array([[[1,0], [-1,0]], [[3/4,0], [-3/4,0]], [[2/4,0], [-2/4,0]], [[1/4,0], [-1/4,0]]]) #optimum phenotypes for population 1 and 2 (divergent)
+# thetas_list = np.array([[1,0], [1,0]], [[3/4,0], [3/4,0]], [[2/4,0], [2/4,0]], [[1/4,0], [1/4,0]]) #optimum phenotypes for population 1 and 2 (parallel)
+
+# theta2_list = [[1, 0], [0.5**0.5, 0.5**0.5], [0, 1], [-0.5**0.5, 0.5**0.5], [-1, 0]] #optimum phenotypes for population 2 (here we go from completely parallel to completely divergent while keeping the distance from optimum constant --we're on the unit circle)
 
 maxgen = 1000 #total number of generations populations adapt for
 
@@ -158,9 +160,11 @@ def main():
 
 	#loop over optima
 	j = 0
-	while j < len(theta2_list):
+	while j < len(thetas_list):
 		
-		theta2 = np.array(theta2_list[j]) #set optima
+		#set optima
+		theta1 = thetas_list[j][0]
+		theta2 = thetas_list[j][1]
 			
 		# #set up plot of hybrid load versus number of ancestral mutations (n_muts)
 		# plt.axis([0, max(n_mut_list)+1, 0, 0.1])
