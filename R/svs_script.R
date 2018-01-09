@@ -108,20 +108,21 @@ Fig.2C
 
 ### Hybrid load across environments for different amts of mutation
 
-Fig3.Data <- read.csv()
+Fig3.Data <- read.csv('SVS_plots/2018-01-08-SVS_Plots.txt/data3.csv')
 
 Fig.Data.PlotReady <-
   Fig3.Data %>% 
   group_by(angle, nmuts) %>% 
   mutate(hl.mean = mean(hybrid.load), hl.sd = sd(hybrid.load))
 
-Fig.3 <- ggplot(Fig.Data.PlotReady, aes(x = angle, y = hl.mean, colour = nmuts)) +
+Fig.3 <- ggplot(Fig.Data.PlotReady, aes(x = angle, y = hl.mean, colour = factor(nmuts))) +
   geom_point() + 
   labs(x = "Angle separating environments",
        y = "Hybrid load") +
   geom_smooth(method = "loess") +
-  geom_errorbar(aes(ymin = hl.mean - hl.sd, ymax = hl.mean + hl.sd)) + 
+  # geom_errorbar(aes(ymin = hl.mean - hl.sd, ymax = hl.mean + hl.sd)) + 
   # ylim(0, 0.085) +
+  # geom_vline(xintercept = 90) + 
   theme_ng1
 Fig.3
 
