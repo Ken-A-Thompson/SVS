@@ -112,7 +112,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 10 #number of replicates for each set of parameters
+nreps = 2 #number of replicates for each set of parameters
 n = 2 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
@@ -121,7 +121,7 @@ data_dir = 'data'
 ######################################################################
 
 K = 1000 #number of individuals (positive integer >=1)
-n_mut_list = [0, 30, 100] #number of mutations (positive integer >=1)
+n_mut_list = [0, 100] #number of mutations (positive integer >=1)
 p_mut = 0.1 #probability of having mutation at any one locus (0<=p<=1) #set this to zero for de novo only
 alpha = 0.1 #mutational sd (positive real number)
 
@@ -134,12 +134,12 @@ alpha_adapt = alpha #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 
-opt_dist = 0.5 #distance to optima
-theta1 = np.array([opt_dist,0]) #set one optima to be fixed
+opt_dist = 1 #distance to optima (eg, 1 puts you on the unit circle)
+theta1 = np.array([opt_dist, 0]) #set one optima to be fixed
 
-n_angles = 20 #number of angles between optima to simulate (including 0 and 180)
-angles = [math.pi*x/(n_angles-1) for x in range(n_angles)] #angles to use (in radians)
-theta2_list = np.array([[opt_dist*math.cos(x), opt_dist*math.sin(x)] for x in angles]) #optima to use
+n_angles = 2 #number of angles between optima to simulate (including 0 and 180)
+angles = [math.pi * x / (n_angles - 1) for x in range(n_angles)] #angles to use (in radians)
+theta2_list = np.array([[math.cos(x), math.sin(x)] for x in angles]) #optima to use
 
 maxgen = 1000 #total number of generations populations adapt for
 
@@ -150,7 +150,7 @@ remove = 'derived' #.. any derived (not from ancestor) mutation that is lost
 ##PARAMETERS FOR HYBRIDS##
 ######################################################################
 
-nHybrids = 100 #number of hybrids to make at end of each replicate
+nHybrids = 10 #number of hybrids to make at end of each replicate
 
 ######################################################################
 ##FUNCTION FOR POPULATIONS TO ADAPT##
@@ -169,10 +169,10 @@ def main():
 		theta2 = theta2_list[j]
 			
 		# #set up plot of hybrid load versus number of ancestral mutations (n_muts)
-		# plt.axis([0, max(n_mut_list)+1, 0, 0.1])
-		# plt.ylabel('hybrid load at generation %d (mean $\pm$ SD of %d replicates)' %(maxgen,nreps))
-		# plt.xlabel('number of ancestral mutations')
-		# plt.ion()
+		plt.axis([0, 180, 0, 0.1])
+		plt.ylabel('hybrid load at generation %d' %maxgen)
+		plt.xlabel('angle between optima')
+		plt.ion()
 
 		#loop over all n_muts values
 		i = 0
@@ -271,29 +271,34 @@ def main():
 				dist = np.linalg.norm(offpheno - np.mean(offpheno, axis=0), axis=1) #phenotypic distance from mean hybrid
 				hyload = np.log(1*B) - np.mean(np.log(survival(dist)*B)) #hybrid load as defined by Chevin et al 2014
 				
-				#print an update
-				print('angle=%r, rep=%d, n_muts=%d, hybrid load=%.3f' %(round(angles[j]*180/math.pi,2), rep+1, n_mut_list[i], hyload)) 
-				
-				#save data
-				write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_mut_list[i], hyload])
+				dist1 = np.linalg.norm(offpheno - theta1, axis=1) #phenotypic distance from parental 1 optimum
+				dist2 = np.linalg.norm(offpheno - theta2, axis=1) #phenotypic distance from parental 2 optimum
+				dist = np.minimum(dist1,dist2) #distance to closest optimum
+				w = survival(dist) #viability (fitness)
+				meanfit = np.mean(w) #mean fitness
+				maxfit = np.amax(w) #max fitness over all hybrids
 
-				# hyloads[rep] = hyload #save hybrid load for this replicate
+				#print an update
+				print('angle=%r, nmuts=%d, hybrid load=%.3f, mean fitness=%.2f, max fitness=%.2f, rep=%d' %(round(angles[j]*180/math.pi,2), n_muts, hyload, meanfit, maxfit, rep+1)) 
+				
+				#plot point
+				plt.scatter(angles[j]*180/math.pi, hyload, s=meanfit*10)
+				plt.pause(0.01)
+
+				#save data
+				write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), hyload, meanfit, maxfit, rep+1])
 
 				# go to next rep
 				rep += 1
 
-			# #plot mean and SD hybrid load over all replicates for this n_muts value
-			# plt.errorbar(n_mut_list[i], np.mean(hyloads), yerr=np.var(hyloads)**0.5, fmt='o', color='k')
-			# plt.pause(0.01)
-
 			#go to next n_muts value
 			i += 1
 
-		# plt.pause(1) #pause on finished plot for a second
-		# plt.savefig('Figs/HLvsNMUT.png') #save finished plot
-
 		#go to next optima
 		j += 1
+
+	#save plot	
+	plt.savefig('Figs/heatmapish.png') #save finished plot
 
 	# cleanup
 	close_output_files(fileHandles)
