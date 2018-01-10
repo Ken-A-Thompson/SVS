@@ -8,11 +8,11 @@
 # install.packages('pbapply')
 # install.packages('tidyverse')
 # install.packages('splitstackshape')
-library(cowplot)
-library(data.table)
-library(flexclust)
-# library(pbapply)
-library(splitstackshape)
+# library(cowplot)
+# library(data.table)
+# library(flexclust)
+# # library(pbapply)
+# library(splitstackshape)
 library(tidyverse)
 
 ### Run themes
@@ -125,6 +125,20 @@ Fig.3 <- ggplot(Fig.Data.PlotReady, aes(x = angle, y = hl.mean, colour = factor(
   # geom_vline(xintercept = 90) + 
   theme_ng1
 Fig.3
+
+################
+### Figure 4 ###
+################
+
+### Hybrid load effects on fitness across environments
+
+Fig4.Data <- read_csv('SVS_plots/2018-01-09-Heatmapdata/data4_opt0.7.csv', col_names = c("nmuts", "hybrid.load", "angle", "meanfit", "maxfit"))
+
+Fig4A.Data <- interp(Fig4.Data$angle,Fig4.Data$hybrid.load,Fig4.Data$meanfit)
+Fig4A.Data <-  image.plot(Fig4A.Data)
+
+Fig4B.Data <- interp(Fig4.Data$angle,Fig4.Data$hybrid.load,Fig4.Data$maxfit)
+Fig4B <- image.plot(Fig4B.Data)
 
 
 # ## Create mult
