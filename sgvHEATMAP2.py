@@ -107,8 +107,12 @@ def main():
 			#set optima
 			theta2 = theta2_list[j]
 
-			dist1 = np.linalg.norm(phenos - theta1, axis=1) #phenotypic distance from parental 1 optimum
-			dist2 = np.linalg.norm(phenos - theta2, axis=1) #phenotypic distance from parental 2 optimum
+			#move mean hybrid pheno to mean of parents
+			hymean = np.mean([theta1,theta2], axis=0) #the mean we want
+			offphenos = phenos - meanpheno + hymean	#shift all phenos to achieve wanted mean
+
+			dist1 = np.linalg.norm(offphenos - theta1, axis=1) #phenotypic distance from parental 1 optimum
+			dist2 = np.linalg.norm(offphenos - theta2, axis=1) #phenotypic distance from parental 2 optimum
 			dist = np.minimum(dist1, dist2) #distance to closest optimum
 			w = survival(dist) #viability
 			fitness = np.log(w*B) #continuous time growth rate
