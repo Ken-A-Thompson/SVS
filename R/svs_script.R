@@ -13,6 +13,8 @@
 # library(flexclust)
 # # library(pbapply)
 # library(splitstackshape)
+library(akima)
+library(fields)
 library(tidyverse)
 
 ### Run themes
@@ -132,15 +134,19 @@ Fig.3
 
 ### Hybrid load effects on fitness across environments
 
-Fig4.Data <- read_csv('SVS_plots/2018-01-09-Heatmapdata/data4_opt0.7.csv', col_names = c("nmuts", "hybrid.load", "angle", "meanfit", "maxfit"))
+Fig4.Data <- read_csv('data/d1_heatmap_percentile.csv', col_names = c("nmuts", "hybrid.load", "angle", "meanfit", "maxfit", "ninetypercent"))
+
 
 Fig4A.Data <- interp(Fig4.Data$angle,Fig4.Data$hybrid.load,Fig4.Data$meanfit)
 Fig4A.Data <-  image.plot(Fig4A.Data)
 
-Fig4B.Data <- interp(Fig4.Data$angle,Fig4.Data$hybrid.load,Fig4.Data$maxfit)
-Fig4B <- image.plot(Fig4B.Data)
+Fig4B.Data <- interp(Fig4.Data$angle,Fig4.Data$hybrid.load,Fig4.Data$ninetypercent)
+Fig4B <- image.plot(Fig4B2.Data)
+
+pdf('fig4a.pdf',width=4,height=3) 
 
 
+??fields
 # ## Create mult
 # 
 # 

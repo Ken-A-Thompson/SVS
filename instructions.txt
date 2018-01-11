@@ -1,0 +1,11 @@
+#Authors: Matthew Osmond <mmosmond@zoology.ubc.ca> & Ken A. Thompson <ken.thompson@zoology.ubc.ca>
+#Description: The role of standing genetic variance in speciation
+
+Script instructions (TBA)
+
+Install python on local machine (https://www.python.org/)
+
+Figure 2
+
+Navigate to directory containing scripts in terminal.
+bash... python sgvStreamline.py

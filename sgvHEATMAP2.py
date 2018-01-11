@@ -118,12 +118,13 @@ def main():
 			fitness = np.log(w*B) #continuous time growth rate
 			meanfit = np.mean(fitness) #mean fitness
 			maxfit = np.amax(fitness) #max fitness over all hybrids
+			percentilefit = np.percentile(fitness, 90) #max fitness over all hybrids
 
 			#print an update
 			print('nmuts=%d, hybrid load=%.3f, angle=%r, mean fitness=%.2f, max fitness=%.2f' %(n_muts, hyload, round(angles[j]*180/math.pi,2), meanfit, maxfit)) 
 
 			#save data
-			write_data_to_output(fileHandles, [n_muts, hyload, round(angles[j]*180/math.pi,2), meanfit, maxfit])
+			write_data_to_output(fileHandles, [n_muts, hyload, round(angles[j]*180/math.pi,2), meanfit, maxfit, percentilefit])
 
 			#go to next optima
 			j += 1
