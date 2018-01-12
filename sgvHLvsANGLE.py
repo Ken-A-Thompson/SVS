@@ -134,7 +134,7 @@ alpha_adapt = alpha #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 
-opt_dist = 0.5 #distance to optima
+opt_dist = 0.7 #distance to optima
 theta1 = np.array([opt_dist,0]) #set one optima to be fixed
 
 n_angles = 20 #number of angles between optima to simulate (including 0 and 180)

@@ -139,6 +139,7 @@ Fig4.Data <- read_csv('data/d1_heatmap_percentile.csv', col_names = c("nmuts", "
 
 Fig4A.Data <- interp(Fig4.Data$angle,Fig4.Data$hybrid.load,Fig4.Data$meanfit)
 Fig4A.Data <-  image.plot(Fig4A.Data)
+abline(v = 90)
 
 Fig4B.Data <- interp(Fig4.Data$angle,Fig4.Data$hybrid.load,Fig4.Data$ninetypercent)
 Fig4B <- image.plot(Fig4B2.Data)
