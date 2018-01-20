@@ -112,16 +112,16 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 10 #number of replicates for each set of parameters
-n = 2 #phenotypic dimensions (positive integer >=1)
+nreps = 2 #number of replicates for each set of parameters
+n = 4 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
 ##PARAMETERS TO MAKE ANCESTOR##
 ######################################################################
 
-K = 1000 #number of individuals (positive integer >=1)
-n_mut_list = [0, 30, 100] #number of mutations (positive integer >=1)
+K = 100 #number of individuals (positive integer >=1)
+n_mut_list = [0, 30] #number of mutations (positive integer >=1)
 p_mut = 0.1 #probability of having mutation at any one locus (0<=p<=1) #set this to zero for de novo only
 alpha = 0.1 #mutational sd (positive real number)
 
@@ -135,13 +135,17 @@ B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 
 opt_dist = 0.7 #distance to optima
-theta1 = np.array([opt_dist,0]) #set one optima to be fixed
+theta1 = np.append(opt_dist,[0]*(n-1)) #set one optima to be fixed
 
 n_angles = 20 #number of angles between optima to simulate (including 0 and 180)
 angles = [math.pi*x/(n_angles-1) for x in range(n_angles)] #angles to use (in radians)
-theta2_list = np.array([[opt_dist*math.cos(x), opt_dist*math.sin(x)] for x in angles]) #optima to use
+if n == 2:
+	theta2_list = np.array([[opt_dist*math.cos(x), opt_dist*math.sin(x)] for x in angles]) #optima to use
+elif n > 2:
+	theta2_list = np.array([np.append([opt_dist*math.cos(x), opt_dist*math.sin(x)], [0]*(n-2)) for x in angles]) #optima to use
 
-maxgen = 1000 #total number of generations populations adapt for
+
+maxgen = 100 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
