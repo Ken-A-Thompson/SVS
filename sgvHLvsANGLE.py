@@ -276,10 +276,10 @@ def main():
 				hyload = np.log(1*B) - np.mean(np.log(survival(dist)*B)) #hybrid load as defined by Chevin et al 2014
 				
 				#print an update
-				print('angle=%r, rep=%d, n_muts=%d, hybrid load=%.3f' %(round(angles[j]*180/math.pi,2), rep+1, n_mut_list[i], hyload)) 
+				print('angle=%r, rep=%d, n_muts=%d, hybrid load=%.3f, distance between optima=%.3f' %(round(angles[j]*180/math.pi,2), rep+1, n_muts, hyload, opt_dist * (2*(1-math.cos(angles[j])))**(0.5))) 
 				
 				#save data
-				write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_mut_list[i], hyload])
+				write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, hyload, opt_dist * (2*(1-math.cos(angles[j])))**(0.5)])
 
 				# hyloads[rep] = hyload #save hybrid load for this replicate
 
