@@ -133,11 +133,14 @@ alpha_adapt = alpha #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 
-thetas_list = np.array([[[0.2,0], [0.2,0]], [[0.5,0], [0.5,0]], [[0.8,0], [0.8,0]]])
+opt_dists = list(np.arange(0.1, 1, 0.1)) #distances to optima
+selection = 'divergent' #divergent selection (angle = 180 deg)
+# selection = 'parallel' #parallel selection (angle = 0)
 
-# theta2_list = [[1, 0], [0.5**0.5, 0.5**0.5], [0, 1], [-0.5**0.5, 0.5**0.5], [-1, 0]] #optimum phenotypes for population 2 (here we go from completely parallel to completely divergent while keeping the distance from optimum constant --we're on the unit circle)
+#thetas_list = np.array([[[0.2,0], [0.2,0]], [[0.5,0], [0.5,0]], [[0.8,0], [0.8,0]]])
+#theta2_list = [[1, 0], [0.5**0.5, 0.5**0.5], [0, 1], [-0.5**0.5, 0.5**0.5], [-1, 0]] #optimum phenotypes for population 2 (here we go from completely parallel to completely divergent while keeping the distance from optimum constant --we're on the unit circle)
 
-maxgen = 1000 #total number of generations populations adapt for
+maxgen = 10 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
@@ -159,11 +162,14 @@ def main():
 
 	#loop over optima
 	j = 0
-	while j < len(thetas_list):
+	while j < len(opt_dists):
 		
 		#set optima
-		theta1 = thetas_list[j][0]
-		theta2 = thetas_list[j][1]
+		theta1 = np.append(opt_dists[j],[0]*(n-1)) #set one optima
+		if selection == 'divergent':
+			theta2 = np.append(-opt_dists[j],[0]*(n-1))
+		elif selection == 'parallel':
+			theta2 = np.append(opt_dists[j],[0]*(n-1))
 			
 		# #set up plot of hybrid load versus number of ancestral mutations (n_muts)
 		# plt.axis([0, max(n_mut_list)+1, 0, 0.1])
@@ -269,10 +275,10 @@ def main():
 				hyload = np.log(1*B) - np.mean(np.log(survival(dist)*B)) #hybrid load as defined by Chevin et al 2014
 				
 				#print an update
-				print('opt1=%r, opt2=%r, rep=%d, n_muts=%d, hybrid load=%.3f' %([round(x,2) for x in theta1], [round(x,2) for x in theta2], rep+1, n_mut_list[i], hyload)) 
+				print('opt1=%r, opt2=%r, rep=%d, n_muts=%d, hybrid load=%.3f, distance=%.3f, selection=%r' %(theta1, theta2, rep+1, n_mut_list[i], hyload, opt_dists[j], selection)) 
 				
 				#save data
-				write_data_to_output(fileHandles, [theta1, theta2, rep+1, n_mut_list[i], hyload])
+				write_data_to_output(fileHandles, [theta1, theta2, rep+1, n_mut_list[i], hyload, opt_dists[j], selection])
 
 				# hyloads[rep] = hyload #save hybrid load for this replicate
 
