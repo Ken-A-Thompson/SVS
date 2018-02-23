@@ -120,7 +120,7 @@ data_dir = 'data'
 ######################################################################
 
 K = 1000 #number of individuals (positive integer >=1)
-n_mut_list = list(np.arange(1000, 1001, 1)) #start, end+1, interval number >=0)
+n_mut_list = list(np.arange(0, 30, 1)) #start, end+1, interval number >=0)
 p_mut = 0.1 #probability of having mutation at any one locus (0<=p<=1) #set this to zero for de novo only
 alpha = 0.1 #mutational sd (positive real number)
 
@@ -133,9 +133,7 @@ alpha_adapt = alpha #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 
-# thetas_list = np.array([[[0.75,0.75], [-0.75,-0.75]], [[0.3,0.3], [-0.3,-0.3]], [[0.1,0.1], [-0.1,-0.1]]]) #optimum phenotypes for population 1 and 2 (divergent)
-# thetas_list = np.array([[[0.75,0.75], [0.75,0.75]], [[0.3,0.3], [0.3,0.3]], [[0.1,0.1], [0.1,0.1]]]) #optimum phenotypes for population 1 and 2 (parallel)
-thetas_list = np.array([[[0.7,0], [-0.7,0]]])
+thetas_list = np.array([[[0.2,0], [0.2,0]], [[0.5,0], [0.5,0]], [[0.8,0], [0.8,0]]])
 
 # theta2_list = [[1, 0], [0.5**0.5, 0.5**0.5], [0, 1], [-0.5**0.5, 0.5**0.5], [-1, 0]] #optimum phenotypes for population 2 (here we go from completely parallel to completely divergent while keeping the distance from optimum constant --we're on the unit circle)
 

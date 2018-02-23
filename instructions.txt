@@ -9,3 +9,26 @@ Figure 2
 
 Navigate to directory containing scripts in terminal.
 bash... python sgvStreamline.py
+
+############
+## Fig.S1 ##
+############
+
+nreps = 10 #number of replicates for each set of parameters
+n = 2 #phenotypic dimensions (positive integer >=1)
+data_dir = 'data'
+
+K = 1000 #number of individuals (positive integer >=1)
+n_mut_list = list([0, 30]) #number of mutations in ancestor
+p_mut = 0.1 #probability of having mutation at any one locus (0<=p<=1) #set this to zero for de novo only
+alpha = 0.1 #mutational sd (positive real number)
+
+K_adapt = K #number of individuals (positive integer)
+alpha_adapt = alpha #mutational sd (positive real number)
+B = 2 #number of offspring per generation per parent (positive integer)
+u = 0.001 #mutation probability per generation per genome (0<u<1)
+
+theta_list = np.array([[1,0]]) #optimum phenotypes for population
+
+maxgen = 1000 #total number of generations population adapts for
+gen_rec = 100 #print and save after this many generations

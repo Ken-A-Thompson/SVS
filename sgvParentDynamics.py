@@ -111,7 +111,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 1 #number of replicates for each set of parameters
+nreps = 5 #number of replicates for each set of parameters
 n = 2 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
@@ -135,8 +135,8 @@ u = 0.001 #mutation probability per generation per genome (0<u<1)
 
 theta_list = np.array([[1,0]]) #optimum phenotypes for population
 
-maxgen = 1000 #total number of generations population adapts for
-gen_rec = 100 #print and save after this many generations
+maxgen = 2000 #total number of generations population adapts for
+gen_rec = 50 #print and save after this many generations
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
