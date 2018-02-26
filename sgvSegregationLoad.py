@@ -121,7 +121,7 @@ data_dir = 'data'
 ######################################################################
 
 K = 1000 #number of individuals (positive integer >=1)
-n_mut_list = list([30]) #number of mutations in ancestor
+n_mut_list = list([0,20]) #number of mutations in ancestor
 p_mut = 0.1 #probability of having mutation at any one locus (0<=p<=1) #set this to zero for de novo only
 alpha = 0.1 #mutational sd (positive real number)
 
@@ -134,7 +134,7 @@ alpha_adapt = alpha #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 
-theta_list = np.array([[1,0]]) #optimum phenotypes for population
+opt_dists = list(np.arange(0.2, 1.1, 0.4)) #distances to optima
 
 maxgen = 2000 #total number of generations population adapts for
 gen_rec = 100 #print and save after this many generations
@@ -142,7 +142,7 @@ gen_rec = 100 #print and save after this many generations
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
 
-nHybrids = 100
+nHybrids = 100 #number of offspring to make to calculate load from
 
 ######################################################################
 ##FUNCTION FOR POPULATION TO ADAPT##
@@ -155,11 +155,11 @@ def main():
 
 	#loop over optima
 	j = 0
-	while j < len(theta_list):
+	while j < len(opt_dists):
 		
-		#set optimum
-		theta = theta_list[j]
-			
+		#set optima
+		theta = np.append(opt_dists[j],[0]*(n-1)) #set optimum
+		
 		#loop over all n_muts values
 		i = 0
 		while i < len(n_mut_list):
@@ -248,10 +248,10 @@ def main():
 						hyload = np.log(1*B) - np.mean(np.log(survival(dist)*B)) #hybrid load as defined by Chevin et al 2014
 		
 						#print update
-						print('opt=%r, n_muts=%d, rep=%d, gen=%d, segregation load=%.3f' %([round(x,2) for x in theta], n_muts,  rep+1, gen, hyload)) 
+						print('opt_dist=%.3f, n_muts=%d, rep=%d, gen=%d, segregation load=%.3f' %(opt_dists[j], n_muts,  rep+1, gen, hyload)) 
 						
 						#save data
-						write_data_to_output(fileHandles, [theta, n_muts, rep+1,  gen, hyload])
+						write_data_to_output(fileHandles, [opt_dists[j], n_muts, rep+1,  gen, hyload])
 						
 					# go to next generation
 					gen += 1
