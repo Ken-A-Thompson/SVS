@@ -111,7 +111,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 1 #number of replicates for each set of parameters
+nreps = 10 #number of replicates for each set of parameters
 n = 2 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
@@ -120,7 +120,7 @@ data_dir = 'data'
 ######################################################################
 
 K = 1000 #number of individuals (positive integer >=1)
-n_mut_list = list(np.arange(0, 2, 1)) #start, end+1, interval number >=0)
+n_mut_list = list(np.arange(0, 101, 5)) #start, end+1, interval number >=0)
 p_mut = 0.1 #probability of having mutation at any one locus (0<=p<=1) #set this to zero for de novo only
 alpha = 0.1 #mutational sd (positive real number)
 
@@ -133,15 +133,15 @@ alpha_adapt = alpha #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 
-opt_dists = list(np.arange(0, 1, 0.5)) #distances to optima
+opt_dists = list(np.arange(0.2, 1.1, 0.4)) #distances to optima
 # selection = 'divergent' #divergent selection (angle = 180 deg)
 # selection = 'parallel' #parallel selection (angle = 0)
-selection = 'both' #both divergent and parallele selection
+selection = 'both' #both divergent and parallel selection
 
 #thetas_list = np.array([[[0.2,0], [0.2,0]], [[0.5,0], [0.5,0]], [[0.8,0], [0.8,0]]])
 #theta2_list = [[1, 0], [0.5**0.5, 0.5**0.5], [0, 1], [-0.5**0.5, 0.5**0.5], [-1, 0]] #optimum phenotypes for population 2 (here we go from completely parallel to completely divergent while keeping the distance from optimum constant --we're on the unit circle)
 
-maxgen = 10 #total number of generations populations adapt for
+maxgen = 2000 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 

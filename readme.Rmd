@@ -1,6 +1,5 @@
 # Standing Genetic Variation & Speciation (SVS)
-## Ken A. Thompson, Matthew M. Osmond, Ailene MacPherson
-
+## Ken A. Thompson, Matthew M. Osmond, Dolph Schluter
 ### Background
 
 Models of ecological speciation (when natural selection generates reproductive isolation between independently evolving populations) typically assume that populations adapt only from new mutation, and that these mutations drawn from an effectively infinite random distribution. However, empirical studies of adaptation demonstrate that much adaptation (especially rapid adaptation) is from standing genetic variation, and also that the number of possible mutations is a 'list' (i.e., finite and discrete) rather than a continuous distribution. In this project our goal is to understand how more realistic modelling of the process of adaptation affect the evolution of reproductive isolation.
@@ -15,13 +14,5 @@ A similar case arises when the number of possible mutations is limited. In reali
 
 
 
-## Running simulations
-1. open sgvBurn.py and choose parameters for burn-in (allowing a build-up of standing genetic variance in ancestor population)
-2. run sgvBurn.py by typing "python sgvBurn.py" in terminal while in SVS directory
-3. open sgvAdapt.py and choose parameters that align with ancestor population of choice (must be first used to run sgvBurn.py)
-4. in sgvAdapt.py choose new optimum and time to adapt to it
-5. run sgvAdapt.py
-6. repeat 4 and 5 with different optima if you wish
-7. open sgvHybrid.py and choose parameters that align with adapted populations of choice (must be first used to run sgvAdapt.py)
-8. run sgvHybrid.py
-9. see newly created plots in data folder
+## Plotting data from this study
+(coming soon)
