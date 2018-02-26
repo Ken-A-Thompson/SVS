@@ -1,18 +1,24 @@
 # Standing Genetic Variation & Speciation (SVS)
 ## Ken A. Thompson, Matthew M. Osmond, Dolph Schluter
+
 ### Background
 
-Models of ecological speciation (when natural selection generates reproductive isolation between independently evolving populations) typically assume that populations adapt only from new mutation, and that these mutations drawn from an effectively infinite random distribution. However, empirical studies of adaptation demonstrate that much adaptation (especially rapid adaptation) is from standing genetic variation, and also that the number of possible mutations is a 'list' (i.e., finite and discrete) rather than a continuous distribution. In this project our goal is to understand how more realistic modelling of the process of adaptation affect the evolution of reproductive isolation.
+Models of ecological speciation (when natural selection generates reproductive isolation between independently evolving populations) typically assume that populations adapt only from new mutation, and that these mutations drawn from an effectively infinite random distribution. However, empirical studies of adaptation demonstrate that much adaptation (especially rapid adaptation) is from standing genetic variation, and also that the number of possible mutations is a 'list' (i.e., finite and discrete) rather than a continuous distribution. The goal of this project was to understand how incorporating standing variation into models of 'speciation-by-selection' affects our predictions about the evolution of reproductive isolation.
 
-One striking result from models is that reproductive isolation evolves at the same rate when allopatric populations adapt to divergent optima as it does when they undergo parallel evolution to the same optimum. However, data from nature suggest that this is not the case. This model result occurs because each independelty evolving population has a unique evolutionary 'solution' when adapting from new mutation. In fixing alternative adaptive alleles, when populations come together they generate 'segregation variance' in hybrids, which reduces mean fitness. 
+### Reproducing this study
 
-When populations adapt from ancestral standing genetic variation, then under some circumstances the exact same allele can be fixed in indepdently evolving populations. If adapting populations fix the same---as opposed to alternative---adaptive alleles, then there will be no segregation variance at that locus. Under parallel evolution, it is likely that many of the same ancestral alleles will be fixed, whereas under divergent evolution, this is unlikely. Thus, our expectation is that, by incorporating standing genetic variation into our models, that this will reduce postzygotic isolation between popoulations that have evolved in parallel.  
+To plot the data we used in the paper, simply open the included R project, and use the script in the 'scripts' folder.
 
-<!-- ![**Fig. 1** Adaptation to (a) divergent and (b) parallel phenotypic optima from a common ancestor when adaptation is from both standing genetic variation (red arrows) and *de novo* mutation (blue arrows).](/Users/Ken/Documents/Projects/SVS/Figs/Conceptual/2017-03-13-SVS_SGV_and_DNM_Fig copy.png) -->
+To re-run simulations, first install python on your machine. Then simply use python to execute the figure-specific scripts. On a Mac, open the terminal and navigate to the directory containing the scripts ('SVS' folder).
 
-A similar case arises when the number of possible mutations is limited. In reality, adaptation via *de novo* mutation does not happen at random. Rather, it is predictable because there are a finite number of possible adaptive mutations.  (More soon).
+```
+cd Documents/Projects/SVS
+```
 
+Still in terminal, execute a particular script (here the script generating data for Fig. 2).
 
+```
+python sgv.Fig2.py
+```
 
-## Plotting data from this study
-(coming soon)
+This data is now ready to visualize. 
