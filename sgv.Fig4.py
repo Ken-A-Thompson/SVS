@@ -53,7 +53,7 @@ data_dir = 'data'
 ######################################################################
 
 K = 1000 #number of individuals (positive integer >=1)
-n_mut_list = [5 * x for x in range(30)] #number of mutations (positive integer >=1)
+n_mut_list = [5 * x for x in range(13)] #number of mutations (positive integer >=1)
 p_mut = 0.1 #probability of having mutation at any one locus (0<=p<=1) #set this to zero for de novo only
 alpha = 0.1 #mutational sd (positive real number)
 
@@ -63,10 +63,10 @@ B = 2 #to determine growth rates (Malthusian fitness)
 ##PARAMETERS FOR PARENTAL POPULATIONS##
 ######################################################################
 
-opt_dist = 0.7 #distance to optima (eg, 1 puts you on the unit circle)
+opt_dist = 0.6 #distance to optima (eg, 1 puts you on the unit circle)
 theta1 = np.array([opt_dist, 0]) #set one optima to be fixed
 
-n_angles = 181 #number of angles between optima to simulate (including 0 and 180)
+n_angles = 10 #number of angles between optima to simulate (including 0 and 180)
 angles = [math.pi * x / (n_angles - 1) for x in range(n_angles)] #angles to use (in radians)
 theta2_list = np.array([[opt_dist*math.cos(x), opt_dist*math.sin(x)] for x in angles]) #optima to use
 
