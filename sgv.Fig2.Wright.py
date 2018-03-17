@@ -5,6 +5,8 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 import csv
+import scipy.special
+from scipy.optimize import fsolve
 
 ######################################################################
 ##FUNCTIONS##
@@ -107,13 +109,27 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 			pop = pop[:, keep]
 	return [pop, mut]
 
-def Wrv(slist):
+def cdf(gamma, K, y):
+	"""
+	this crazy thing is the cumulative distribution of Wright's "transient distribution" (see eqn 1 in Bustamente et al 2001 Genetics), obtained by integrating the transient distribution from 1/n to y (and dividing by the integral from 1/n to 1-1/n, to normalize)
+	gamma is the scaled selective effects (s*Ne)
+	K is the population size (N)
+	y is the frequency of the mutant
+	"""
+	return (scipy.special.expi(2 * gamma / K) - scipy.special.expi(2 * y * gamma) + np.exp(2*gamma) * ( scipy.special.expi(-2 * (1-y) * gamma) - scipy.special.expi(-2 * (1-1/K) * gamma) + np.log( -((1-K) * y) / (1-y) ) ) ) / ( scipy.special.expi(2 * gamma / K) - scipy.special.expi(- 2 * (1-K) * gamma / K) + np.exp(2 * gamma) * ( -scipy.special.expi(-2 * (1-1/K) * gamma) + scipy.special.expi(-2 * gamma / K) + 2 * np.log(-(1-K)) ) ) 
+
+def Wrv(slist, K, B):
 	"""
 	Frequency of deleterious alleles randomly chosen from Wright's distribution without mutation given list of selection coefficients (uses inverse transform sampling)
 	"""
 	x = np.random.uniform(size = len(slist)) #random uniform numbers in [0,1]
 	Ne = 2 * B / ( 2 * B - 1 ) * K #effective population size (eqn 13 in Burger & Lynch 1995 Evol)
-	return [math.log( 1 - x[i] + np.exp(4 * Ne * slist[i]) * x[i] ) / (4 * Ne * slist[i] ) for i in range(len(x))]
+	gamma = Ne * slist #population scaled selective effects
+	ys = np.array([])
+	for i in range(len(x)): 
+		func = lambda y : cdf(gamma, K, y) - x[i] #function to find root (where cdf=x)
+		ys = np.append(ys, fsolve(func, 0.001)) #numerically find solution y with initial guess
+	return  ys 
 
 ######################################################################
 ##UNIVERSAL PARAMETERS##
@@ -129,6 +145,7 @@ data_dir = 'data'
 
 K = 1000 #number of individuals (positive integer >=1)
 n_mut_list = list(np.arange(0, 101, 5)) #start, end+1, interval number >=0)
+# n_mut_list = [0,10]
 alpha = 0.1 #mutational sd (positive real number)
 
 ######################################################################
@@ -141,6 +158,8 @@ B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 
 opt_dists = list(np.arange(0.2, 1.1, 0.4)) #distances to optima
+# opt_dists = [0.2]
+
 # selection = 'divergent' #divergent selection (angle = 180 deg)
 # selection = 'parallel' #parallel selection (angle = 0)
 selection = 'both' #both divergent and parallel selection
@@ -215,7 +234,7 @@ def main():
 					if n_muts > 0:
 						mut = np.random.normal(0, alpha, (n_muts, n)) #create n_muts mutations, each with a random normal phenotypic effect in each n dimension with mean 0 and sd alpha
 						slist = survival(np.linalg.norm(mut, axis=1)) - 1 #selection coefficients for each mutant (in isolation in a background at the optimum)
-						p_mut = Wrv(slist) #frequency of each mutation (randomly chosen from Wright's distribution, without mutation)
+						p_mut = Wrv(slist,K,B) #frequency of each mutation (randomly chosen from Wright's distribution, without mutation)
 						pop = np.random.binomial(1, p_mut, (K, n_muts)) #randomly assign each of n_muts mutations to each of K individuals, weighted by random freqeucny from Wright's distribution
 					else: #de novo only, even if p_mut>0
 						pop = np.array([[1]] * K)

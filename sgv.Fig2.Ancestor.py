@@ -4,6 +4,8 @@
 import numpy as np
 import time
 import csv
+import ast
+import random
 
 ######################################################################
 ##FUNCTIONS##
@@ -14,7 +16,7 @@ def open_output_files(n, K, alpha, B, u, data_dir):
 	This function opens the output files and returns file
 	handles to each.
 	"""
-	sim_id = 'n%d_K%d_pmut%.1f_alpha%.1f_B%d_u%.3f' %(n, K, p_mut, alpha, B, u)
+	sim_id = 'n%d_K%d_alpha%.1f_B%d_u%.3f' %(n, K, alpha, B, u)
 	outfile_A = open("%s/hybrid_loads_%s.csv" %(data_dir, sim_id), "w")
 	return outfile_A
 
@@ -32,6 +34,22 @@ def close_output_files(fileHandles):
 	This function closes all output files.
 	"""
 	fileHandles.close()
+
+def found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n):
+	"""
+	This function creates a founding population from an ancestral one
+	"""
+
+	#make ancestor
+	if n_muts > 0:
+		mut_choice = np.random.choice(nmuts_max, size=n_muts, replace=False) #indices of mutations to take from ancestor
+		mutfound = ancestor_muts[mut_choice] #mutational effects
+		p_mut = ancestor_freqs[mut_choice] #expected frequency of these mutations
+		popfound = np.random.binomial(1, p_mut, (K, n_muts)) #p_mut chance of having each of n_muts mutations, for all K individuals
+	else: #de novo only, even if p_mut>0
+		popfound = np.array([[1]] * K)
+		mutfound = np.array([[0] * n])
+	return [popfound, mutfound]
 
 def survival(dist):
 	"""
@@ -96,7 +114,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 10 #number of replicates for each set of parameters
+nreps = 1 #number of replicates for each set of parameters
 n = 2 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
@@ -111,19 +129,34 @@ u = 0.001 #mutation probability per generation per genome (0<u<1)
 
 ancestor_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f' %(n, K, alpha, B, u)
 
+with open('%s/Ancestor_%s.csv' %(data_dir,ancestor_id)) as csvfile:
+    readCSV = csv.reader(csvfile, delimiter=',')
+    ancestor_muts = []
+    ancestor_freqs = []
+    for row in readCSV:
+        mut = ast.literal_eval(row[0].replace("[ ","[").replace("  "," ").replace(" ",",").replace(",,",","))
+        freq = float(row[1])
+        ancestor_muts.append(mut)
+        ancestor_freqs.append(freq)
+
+ancestor_muts = np.array(ancestor_muts)
+ancestor_freqs = np.array(ancestor_freqs)
+nmuts_max = len(ancestor_freqs) #number of mutations in ancestor
+
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-n_mut_list = list(np.arange(0, 11, 10))
+n_mut_list = list(np.arange(0, nmuts_max, 10))
 
 K_adapt = 1000 #number of individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 B_adapt = B #number of offspring per generation per parent (positive integer)
-u_adpat = u #mutation probability per generation per genome (0<u<1)
+u_adapt = 0.0001 #mutation probability per generation per genome (0<u<1)
 
 opt_dists = list(np.arange(0.2, 1.1, 0.4)) #distances to optima
+
 # selection = 'divergent' #divergent selection (angle = 180 deg)
 # selection = 'parallel' #parallel selection (angle = 0)
 selection = 'both' #both divergent and parallel selection
@@ -131,7 +164,7 @@ selection = 'both' #both divergent and parallel selection
 #thetas_list = np.array([[[0.2,0], [0.2,0]], [[0.5,0], [0.5,0]], [[0.8,0], [0.8,0]]])
 #theta2_list = [[1, 0], [0.5**0.5, 0.5**0.5], [0, 1], [-0.5**0.5, 0.5**0.5], [-1, 0]] #optimum phenotypes for population 2 (here we go from completely parallel to completely divergent while keeping the distance from optimum constant --we're on the unit circle)
 
-maxgen = 1000 #total number of generations populations adapt for
+maxgen = 2000 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
@@ -194,17 +227,9 @@ def main():
 				rep = 0
 				while rep < nreps:
 
-					#make ancestor
-					if n_muts > 0:
-						pop = np.random.binomial(1, p_mut, (K, n_muts)) #p_mut chance of having each of n_muts mutations, for all K individuals
-						mut = np.random.normal(0, alpha, (n_muts, n)) #create n_muts mutations, each with a random normal phenotypic effect in each n dimension with mean 0 and sd alpha
-					else: #de novo only, even if p_mut>0
-						pop = np.array([[1]] * K)
-						mut = np.array([[0] * n])
-
 					#found adapting populations
-					[popfound1, mutfound1] = found(K, K_adapt, pop, mut, remove_lost, remove)
-					[popfound2, mutfound2] = found(K, K_adapt, pop, mut, remove_lost, remove)
+					[popfound1, mutfound1] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
+					[popfound2, mutfound2] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
 
 					#initialize adapting populations
 					[pop1, mut1] = [popfound1, mutfound1]
