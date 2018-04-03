@@ -230,15 +230,15 @@ def main():
 						# go to next generation
 						gen += 1
 
-					#parent load (use parent 1, but could be either)	
+					#parent fitness and load (use parent 1, but could be either)	
 					parents = np.random.randint(len(pop1), size = nHybrids)
 					parent_phenos = np.dot(pop1[parents],mut1)	
 					dist = np.linalg.norm(parent_phenos - np.mean(parent_phenos, axis=0), axis=1) #phenotypic distance from mean
-					w = survival(dist) #viability
-					fitness = np.log(w*B) #continuous time growth rate
-					pload = np.log(1*B) - np.mean(fitness) #segregation load of parents
+					fitness = survival(dist) #viability
 					pfit = np.mean(fitness) #mean fitness
-
+					growth = np.log(fitness*B) #continuous time growth rates
+					pload = np.log(1*B) - np.mean(growth) #segregation load
+					
 					#make variables to hold hybrid phenotypes
 					offphenos = dict()
 					offpheno = []
@@ -279,8 +279,7 @@ def main():
 					dist1 = np.linalg.norm(offpheno - theta1, axis=1) #phenotypic distance from parental 1 optimum
 					dist2 = np.linalg.norm(offpheno - theta2, axis=1) #phenotypic distance from parental 2 optimum
 					dist = np.minimum(dist1, dist2) #distance to closest optimum
-					w = survival(dist) #viability
-					fitness = np.log(w*B) #continuous time growth rate
+					fitness = survival(dist) #viability
 					hyfit = np.mean(fitness) #mean fitness
 					rhyfit = hyfit/pfit #relative fitness
 
