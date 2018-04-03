@@ -112,7 +112,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 2 #number of replicates for each set of parameters
+nreps = 10 #number of replicates for each set of parameters
 n = 2 #phenotypic dimensions (positive integer >=1); actually need it greater or equal to 2 for angle code below to work (otherwise just 0 or 180 valid) 
 data_dir = 'data'
 
@@ -121,8 +121,8 @@ data_dir = 'data'
 ######################################################################
 
 K = 1000 #number of individuals (positive integer >=1)
-n_mut_list = list(np.arange(0, 6, 5)) #start, end+1, interval number >=0)
-p_mut = 0.1 #probability of having mutation at any one locus (0<=p<=1) #set this to zero for de novo only
+n_mut_list = list(np.arange(0, 31, 30)) #start, end+1, interval number >=0)
+p_mut = 0.1 #probability of having mutation at any one locus (0<=p<=1)
 alpha = 0.1 #mutational sd (positive real number)
 
 ######################################################################
@@ -134,10 +134,11 @@ alpha_adapt = alpha #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 
+# opt_angles = [0] #angles of 0, 60 and 180 degrees, which give distances between optima of 0, d, and 2d
 opt_angles = [0, np.pi/3, np.pi] #angles of 0, 60 and 180 degrees, which give distances between optima of 0, d, and 2d
-opt_dists = list(np.arange(0.1, 2, 1)) #distances from origin to optima (d)
+opt_dists = list(np.arange(0, 0.801, 0.05)) #distances from origin to optima (d)
 
-maxgen = 100 #total number of generations populations adapt for
+maxgen = 2000 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 

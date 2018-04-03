@@ -135,7 +135,7 @@ def Wrv(slist, K, B):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 10 #number of replicates for each set of parameters
+nreps = 5 #number of replicates for each set of parameters
 n = 2 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
@@ -144,7 +144,7 @@ data_dir = 'data'
 ######################################################################
 
 K = 1000 #number of individuals (positive integer >=1)
-n_mut_list = list(np.arange(0, 101, 5)) #start, end+1, interval number >=0)
+n_mut_list = list(np.arange(0, 201, 20)) #start, end+1, interval number >=0)
 # n_mut_list = [0,10]
 alpha = 0.1 #mutational sd (positive real number)
 
@@ -157,15 +157,12 @@ alpha_adapt = alpha #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 
-opt_dists = list(np.arange(0.2, 1.1, 0.4)) #distances to optima
+opt_dists = list(np.arange(0.6, 0.601, 0.4)) #distances to optima
 # opt_dists = [0.2]
 
 # selection = 'divergent' #divergent selection (angle = 180 deg)
 # selection = 'parallel' #parallel selection (angle = 0)
 selection = 'both' #both divergent and parallel selection
-
-#thetas_list = np.array([[[0.2,0], [0.2,0]], [[0.5,0], [0.5,0]], [[0.8,0], [0.8,0]]])
-#theta2_list = [[1, 0], [0.5**0.5, 0.5**0.5], [0, 1], [-0.5**0.5, 0.5**0.5], [-1, 0]] #optimum phenotypes for population 2 (here we go from completely parallel to completely divergent while keeping the distance from optimum constant --we're on the unit circle)
 
 maxgen = 2000 #total number of generations populations adapt for
 

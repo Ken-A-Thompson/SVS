@@ -128,9 +128,9 @@ data_dir = 'data'
 ##PARAMETERS TO MAKE ANCESTOR##
 ######################################################################
 
-K = 10 #number of individuals (positive integer >=1)
-n_mut_list = list([10]) #number of mutations in ancestor
-alpha = 0.1 #mutational sd (positive real number)
+K = 50 #number of individuals (positive integer >=1)
+n_mut_list = list([0]) #number of mutations in ancestor
+alpha = 0.001 #mutational sd (positive real number)
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATION##
@@ -139,11 +139,11 @@ alpha = 0.1 #mutational sd (positive real number)
 K_adapt = K #number of individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
-u = 0.001 #mutation probability per generation per genome (0<u<1)
+u = 1 #mutation probability per generation per genome (0<u<1)
 
-theta_list = np.array([[1,0]]) #optimum phenotypes for population
+theta_list = np.array([[0.3,0]]) #optimum phenotypes for population
 
-maxgen = 100 #total number of generations population adapts for
+maxgen = 1000 #total number of generations population adapts for
 gen_rec = 10 #print and save after this many generations
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)

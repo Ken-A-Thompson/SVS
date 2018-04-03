@@ -114,7 +114,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 1 #number of replicates for each set of parameters
+nreps = 5 #number of replicates for each set of parameters
 n = 2 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
@@ -148,18 +148,18 @@ nmuts_max = len(ancestor_freqs) #number of mutations in ancestor
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-n_mut_list = list(np.arange(0, nmuts_max, 10))
+n_mut_list = list(np.arange(0, 101, 10))
 
 K_adapt = 1000 #number of individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 B_adapt = B #number of offspring per generation per parent (positive integer)
-u_adapt = 0.0001 #mutation probability per generation per genome (0<u<1)
+u_adapt = 0.001 #mutation probability per generation per genome (0<u<1)
 
 opt_dists = list(np.arange(0.2, 1.1, 0.4)) #distances to optima
 
 # selection = 'divergent' #divergent selection (angle = 180 deg)
-# selection = 'parallel' #parallel selection (angle = 0)
-selection = 'both' #both divergent and parallel selection
+selection = 'parallel' #parallel selection (angle = 0)
+# selection = 'both' #both divergent and parallel selection
 
 #thetas_list = np.array([[[0.2,0], [0.2,0]], [[0.5,0], [0.5,0]], [[0.8,0], [0.8,0]]])
 #theta2_list = [[1, 0], [0.5**0.5, 0.5**0.5], [0, 1], [-0.5**0.5, 0.5**0.5], [-1, 0]] #optimum phenotypes for population 2 (here we go from completely parallel to completely divergent while keeping the distance from optimum constant --we're on the unit circle)
