@@ -130,7 +130,7 @@ data_dir = 'data'
 
 K = 50 #number of individuals (positive integer >=1)
 n_mut_list = list([0]) #number of mutations in ancestor
-alpha = 0.001 #mutational sd (positive real number)
+alpha = 0.01 #mutational sd (positive real number)
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATION##
@@ -141,10 +141,10 @@ alpha_adapt = alpha #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 1 #mutation probability per generation per genome (0<u<1)
 
-theta_list = np.array([[0.3,0]]) #optimum phenotypes for population
+theta_list = np.array([[0.5,0.5]]) #optimum phenotypes for population
 
 maxgen = 1000 #total number of generations population adapts for
-gen_rec = 10 #print and save after this many generations
+gen_rec = 25 #print and save after this many generations
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 

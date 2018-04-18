@@ -53,7 +53,9 @@ def survival(dist):
 	"""
 	This function gives the probability of survival
 	"""
-	return np.exp(-0.5 * dist**2) #probability of survival
+	return np.exp(-0.65 * dist**2) #probability of survival (KT stronger selection trial)
+	# return np.exp(-0.5 * dist**2) #probability of survival
+
 
 def viability(phenos, theta, pop, K_adapt):
 	"""
@@ -69,7 +71,7 @@ def viability(phenos, theta, pop, K_adapt):
 
 def recomb(surv, B):
 	"""
-	This function creates offspring through pairing of parents (haploid) and recombination (i.e, meiosis)
+	This function creates offspring through pairing of parents (haploid) and recombination (i.e., meiosis)
 	"""
 	pairs = np.resize(np.random.choice(len(surv), size=len(surv), replace=False), (int(len(surv)/2), 2)) #random mate pairs (each mates at most once and not with self)
 	rand2 = np.random.randint(2, size=(len(pairs), len(surv[0]))) #from which parent each offspring inherits each allele (free recombination, fair transmission)
@@ -112,8 +114,8 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 10 #number of replicates for each set of parameters
-n = 2 #phenotypic dimensions (positive integer >=1); actually need it greater or equal to 2 for angle code below to work (otherwise just 0 or 180 valid) 
+nreps = 1 #number of replicates for each set of parameters
+n = 2 #phenotypic dimensions (positive integer >=1); must be greater or equal to 2 for angle code below to work (otherwise just 0 or 180 valid) 
 data_dir = 'data'
 
 ######################################################################
@@ -121,7 +123,7 @@ data_dir = 'data'
 ######################################################################
 
 K = 1000 #number of individuals (positive integer >=1)
-n_mut_list = list(np.arange(0, 31, 30)) #start, end+1, interval number >=0)
+n_mut_list = list(np.arange(0, 51, 50)) #start, end+1, interval number >=0)
 p_mut = 0.1 #probability of having mutation at any one locus (0<=p<=1)
 alpha = 0.1 #mutational sd (positive real number)
 
@@ -134,9 +136,9 @@ alpha_adapt = alpha #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 
-# opt_angles = [0] #angles of 0, 60 and 180 degrees, which give distances between optima of 0, d, and 2d
-opt_angles = [0, np.pi/3, np.pi] #angles of 0, 60 and 180 degrees, which give distances between optima of 0, d, and 2d
-opt_dists = list(np.arange(0, 0.801, 0.05)) #distances from origin to optima (d)
+opt_angles = list(np.arange(0, np.pi, np.pi/60)) # list of angles to test
+# opt_angles = [0, np.pi/2] #angles of 0, 60 and 180 degrees, which give distances between optima (delta) of 0, d, and 2d
+opt_dists = list(np.arange(1, 1.01, 1)) #distances from origin to optima (d)
 
 maxgen = 2000 #total number of generations populations adapt for
 
