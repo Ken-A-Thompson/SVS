@@ -5,13 +5,12 @@ import numpy as np
 import time
 import csv
 import math
-import matplotlib.pyplot as plt
 
 ######################################################################
 ##FUNCTIONS##
 ######################################################################
 
-def open_output_file_for_plot(n, K, alpha, B, u, sigma, data_dir):
+def open_output_file(n, K, alpha, B, u, sigma, data_dir):
 	"""
 	This function opens the output files and returns file
 	handles to each.
@@ -20,29 +19,11 @@ def open_output_file_for_plot(n, K, alpha, B, u, sigma, data_dir):
 	outfile_A = open("%s/PlotBurn_%s.csv" %(data_dir, sim_id), "w")
 	return outfile_A
 
-def open_output_files(n, K, alpha, B, u, sigma, rep, data_dir):
-	"""
-	This function opens the output files and returns file
-	handles to each.
-	"""
-	sim_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.1f_rep%d' %(n, K, alpha, B, u, sigma, rep)
-	outfile_A = open("%s/Muts_%s.txt" %(data_dir, sim_id), "w")
-	outfile_B = open("%s/Freqs_%s.txt" %(data_dir, sim_id), "w")
-	return [outfile_A, outfile_B]
-
 def write_data_to_output(fileHandles, data):
 	"""
 	This function writes to the corresponding output file.
 	"""
-	i = 0
-	while i < len(fileHandles):
-		np.savetxt(fileHandles[i], data[i])
-
-def write_data_to_output_for_plot(fileHandles, data):
-	"""
-	This function writes to the corresponding output file.
-	"""
-	writerowter = csv.writer(fileHandles)
+	writer = csv.writer(fileHandles)
 	writer.writerow(data)
 
 def close_output_files(fileHandles):
@@ -50,6 +31,18 @@ def close_output_files(fileHandles):
 	This function closes all output files.
 	"""
 	fileHandles.close()
+
+def save_arrays(n, K, alpha, B, u, sigma, rep, data_dir, mut, pop):
+	"""
+	Save numpy arrays of mutations and their frequencies.
+	"""
+	sim_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.1f_rep%d' %(n, K, alpha, B, u, sigma, rep)
+	
+	filename = "%s/Muts_%s.npy" %(data_dir, sim_id)
+	np.save(filename, mut[1:]) #save mutations
+	
+	filename = "%s/Freqs_%s.npy" %(data_dir, sim_id)
+	np.save(filename, np.sum(pop[:,1:],axis=0)/len(pop)) #save frequencies
 
 def survival(sigma, dist):
 	"""
@@ -115,20 +108,20 @@ n = 2 #phenotypic dimensions (positive integer >=1)
 K = 1000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
-u = 0.001 #mutation probability per generation per genome (0<u<1)
-sigma = 0.05 #strength of selection
+u = 0.001 #mutation probability per generation per genome (0<=u<=1)
+sigma = 0.05 #strength of selection (positive real number)
 
-theta = np.array([0]*n) #optimum phenotype
+theta = np.array([0]*n) #optimum phenotype (n real numbers)
 
-maxgen = 1000 #total number of generations population adapts for
-gen_rec = 100 #print every this many generations (to see approach to mutation-selection balance)
+maxgen = 1000 #total number of generations population adapts for (positive integer)
+gen_rec = 100 #print every this many generations (positve integer <=maxgen)
 
 remove_lost = True #If true, remove mutations that are lost
 remove_fixed = True #If true, remove mutations that are fixed
 
-reps = 1
+reps = 10 #number of replicates (positive integer)
 
-data_dir = 'data/burnins'
+data_dir = 'data/burnins' #where to save data
 
 ######################################################################
 ##MAIN SIMULATION##
@@ -136,16 +129,13 @@ data_dir = 'data/burnins'
 
 def main():
 
-	fileHandles_for_plot = open_output_file_for_plot(n, K, alpha, B, u, sigma, data_dir)
+	fileHandles = open_output_file(n, K, alpha, B, u, sigma, data_dir)
 
 	rep = 1
 	while rep < reps + 1:
 
-		# open output files
-		fileHandles = open_output_files(n, K, alpha, B, u, sigma, rep, data_dir) 
-
 		pop = np.array([[1]] * K) #start all individuals with one "mutation"
-		mut = np.array([[0] * n]) #but let the "mutation" do nothing (ie stay at origin)
+		mut = np.array([[0] * n]) #but let the "mutation" do nothing (ie put all phenotypes at origin)
 
 		#intitialize generation counter
 		gen = 0
@@ -154,15 +144,15 @@ def main():
 		while gen < maxgen + 1:
 
 			# genotype to phenotype
-			phenos = np.dot(pop, mut) #sum mutations held by each individual
+			phenos = np.dot(pop, mut) #sum mutations held by each individual (ie additivity in phenotype)
 
 			# viability selection
 			surv = viability(phenos, theta, pop, K, sigma)
 
-			#end simulation if population extinct (or unable to produce offspring)        
-			# if len(surv) < 2: 
-			# 	print("Extinct")              
-			# 	break 
+			# end simulation if population extinct (or unable to produce offspring)        
+			if len(surv) < 2: 
+				print("Extinct")              
+				break 
 
 			# meiosis
 			off = recomb(surv, B)
@@ -178,27 +168,19 @@ def main():
 				#print update
 				print('rep=%d   gen=%d   seg=%d' %(rep, gen, len(mut)))
 
-				#save for plotting
-				write_data_to_output_for_plot(fileHandles_for_plot, [rep, gen, len(mut)])
+				#save for plotting approach to MS balance (number of mutations and avg frequency)
+				write_data_to_output(fileHandles, [rep, gen, len(mut), np.mean(np.sum(pop[:,1:],axis=0)/len(pop))])
 
-				# #plot approach to ms balance
-				# plt.plot(gen, len(mut))
-				# plt.pause(0.1) 
-				
 			# go to next generation
 			gen += 1
 
-		#save data
-		for x in range(len(mut)-1):
-			write_data_to_output(fileHandles, [mut[x+1]] + [np.sum(pop,axis=0)[x+1]/len(pop)]) #mutation (phenotypic vector) and its frequency
-
-		# cleanup
-		close_output_files(fileHandles)
+		#save mutation and frequency data
+		save_arrays(n, K, alpha, B, u, sigma, rep, data_dir, mut, pop)
 
 		# go to next rep
 		rep += 1
 
-	close_output_files(fileHandles_for_plot)
+	close_output_files(fileHandles)
 
 ######################################################################
 ##RUNNING ADAPTATION FUNCTION##

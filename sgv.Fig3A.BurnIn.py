@@ -3,10 +3,9 @@
 
 import numpy as np
 import time
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import csv
 import math
-import ast
 
 ######################################################################
 ##FUNCTIONS##
@@ -125,7 +124,7 @@ data_dir = 'data'
 ######################################################################
 
 n_reps = 10 #number of reps of ancestor that exist
-K = 10000 #number of individuals (positive integer >=1)
+K = 1000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
@@ -199,20 +198,14 @@ def main():
 			rep = 0
 			while rep < nreps:
 
+				#load ancestor
 				burn_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.1f_rep%d' %(n, K, alpha, B, u, sigma, rrep[rep]+1)
 
-				with open('%s/BurnIn_%s.csv' %(burn_dir,burn_id)) as csvfile:
-				    readCSV = csv.reader(csvfile, delimiter=',')
-				    ancestor_muts = []
-				    ancestor_freqs = []
-				    for row in readCSV:
-				        mut = ast.literal_eval(row[0].replace("[ ","[").replace("  "," ").replace(" ",",").replace(",,",",").replace(",,",","))
-				        freq = float(row[1])
-				        ancestor_muts.append(mut)
-				        ancestor_freqs.append(freq)
+				filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
+				ancestor_muts = np.load(filename) #load mutations
 
-				ancestor_muts = np.array(ancestor_muts)
-				ancestor_freqs = np.array(ancestor_freqs)
+				filename = "%s/Freqs_%s.npy" %(burn_dir, burn_id)
+				ancestor_freqs = np.load(filename) #load frequencies
 				nmuts_max = len(ancestor_freqs) #number of mutations in ancestor
 
 				#found adapting populations

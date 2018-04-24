@@ -4,8 +4,9 @@
 import numpy as np
 import time
 import csv
-import ast
 import random
+# import matplotlib.pyplot as plt
+
 
 ######################################################################
 ##FUNCTIONS##
@@ -114,7 +115,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 5 #number of replicates for each set of parameters
+nreps = 2 #number of replicates for each set of parameters
 n = 2 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
@@ -122,8 +123,8 @@ data_dir = 'data'
 ##PARAMETERS OF ANCESTOR##
 ######################################################################
 
-n_reps = 5 #number of reps of ancestor that exist
-K = 10000 #number of individuals (positive integer >=1)
+n_reps = 10 #number of reps of ancestor that exist
+K = 1000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
@@ -135,7 +136,7 @@ rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep 
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-n_mut_list = list(np.arange(1, 102, 100))
+n_mut_list = list(np.arange(1, 11, 5))
 
 K_adapt = 1000 #number of individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
@@ -211,20 +212,14 @@ def main():
 				rep = 0
 				while rep < nreps:
 
+					#load ancestor
 					burn_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.1f_rep%d' %(n, K, alpha, B, u, sigma, rrep[rep]+1)
 
-					with open('%s/BurnIn_%s.csv' %(burn_dir,burn_id)) as csvfile:
-					    readCSV = csv.reader(csvfile, delimiter=',')
-					    ancestor_muts = []
-					    ancestor_freqs = []
-					    for row in readCSV:
-					        mut = ast.literal_eval(row[0].replace("[ ","[").replace("  "," ").replace(" ",",").replace(",,",",").replace(",,",","))
-					        freq = float(row[1])
-					        ancestor_muts.append(mut)
-					        ancestor_freqs.append(freq)
+					filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
+					ancestor_muts = np.load(filename) #load mutations
 
-					ancestor_muts = np.array(ancestor_muts)
-					ancestor_freqs = np.array(ancestor_freqs)
+					filename = "%s/Freqs_%s.npy" %(burn_dir, burn_id)
+					ancestor_freqs = np.load(filename) #load frequencies
 					nmuts_max = len(ancestor_freqs) #number of mutations in ancestor
 
 					#found adapting populations

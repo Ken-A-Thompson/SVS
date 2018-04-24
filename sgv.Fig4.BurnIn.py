@@ -3,10 +3,9 @@
 
 import numpy as np
 import time
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import csv
 import math
-import ast
 
 ######################################################################
 ##FUNCTIONS##
@@ -83,7 +82,7 @@ rrep = np.random.choice(n_reps, 1, replace=False) #randomly assign each rep an a
 ######################################################################
 
 K = 1000 #number of individuals (positive integer >=1)
-n_mut_list = [5 * x for x in range(13)] #number of mutations (positive integer >=1)
+n_mut_list = [5 * x for x in range(2)] #number of mutations (positive integer >=1)
 
 ######################################################################
 ##PARAMETERS FOR PARENTAL POPULATIONS##
@@ -112,20 +111,14 @@ def main():
 		#set number of mutations in hybrid
 		n_muts = n_mut_list[i] 
 
-		burn_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.1f_rep%d' %(n, K_ancestor	, alpha, B, u, sigma, rrep+1)
+		#load ancestor
+		burn_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.1f_rep%d' %(n, K, alpha, B, u, sigma, rrep+1)
 
-		with open('%s/BurnIn_%s.csv' %(burn_dir,burn_id)) as csvfile:
-		    readCSV = csv.reader(csvfile, delimiter=',')
-		    ancestor_muts = []
-		    ancestor_freqs = []
-		    for row in readCSV:
-		        mut = ast.literal_eval(row[0].replace("[ ","[").replace("  "," ").replace(" ",",").replace(",,",",").replace(",,",","))
-		        freq = float(row[1])
-		        ancestor_muts.append(mut)
-		        ancestor_freqs.append(freq)
+		filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
+		ancestor_muts = np.load(filename) #load mutations
 
-		ancestor_muts = np.array(ancestor_muts)
-		ancestor_freqs = np.array(ancestor_freqs)
+		filename = "%s/Freqs_%s.npy" %(burn_dir, burn_id)
+		ancestor_freqs = np.load(filename) #load frequencies
 		nmuts_max = len(ancestor_freqs) #number of mutations in ancestor
 
 		#make "hybrids"
