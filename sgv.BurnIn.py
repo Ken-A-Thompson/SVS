@@ -109,7 +109,7 @@ K = 10000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
-sigma = 0.1 #strength of selection
+sigma = 0.05 #strength of selection
 
 theta = np.array([0,0]) #optimum phenotype
 
@@ -119,7 +119,7 @@ gen_rec = 100 #print every this many generations (to see approach to mutation-se
 remove_lost = True #If true, remove mutations that are lost
 remove_fixed = True #If true, remove mutations that are fixed
 
-reps = 10
+reps = 5
 
 data_dir = 'data/burnins'
 
