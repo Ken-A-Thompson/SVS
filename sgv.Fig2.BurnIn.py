@@ -123,33 +123,33 @@ data_dir = 'data'
 ##PARAMETERS OF ANCESTOR##
 ######################################################################
 
-n_reps = 10 #number of reps of ancestor that exist
+n_reps = 1 #number of reps of ancestor that exist
 K = 1000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
-u = 0.001 #mutation probability per generation per genome (0<u<1)
-sigma = 0.05 #selection strength
+u = 0.01 #mutation probability per generation per genome (0<u<1)
+sigma = 0.1 #selection strength
 burn_dir = 'data/burnins'
-rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep an ancestor
+rrep = np.random.choice(n_reps, nreps, replace=True) #randomly assign each rep an ancestor
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-n_mut_list = list(np.arange(1, 11, 5))
+n_mut_list = list(np.arange(0, 141, 35))
 
 K_adapt = 1000 #number of individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 B_adapt = B #number of offspring per generation per parent (positive integer)
 u_adapt = u #mutation probability per generation per genome (0<u<1)
 
-opt_dists = list(np.arange(0.2, 1.1, 0.5)) #distances to optima
+opt_dists = list(np.arange(1, 1.1, 0.5)) #distances to optima
 
 # selection = 'divergent' #divergent selection (angle = 180 deg)
 selection = 'parallel' #parallel selection (angle = 0)
 # selection = 'both' #both divergent and parallel selection
 
-maxgen = 200 #total number of generations populations adapt for
+maxgen = 1000 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
@@ -223,12 +223,17 @@ def main():
 					nmuts_max = len(ancestor_freqs) #number of mutations in ancestor
 
 					#found adapting populations
-					[popfound1, mutfound1] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
-					[popfound2, mutfound2] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
+					# [popfound1, mutfound1] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
+					# [popfound2, mutfound2] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
 
 					#initialize adapting populations
-					[pop1, mut1] = [popfound1, mutfound1]
-					[pop2, mut2] = [popfound2, mutfound2]
+					# [pop1, mut1] = [popfound1, mutfound1]
+					# [pop2, mut2] = [popfound2, mutfound2]
+
+					#found identical populations
+					[popfound, mutfound] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
+					[pop1, mut1] = [popfound, mutfound]
+					[pop2, mut2] = [popfound, mutfound]
 
 					#intitialize generation counter
 					gen = 0
@@ -258,8 +263,8 @@ def main():
 						[pop2, mut2] = mutate(off2, u, alpha, n, mut2)
 
 						# remove lost mutations (all zero columns in pop)
-						[pop1, mut1] = remove_muts(remove, remove_lost, pop1, mut1, mutfound1)
-						[pop2, mut2] = remove_muts(remove, remove_lost, pop2, mut2, mutfound2)
+						[pop1, mut1] = remove_muts(remove, remove_lost, pop1, mut1, mutfound)
+						[pop2, mut2] = remove_muts(remove, remove_lost, pop2, mut2, mutfound)
 
 						# go to next generation
 						gen += 1

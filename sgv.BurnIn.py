@@ -48,7 +48,7 @@ def survival(sigma, dist):
 	"""
 	This function gives the probability of survival
 	"""
-	return np.exp(-sigma * dist**2) #probability of survival
+	return np.exp(-0.5 * sigma * dist**2) #probability of survival
 
 def viability(phenos, theta, pop, K, sigma):
 	"""
@@ -108,18 +108,18 @@ n = 2 #phenotypic dimensions (positive integer >=1)
 K = 1000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
-u = 0.001 #mutation probability per generation per genome (0<=u<=1)
-sigma = 0.05 #strength of selection (positive real number)
+u = 0.01 #mutation probability per generation per genome (0<=u<=1)
+sigma = 0.1 #strength of selection (positive real number)
 
 theta = np.array([0]*n) #optimum phenotype (n real numbers)
 
-maxgen = 1000 #total number of generations population adapts for (positive integer)
+maxgen = 2000 #total number of generations population adapts for (positive integer)
 gen_rec = 100 #print every this many generations (positve integer <=maxgen)
 
 remove_lost = True #If true, remove mutations that are lost
 remove_fixed = True #If true, remove mutations that are fixed
 
-reps = 10 #number of replicates (positive integer)
+reps = 1 #number of replicates (positive integer)
 
 data_dir = 'data/burnins' #where to save data
 
@@ -166,10 +166,10 @@ def main():
 			if gen % gen_rec == 0:
 				
 				#print update
-				print('rep=%d   gen=%d   seg=%d' %(rep, gen, len(mut)))
+				print('rep=%d   gen=%d   seg=%d   mfreq=%.3f   mdist=%.3f' %(rep, gen, len(mut), np.mean(np.sum(pop[:,1:],axis=0)/len(pop)), np.mean(np.linalg.norm(mut - theta, axis=1))))
 
 				#save for plotting approach to MS balance (number of mutations and avg frequency)
-				write_data_to_output(fileHandles, [rep, gen, len(mut), np.mean(np.sum(pop[:,1:],axis=0)/len(pop))])
+				write_data_to_output(fileHandles, [rep, gen, len(mut), np.mean(np.sum(pop[:,1:],axis=0)/len(pop)), np.mean(np.linalg.norm(mut - theta, axis=1))])
 
 			# go to next generation
 			gen += 1
