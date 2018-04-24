@@ -4,9 +4,8 @@
 import numpy as np
 import time
 import csv
+import ast
 import random
-# import matplotlib.pyplot as plt
-
 
 ######################################################################
 ##FUNCTIONS##
@@ -115,7 +114,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 2 #number of replicates for each set of parameters
+nreps = 5 #number of replicates for each set of parameters
 n = 2 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
@@ -123,33 +122,49 @@ data_dir = 'data'
 ##PARAMETERS OF ANCESTOR##
 ######################################################################
 
-n_reps = 4 #number of reps of ancestor that exist
-K = 1000 #number of individuals (positive integer >=1)
+K = 10000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
-u = 0.01 #mutation probability per generation per genome (0<u<1)
-sigma = 0.1 #selection strength
-burn_dir = 'data/burnins'
-rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep an ancestor
+u = 0.001 #mutation probability per generation per genome (0<u<1)
+
+ancestor_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f' %(n, K, alpha, B, u)
+
+with open('%s/Ancestor_%s.csv' %(data_dir,ancestor_id)) as csvfile:
+    readCSV = csv.reader(csvfile, delimiter=',')
+    ancestor_muts = []
+    ancestor_freqs = []
+    for row in readCSV:
+        mut = ast.literal_eval(row[0].replace("[ ","[").replace("  "," ").replace(" ",",").replace(",,",","))
+        freq = float(row[1])
+        ancestor_muts.append(mut)
+        ancestor_freqs.append(freq)
+
+ancestor_muts = np.array(ancestor_muts)
+ancestor_freqs = np.array(ancestor_freqs)
+nmuts_max = len(ancestor_freqs) #number of mutations in ancestor
+
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-n_mut_list = list(np.arange(0, 136, 15))
+n_mut_list = list(np.arange(0, 101, 10))
 
 K_adapt = 1000 #number of individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 B_adapt = B #number of offspring per generation per parent (positive integer)
-u_adapt = u #mutation probability per generation per genome (0<u<1)
+u_adapt = 0.001 #mutation probability per generation per genome (0<u<1)
 
-opt_dists = list(np.arange(1, 1.01, 0.1)) #distances to optima
+opt_dists = list(np.arange(0.2, 1.1, 0.4)) #distances to optima
 
 # selection = 'divergent' #divergent selection (angle = 180 deg)
 selection = 'parallel' #parallel selection (angle = 0)
 # selection = 'both' #both divergent and parallel selection
 
-maxgen = 1000 #total number of generations populations adapt for
+#thetas_list = np.array([[[0.2,0], [0.2,0]], [[0.5,0], [0.5,0]], [[0.8,0], [0.8,0]]])
+#theta2_list = [[1, 0], [0.5**0.5, 0.5**0.5], [0, 1], [-0.5**0.5, 0.5**0.5], [-1, 0]] #optimum phenotypes for population 2 (here we go from completely parallel to completely divergent while keeping the distance from optimum constant --we're on the unit circle)
+
+maxgen = 2000 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
@@ -212,28 +227,13 @@ def main():
 				rep = 0
 				while rep < nreps:
 
-					#load ancestor
-					burn_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.1f_rep%d' %(n, K, alpha, B, u, sigma, rrep[rep]+1)
-
-					filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
-					ancestor_muts = np.load(filename) #load mutations
-
-					filename = "%s/Freqs_%s.npy" %(burn_dir, burn_id)
-					ancestor_freqs = np.load(filename) #load frequencies
-					nmuts_max = len(ancestor_freqs) #number of mutations in ancestor
-
 					#found adapting populations
-					# [popfound1, mutfound1] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
-					# [popfound2, mutfound2] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
+					[popfound1, mutfound1] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
+					[popfound2, mutfound2] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
 
 					#initialize adapting populations
-					# [pop1, mut1] = [popfound1, mutfound1]
-					# [pop2, mut2] = [popfound2, mutfound2]
-
-					#found identical populations
-					[popfound, mutfound] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
-					[pop1, mut1] = [popfound, mutfound]
-					[pop2, mut2] = [popfound, mutfound]
+					[pop1, mut1] = [popfound1, mutfound1]
+					[pop2, mut2] = [popfound2, mutfound2]
 
 					#intitialize generation counter
 					gen = 0
@@ -263,8 +263,8 @@ def main():
 						[pop2, mut2] = mutate(off2, u, alpha, n, mut2)
 
 						# remove lost mutations (all zero columns in pop)
-						[pop1, mut1] = remove_muts(remove, remove_lost, pop1, mut1, mutfound)
-						[pop2, mut2] = remove_muts(remove, remove_lost, pop2, mut2, mutfound)
+						[pop1, mut1] = remove_muts(remove, remove_lost, pop1, mut1, mutfound1)
+						[pop2, mut2] = remove_muts(remove, remove_lost, pop2, mut2, mutfound2)
 
 						# go to next generation
 						gen += 1

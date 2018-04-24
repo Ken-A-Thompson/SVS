@@ -3,10 +3,10 @@
 
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 import csv
-import random
-# import matplotlib.pyplot as plt
-
+import scipy.special
+from scipy.optimize import fsolve
 
 ######################################################################
 ##FUNCTIONS##
@@ -36,20 +36,18 @@ def close_output_files(fileHandles):
 	"""
 	fileHandles.close()
 
-def found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n):
+def found(K, K_adapt, pop, mut, remove_lost, remove):
 	"""
 	This function creates a founding population from an ancestral one
 	"""
-
-	#make ancestor
-	if n_muts > 0:
-		mut_choice = np.random.choice(nmuts_max, size=n_muts, replace=False) #indices of mutations to take from ancestor
-		mutfound = ancestor_muts[mut_choice] #mutational effects
-		p_mut = ancestor_freqs[mut_choice] #expected frequency of these mutations
-		popfound = np.random.binomial(1, p_mut, (K, n_muts)) #p_mut chance of having each of n_muts mutations, for all K individuals
-	else: #de novo only, even if p_mut>0
-		popfound = np.array([[1]] * K)
-		mutfound = np.array([[0] * n])
+	whofounds = np.random.choice(K, size = K_adapt, replace = False) #random choice of K_adapt founders from ancestral population 
+	popfound = pop[whofounds] #list of mutations held by each founding individual
+	if remove_lost and remove == 'any': #if removing ancestral mutations when lost
+		keep = popfound.any(axis = 0) #loci that have mutation in at least one founding individual
+		mutfound = mut[keep] #keep those mutations
+		popfound = pop[:, keep] #keep those loci
+	else:
+		mutfound = mut #else just keep all mutations (and all loci)
 	return [popfound, mutfound]
 
 def survival(dist):
@@ -58,7 +56,7 @@ def survival(dist):
 	"""
 	return np.exp(-0.5 * dist**2) #probability of survival
 
-def viability(phenos, theta, pop, K):
+def viability(phenos, theta, pop, K_adapt):
 	"""
 	This function determines which individuals survive viability selection
 	"""
@@ -66,8 +64,8 @@ def viability(phenos, theta, pop, K):
 	w = survival(dist) #probability of survival
 	rand = np.random.uniform(size = len(pop)) #random uniform number in [0,1] for each individual
 	surv = pop[rand < w] #survivors
-	if len(surv) > K:
-		surv = surv[np.random.randint(len(surv), size = K)] #randomly choose K individuals if more than K
+	if len(surv) > K_adapt:
+		surv = surv[np.random.randint(len(surv), size = K_adapt)] #randomly choose K_adapt individuals if more than K_adapt
 	return surv
 
 def recomb(surv, B):
@@ -111,45 +109,62 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 			pop = pop[:, keep]
 	return [pop, mut]
 
+def cdf(gamma, K, y):
+	"""
+	this crazy thing is the cumulative distribution of Wright's "transient distribution" (see eqn 1 in Bustamente et al 2001 Genetics), obtained by integrating the transient distribution from 1/n to y (and dividing by the integral from 1/n to 1-1/n, to normalize)
+	gamma is the scaled selective effects (s*Ne)
+	K is the population size (N)
+	y is the frequency of the mutant
+	"""
+	return (scipy.special.expi(2 * gamma / K) - scipy.special.expi(2 * y * gamma) + np.exp(2*gamma) * ( scipy.special.expi(-2 * (1-y) * gamma) - scipy.special.expi(-2 * (1-1/K) * gamma) + np.log( -((1-K) * y) / (1-y) ) ) ) / ( scipy.special.expi(2 * gamma / K) - scipy.special.expi(- 2 * (1-K) * gamma / K) + np.exp(2 * gamma) * ( -scipy.special.expi(-2 * (1-1/K) * gamma) + scipy.special.expi(-2 * gamma / K) + 2 * np.log(-(1-K)) ) ) 
+
+def Wrv(slist, K, B):
+	"""
+	Frequency of deleterious alleles randomly chosen from Wright's distribution without mutation given list of selection coefficients (uses inverse transform sampling)
+	"""
+	x = np.random.uniform(size = len(slist)) #random uniform numbers in [0,1]
+	Ne = 2 * B / ( 2 * B - 1 ) * K #effective population size (eqn 13 in Burger & Lynch 1995 Evol)
+	gamma = Ne * slist #population scaled selective effects
+	ys = np.array([])
+	for i in range(len(x)): 
+		func = lambda y : cdf(gamma, K, y) - x[i] #function to find root (where cdf=x)
+		ys = np.append(ys, fsolve(func, 0.001)) #numerically find solution y with initial guess
+	return  ys 
+
 ######################################################################
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 2 #number of replicates for each set of parameters
+nreps = 5 #number of replicates for each set of parameters
 n = 2 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
-##PARAMETERS OF ANCESTOR##
+##PARAMETERS TO MAKE ANCESTOR##
 ######################################################################
 
-n_reps = 4 #number of reps of ancestor that exist
 K = 1000 #number of individuals (positive integer >=1)
+n_mut_list = list(np.arange(0, 201, 20)) #start, end+1, interval number >=0)
+# n_mut_list = [0,10]
 alpha = 0.1 #mutational sd (positive real number)
-B = 2 #number of offspring per generation per parent (positive integer)
-u = 0.01 #mutation probability per generation per genome (0<u<1)
-sigma = 0.1 #selection strength
-burn_dir = 'data/burnins'
-rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep an ancestor
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-n_mut_list = list(np.arange(0, 136, 15))
-
-K_adapt = 1000 #number of individuals (positive integer)
+K_adapt = K #number of individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
-B_adapt = B #number of offspring per generation per parent (positive integer)
-u_adapt = u #mutation probability per generation per genome (0<u<1)
+B = 2 #number of offspring per generation per parent (positive integer)
+u = 0.001 #mutation probability per generation per genome (0<u<1)
 
-opt_dists = list(np.arange(1, 1.01, 0.1)) #distances to optima
+opt_dists = list(np.arange(0.6, 0.601, 0.4)) #distances to optima
+# opt_dists = [0.2]
 
 # selection = 'divergent' #divergent selection (angle = 180 deg)
-selection = 'parallel' #parallel selection (angle = 0)
-# selection = 'both' #both divergent and parallel selection
+# selection = 'parallel' #parallel selection (angle = 0)
+selection = 'both' #both divergent and parallel selection
 
-maxgen = 1000 #total number of generations populations adapt for
+maxgen = 2000 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
@@ -167,7 +182,7 @@ nHybrids = 100 #number of hybrids to make at end of each replicate
 def main():
 
 	# open output files
-	fileHandles = open_output_files(n, K_adapt, alpha_adapt, B_adapt, u_adapt, data_dir) 
+	fileHandles = open_output_files(n, K, alpha, B, u, data_dir) 
 
 	if selection == 'both':
 		k = 0
@@ -212,28 +227,23 @@ def main():
 				rep = 0
 				while rep < nreps:
 
-					#load ancestor
-					burn_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.1f_rep%d' %(n, K, alpha, B, u, sigma, rrep[rep]+1)
-
-					filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
-					ancestor_muts = np.load(filename) #load mutations
-
-					filename = "%s/Freqs_%s.npy" %(burn_dir, burn_id)
-					ancestor_freqs = np.load(filename) #load frequencies
-					nmuts_max = len(ancestor_freqs) #number of mutations in ancestor
+					#make ancestor
+					if n_muts > 0:
+						mut = np.random.normal(0, alpha, (n_muts, n)) #create n_muts mutations, each with a random normal phenotypic effect in each n dimension with mean 0 and sd alpha
+						slist = survival(np.linalg.norm(mut, axis=1)) - 1 #selection coefficients for each mutant (in isolation in a background at the optimum)
+						p_mut = Wrv(slist,K,B) #frequency of each mutation (randomly chosen from Wright's distribution, without mutation)
+						pop = np.random.binomial(1, p_mut, (K, n_muts)) #randomly assign each of n_muts mutations to each of K individuals, weighted by random freqeucny from Wright's distribution
+					else: #de novo only, even if p_mut>0
+						pop = np.array([[1]] * K)
+						mut = np.array([[0] * n])
 
 					#found adapting populations
-					# [popfound1, mutfound1] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
-					# [popfound2, mutfound2] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
+					[popfound1, mutfound1] = found(K, K_adapt, pop, mut, remove_lost, remove)
+					[popfound2, mutfound2] = found(K, K_adapt, pop, mut, remove_lost, remove)
 
 					#initialize adapting populations
-					# [pop1, mut1] = [popfound1, mutfound1]
-					# [pop2, mut2] = [popfound2, mutfound2]
-
-					#found identical populations
-					[popfound, mutfound] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
-					[pop1, mut1] = [popfound, mutfound]
-					[pop2, mut2] = [popfound, mutfound]
+					[pop1, mut1] = [popfound1, mutfound1]
+					[pop2, mut2] = [popfound2, mutfound2]
 
 					#intitialize generation counter
 					gen = 0
@@ -263,8 +273,8 @@ def main():
 						[pop2, mut2] = mutate(off2, u, alpha, n, mut2)
 
 						# remove lost mutations (all zero columns in pop)
-						[pop1, mut1] = remove_muts(remove, remove_lost, pop1, mut1, mutfound)
-						[pop2, mut2] = remove_muts(remove, remove_lost, pop2, mut2, mutfound)
+						[pop1, mut1] = remove_muts(remove, remove_lost, pop1, mut1, mutfound1)
+						[pop2, mut2] = remove_muts(remove, remove_lost, pop2, mut2, mutfound2)
 
 						# go to next generation
 						gen += 1

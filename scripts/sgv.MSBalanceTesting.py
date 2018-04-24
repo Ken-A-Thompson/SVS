@@ -3,6 +3,7 @@
 
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 import csv
 import math
 
@@ -10,18 +11,20 @@ import math
 ##FUNCTIONS##
 ######################################################################
 
-def open_output_file(n, K, alpha, B, u, sigma, data_dir):
+def open_output_files(n, K, alpha, B, u, data_dir):
 	"""
 	This function opens the output files and returns file
 	handles to each.
 	"""
-	sim_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.1f' %(n, K, alpha, B, u, sigma)
-	outfile_A = open("%s/PlotBurn_%s.csv" %(data_dir, sim_id), "w")
+	sim_id = 'n%d_K%d_alpha%.2f_B%d_u%.3f' %(n, K, alpha, B, u)
+	outfile_A = open("%s/MSBalance_%s.csv" %(data_dir, sim_id), "w")
 	return outfile_A
 
 def write_data_to_output(fileHandles, data):
 	"""
-	This function writes to the corresponding output file.
+	This function writes a (time, data) pair to the
+	corresponding output file. We write densities
+	not abundances.
 	"""
 	writer = csv.writer(fileHandles)
 	writer.writerow(data)
@@ -32,34 +35,22 @@ def close_output_files(fileHandles):
 	"""
 	fileHandles.close()
 
-def save_arrays(n, K, alpha, B, u, sigma, rep, data_dir, mut, pop):
-	"""
-	Save numpy arrays of mutations and their frequencies.
-	"""
-	sim_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.1f_rep%d' %(n, K, alpha, B, u, sigma, rep)
-	
-	filename = "%s/Muts_%s.npy" %(data_dir, sim_id)
-	np.save(filename, mut[1:]) #save mutations
-	
-	filename = "%s/Freqs_%s.npy" %(data_dir, sim_id)
-	np.save(filename, np.sum(pop[:,1:],axis=0)/len(pop)) #save frequencies
-
-def survival(sigma, dist):
+def survival(dist):
 	"""
 	This function gives the probability of survival
 	"""
-	return np.exp(-0.5 * sigma * dist**2) #probability of survival
+	return np.exp(-0.5 * dist**2) #probability of survival
 
-def viability(phenos, theta, pop, K, sigma):
+def viability(phenos, theta, pop, K_adapt):
 	"""
 	This function determines which individuals survive viability selection
 	"""
 	dist = np.linalg.norm(phenos - theta, axis=1) #phenotypic distance from optimum
-	w = survival(sigma, dist) #probability of survival
+	w = survival(dist) #probability of survival
 	rand = np.random.uniform(size = len(pop)) #random uniform number in [0,1] for each individual
 	surv = pop[rand < w] #survivors
-	if len(surv) > K:
-		surv = surv[np.random.randint(len(surv), size = K)] #randomly choose K_adapt individuals if more than K_adapt
+	if len(surv) > K_adapt:
+		surv = surv[np.random.randint(len(surv), size = K_adapt)] #randomly choose K_adapt individuals if more than K_adapt
 	return surv
 
 def recomb(surv, B):
@@ -86,16 +77,12 @@ def mutate(off, u, alpha, n, mut):
 	mut = np.append(mut, newmuts, axis=0) #append effect of new mutations to mutation list
 	return [pop, mut]
 
-def remove_muts(remove_lost, remove_fixed, pop, mut):
+def remove_muts(remove_lost, pop, mut):
 	"""
 	This function creates mutations and updates population
 	"""
 	if remove_lost:
 		keep = pop.any(axis=0)
-		mut = mut[keep]
-		pop = pop[:, keep]
-	if remove_fixed:
-		keep = np.concatenate((np.array([True]), np.any(pop[:,1:]-1, axis=0))) #note this is a little more complicated because we want to keep the first, base, mutation despite it being fixed
 		mut = mut[keep]
 		pop = pop[:, keep]
 	return [pop, mut]
@@ -104,38 +91,43 @@ def remove_muts(remove_lost, remove_fixed, pop, mut):
 ##PARAMETERS##
 ######################################################################
 
+nreps = 1 #number of replicates for each set of parameters
 n = 2 #phenotypic dimensions (positive integer >=1)
+data_dir = 'data'
+
 K = 1000 #number of individuals (positive integer >=1)
-alpha = 0.1 #mutational sd (positive real number)
+Es = 0.05 #expected selective effect
+alpha = 2*Es/n #mutational sd (positive real number)
+
+theta = [0] * n #optimum
+
 B = 2 #number of offspring per generation per parent (positive integer)
-u = 0.01 #mutation probability per generation per genome (0<=u<=1)
-sigma = 0.1 #strength of selection (positive real number)
+u = 0.01 #mutation probability per generation per genome (0<u<1)
 
-theta = np.array([0]*n) #optimum phenotype (n real numbers)
+maxgen = 10000 #total number of generations population adapts for
+gen_rec = 1000 #print and save after this many generations
 
-maxgen = 2000 #total number of generations population adapts for (positive integer)
-gen_rec = 100 #print every this many generations (positve integer <=maxgen)
-
-remove_lost = True #If true, remove mutations that are lost
-remove_fixed = True #If true, remove mutations that are fixed
-
-reps = 10 #number of replicates (positive integer)
-
-data_dir = 'data/burnins' #where to save data
+remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 
 ######################################################################
-##MAIN SIMULATION##
+##FUNCTION FOR POPULATION TO ADAPT##
 ######################################################################
 
 def main():
 
-	fileHandles = open_output_file(n, K, alpha, B, u, sigma, data_dir)
+	#plot hybrid load
+	# plt.axis([-0.1, 0, 0, 10])
+	# plt.ion()
 
-	rep = 1
-	while rep < reps + 1:
+	# open output files
+	fileHandles = open_output_files(n, K, alpha, B, u, data_dir) 
+
+	#loop over all replicates
+	rep = 0
+	while rep < nreps:
 
 		pop = np.array([[1]] * K) #start all individuals with one "mutation"
-		mut = np.array([[0] * n]) #but let the "mutation" do nothing (ie put all phenotypes at origin)
+		mut = np.array([[0] * n]) #but let the "mutation" do nothing (ie stay at origin)
 
 		#intitialize generation counter
 		gen = 0
@@ -144,16 +136,16 @@ def main():
 		while gen < maxgen + 1:
 
 			# genotype to phenotype
-			phenos = np.dot(pop, mut) #sum mutations held by each individual (ie additivity in phenotype)
+			phenos = np.dot(pop, mut) #sum mutations held by each individual
 
 			# viability selection
-			surv = viability(phenos, theta, pop, K, sigma)
+			surv = viability(phenos, theta, pop, K)
 
 			# end simulation if population extinct (or unable to produce offspring)        
 			if len(surv) < 2: 
 				print("Extinct")              
 				break 
-
+				
 			# meiosis
 			off = recomb(surv, B)
 
@@ -161,25 +153,35 @@ def main():
 			[pop, mut] = mutate(off, u, alpha, n, mut)
 
 			# remove lost mutations (all zero columns in pop)
-			[pop, mut] = remove_muts(remove_lost, remove_fixed, pop, mut)
+			[pop, mut] = remove_muts(remove_lost, pop, mut)
 
 			if gen % gen_rec == 0:
 				
-				#print update
-				print('rep=%d   gen=%d   seg=%d   mfreq=%.10f   mdist=%.3f' %(rep, gen, len(mut), np.mean(np.sum(pop[:,1:],axis=0)/len(pop)), np.mean(np.linalg.norm(mut - theta, axis=1))))
+				w = survival(np.linalg.norm(mut - theta, axis=1)) #fitness of each mutation alone
+				# w = survival(np.linalg.norm(np.dot(pop,mut) - theta, axis=1)) #fitness of each individual
+				s = np.log(w)
 
-				#save for plotting approach to MS balance (number of mutations and avg frequency)
-				write_data_to_output(fileHandles, [rep, gen, len(mut), np.mean(np.sum(pop[:,1:],axis=0)/len(pop)), np.mean(np.linalg.norm(mut - theta, axis=1))])
+				fig, (ax1, ax2, ax3) = plt.subplots(3,1)
+
+				ax1.hist(s) #histogram of s of individual mutations
+				ax2.hist(sum(pop)[1:]/len(pop)) #histogram of mutant frequencies (site frequency spectrum)
+				ax3.hist(np.sum(pop[:,1:],axis=1)) #histogram of number of mutations in a single individual
+				plt.pause(0.01)
+
+				#print update
+				print('gen=%d n=%d' %(gen, len(pop))) 
+				
+				#save data
+				for x in range(len(w)):
+					write_data_to_output(fileHandles, [gen] + [s[x]]) #gen, s
 
 			# go to next generation
 			gen += 1
 
-		#save mutation and frequency data
-		save_arrays(n, K, alpha, B, u, sigma, rep, data_dir, mut, pop)
-
 		# go to next rep
 		rep += 1
 
+	# cleanup
 	close_output_files(fileHandles)
 
 ######################################################################
