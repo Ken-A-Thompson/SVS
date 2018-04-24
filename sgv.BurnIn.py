@@ -26,16 +26,23 @@ def open_output_files(n, K, alpha, B, u, sigma, rep, data_dir):
 	handles to each.
 	"""
 	sim_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.1f_rep%d' %(n, K, alpha, B, u, sigma, rep)
-	outfile_A = open("%s/BurnIn_%s.csv" %(data_dir, sim_id), "w")
-	return outfile_A
+	outfile_A = open("%s/Muts_%s.txt" %(data_dir, sim_id), "w")
+	outfile_B = open("%s/Freqs_%s.txt" %(data_dir, sim_id), "w")
+	return [outfile_A, outfile_B]
 
 def write_data_to_output(fileHandles, data):
 	"""
-	This function writes a (time, data) pair to the
-	corresponding output file. We write densities
-	not abundances.
+	This function writes to the corresponding output file.
 	"""
-	writer = csv.writer(fileHandles)
+	i = 0
+	while i < len(fileHandles):
+		np.savetxt(fileHandles[i], data[i])
+
+def write_data_to_output_for_plot(fileHandles, data):
+	"""
+	This function writes to the corresponding output file.
+	"""
+	writerowter = csv.writer(fileHandles)
 	writer.writerow(data)
 
 def close_output_files(fileHandles):
@@ -105,13 +112,13 @@ def remove_muts(remove_lost, remove_fixed, pop, mut):
 ######################################################################
 
 n = 2 #phenotypic dimensions (positive integer >=1)
-K = 10000 #number of individuals (positive integer >=1)
+K = 1000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 sigma = 0.05 #strength of selection
 
-theta = np.array([0,0]) #optimum phenotype
+theta = np.array([0]*n) #optimum phenotype
 
 maxgen = 1000 #total number of generations population adapts for
 gen_rec = 100 #print every this many generations (to see approach to mutation-selection balance)
@@ -119,7 +126,7 @@ gen_rec = 100 #print every this many generations (to see approach to mutation-se
 remove_lost = True #If true, remove mutations that are lost
 remove_fixed = True #If true, remove mutations that are fixed
 
-reps = 5
+reps = 1
 
 data_dir = 'data/burnins'
 
@@ -172,7 +179,7 @@ def main():
 				print('rep=%d   gen=%d   seg=%d' %(rep, gen, len(mut)))
 
 				#save for plotting
-				write_data_to_output(fileHandles_for_plot, [rep, gen, len(mut)])
+				write_data_to_output_for_plot(fileHandles_for_plot, [rep, gen, len(mut)])
 
 				# #plot approach to ms balance
 				# plt.plot(gen, len(mut))
