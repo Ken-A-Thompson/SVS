@@ -166,10 +166,11 @@ def main():
 			if gen % gen_rec == 0:
 				
 				#print update
-				print('rep=%d   gen=%d   seg=%d   mfreq=%.10f   mdist=%.3f' %(rep, gen, len(mut), np.mean(np.sum(pop[:,1:],axis=0)/len(pop)), np.mean(np.linalg.norm(mut - theta, axis=1))))
+				# print(np.mean(pop[:,1:],axis=0))
+				print('rep=%d   gen=%d   seg=%d   mfreq=%.3f   mdist=%.3f' %(rep, gen, len(mut), np.mean(np.mean(pop[:,1:],axis=0)), np.mean(np.linalg.norm(mut - theta, axis=1))))
 
 				#save for plotting approach to MS balance (number of mutations and avg frequency)
-				write_data_to_output(fileHandles, [rep, gen, len(mut), np.mean(np.sum(pop[:,1:],axis=0)/len(pop)), np.mean(np.linalg.norm(mut - theta, axis=1))])
+				write_data_to_output(fileHandles, [rep, gen, len(mut), np.mean(np.mean(pop[:,1:],axis=0)), np.mean(np.linalg.norm(mut - theta, axis=1))])
 
 			# go to next generation
 			gen += 1

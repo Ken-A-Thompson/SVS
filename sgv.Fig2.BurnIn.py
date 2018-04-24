@@ -130,7 +130,7 @@ B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.01 #mutation probability per generation per genome (0<u<1)
 sigma = 0.1 #selection strength
 burn_dir = 'data/burnins'
-rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep an ancestor
+rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep an ancestor, without or with replacement (i.e., unique ancestor for each sim or not)
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATIONS##
