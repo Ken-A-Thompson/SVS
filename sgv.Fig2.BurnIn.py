@@ -43,7 +43,8 @@ def found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n):
 
 	#make ancestor
 	if n_muts > 0:
-		mut_choice = np.random.choice(nmuts_max, size=n_muts, replace=False) #indices of mutations to take from ancestor
+		probs = ancestor_freqs/ancestor_freqs.sum() #probability of choosing each mutation (make pdf)
+		mut_choice = np.random.choice(nmuts_max, size=n_muts, replace=False, p=probs) #choose n_muts different mutations
 		mutfound = ancestor_muts[mut_choice] #mutational effects
 		p_mut = ancestor_freqs[mut_choice] #expected frequency of these mutations
 		popfound = np.random.binomial(1, p_mut, (K, n_muts)) #p_mut chance of having each of n_muts mutations, for all K individuals
@@ -124,10 +125,10 @@ data_dir = 'data'
 ######################################################################
 
 n_reps = 2 #number of reps of ancestor that exist
-K = 10000 #number of individuals (positive integer >=1)
+K = 1000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
-u = 0.001 #mutation probability per generation per genome (0<u<1)
+u = 0.01 #mutation probability per generation per genome (0<u<1)
 sigma = 0.1 #selection strength
 burn_dir = 'data/burnins'
 rrep = np.random.choice(n_reps, nreps, replace=True) #randomly assign each rep an ancestor, without or with replacement (i.e., unique ancestor for each sim or not)
@@ -136,7 +137,7 @@ rrep = np.random.choice(n_reps, nreps, replace=True) #randomly assign each rep a
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-n_mut_list = list(np.arange(0, 166, 8)) #starting nmuts, final n_muts, interval
+n_mut_list = list(np.arange(10, 166, 8)) #starting nmuts, final n_muts, interval
 
 K_adapt = 1000 #number of individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
@@ -149,7 +150,7 @@ opt_dists = list(np.arange(0.4, 0.41, 0.1)) #distances to optima
 selection = 'parallel' #parallel selection (angle = 0)
 # selection = 'both' #both divergent and parallel selection
 
-maxgen = 2000 #total number of generations populations adapt for
+maxgen = 200 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 

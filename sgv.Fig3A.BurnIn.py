@@ -35,6 +35,23 @@ def close_output_files(fileHandles):
 	"""
 	fileHandles.close()
 
+def found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n):
+	"""
+	This function creates a founding population from an ancestral one
+	"""
+
+	#make ancestor
+	if n_muts > 0:
+		probs = ancestor_freqs/ancestor_freqs.sum() #probability of choosing each mutation (make pdf)
+		mut_choice = np.random.choice(nmuts_max, size=n_muts, replace=False, p=probs) #choose n_muts different mutations
+		mutfound = ancestor_muts[mut_choice] #mutational effects
+		p_mut = ancestor_freqs[mut_choice] #expected frequency of these mutations
+		popfound = np.random.binomial(1, p_mut, (K, n_muts)) #p_mut chance of having each of n_muts mutations, for all K individuals
+	else: #de novo only, even if p_mut>0
+		popfound = np.array([[1]] * K)
+		mutfound = np.array([[0] * n])
+	return [popfound, mutfound]
+
 def survival(dist):
 	"""
 	This function gives the probability of survival
@@ -93,23 +110,6 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 			mut = mut[keep]
 			pop = pop[:, keep]
 	return [pop, mut]
-
-
-def found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n):
-	"""
-	This function creates a founding population from an ancestral one
-	"""
-
-	#make ancestor
-	if n_muts > 0:
-		mut_choice = np.random.choice(nmuts_max, size=n_muts, replace=False) #indices of mutations to take from ancestor
-		mutfound = ancestor_muts[mut_choice] #mutational effects
-		p_mut = ancestor_freqs[mut_choice] #expected frequency of these mutations
-		popfound = np.random.binomial(1, p_mut, (K, n_muts)) #p_mut chance of having each of n_muts mutations, for all K individuals
-	else: #de novo only, even if p_mut>0
-		popfound = np.array([[1]] * K)
-		mutfound = np.array([[0] * n])
-	return [popfound, mutfound]
 
 ######################################################################
 ##UNIVERSAL PARAMETERS##
