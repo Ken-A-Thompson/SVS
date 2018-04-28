@@ -1,5 +1,7 @@
 #Authors: Matthew Osmond <mmosmond@zoology.ubc.ca> & Ken A. Thompson <ken.thompson@zoology.ubc.ca>
 #Description: The role of standing genetic variance in speciation
+#Function: This script has populations adapt in parallel while varying d and n. Goal is to determine the value of n that minimizes variance load for a given d
+
 
 import numpy as np
 import time
@@ -18,7 +20,7 @@ def open_output_files(n, K, alpha, B, u, data_dir):
 	handles to each.
 	"""
 	sim_id = 'n%d_K%d_alpha%.1f_B%d_u%.3f' %(n, K, alpha, B, u)
-	outfile_A = open("%s/hybrid_loads_%s.csv" %(data_dir, sim_id), "w")
+	outfile_A = open("%s/Fig2B.var_loads_%s.csv" %(data_dir, sim_id), "w")
 	return outfile_A
 
 def write_data_to_output(fileHandles, data):
@@ -116,7 +118,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 20 #number of replicates for each set of parameters
+nreps = 1 #number of replicates for each set of parameters
 n = 2 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
@@ -144,11 +146,11 @@ alpha_adapt = alpha #mutational sd (positive real number)
 B_adapt = B #number of offspring per generation per parent (positive integer)
 u_adapt = u #mutation probability per generation per genome (0<u<1)
 
-opt_dists = list(np.arange(0.4, 0.41, 0.1)) #distances to optima
+opt_dists = list(np.arange(1, 1.01, 0.1)) #distances to optima
 
 # selection = 'divergent' #divergent selection (angle = 180 deg)
-# selection = 'parallel' #parallel selection (angle = 0)
-selection = 'both' #both divergent and parallel selection
+selection = 'parallel' #parallel selection (angle = 0)
+# selection = 'both' #both divergent and parallel selection
 
 maxgen = 2000 #total number of generations populations adapt for
 
