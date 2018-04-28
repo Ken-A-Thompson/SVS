@@ -41,7 +41,8 @@ def found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n):
 
 	#make ancestor
 	if n_muts > 0:
-		mut_choice = np.random.choice(nmuts_max, size=n_muts, replace=False) #indices of mutations to take from ancestor
+		probs = ancestor_freqs/ancestor_freqs.sum() #probability of choosing each mutation (make pdf)
+		mut_choice = np.random.choice(nmuts_max, size=n_muts, replace=False, p=probs) #choose n_muts different mutations
 		mutfound = ancestor_muts[mut_choice] #mutational effects
 		p_mut = ancestor_freqs[mut_choice] #expected frequency of these mutations
 		popfound = np.random.binomial(1, p_mut, (K, n_muts)) #p_mut chance of having each of n_muts mutations, for all K individuals
