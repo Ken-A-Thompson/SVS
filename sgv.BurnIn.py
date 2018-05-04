@@ -86,14 +86,20 @@ def mutate(off, u, alpha, n, mut):
 	mut = np.append(mut, newmuts, axis=0) #append effect of new mutations to mutation list
 	return [pop, mut]
 
-def remove_muts(remove_lost, remove_fixed, pop, mut):
+def remove_lost_muts(remove_lost, pop, mut):
 	"""
-	This function creates mutations and updates population
+	This function removes lost mutations
 	"""
 	if remove_lost:
 		keep = pop.any(axis=0)
 		mut = mut[keep]
 		pop = pop[:, keep]
+	return [pop, mut]
+
+def remove_fixed_muts(remove_fixed, pop, mut):
+	"""
+	This function removes fixed mutations
+	"""
 	if remove_fixed:
 		keep = np.concatenate((np.array([True]), np.any(pop[:,1:]-1, axis=0))) #note this is a little more complicated because we want to keep the first, base, mutation despite it being fixed
 		mut = mut[keep]
@@ -160,8 +166,8 @@ def main():
 			# mutation and population update
 			[pop, mut] = mutate(off, u, alpha, n, mut)
 
-			# remove lost mutations (all zero columns in pop)
-			[pop, mut] = remove_muts(remove_lost, remove_fixed, pop, mut)
+			# remove lost mutations
+			[pop, mut] = remove_lost_muts(remove_lost, pop, mut)
 
 			if gen % gen_rec == 0:
 				
@@ -174,6 +180,9 @@ def main():
 
 			# go to next generation
 			gen += 1
+
+		# remove fixed mutations
+		[pop, mut] = remove_fixed_muts(remove_fixed, pop, mut)
 
 		#save mutation and frequency data
 		save_arrays(n, K, alpha, B, u, sigma, rep, data_dir, mut, pop)
