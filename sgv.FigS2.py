@@ -10,12 +10,12 @@ import csv
 ##FUNCTIONS##
 ######################################################################
 
-def open_output_files(n, K, p_mut, alpha, B, u, data_dir):
+def open_output_files(n, K, alpha, B, u, data_dir):
 	"""
 	This function opens the output files and returns file
 	handles to each.
 	"""
-	sim_id = 'n%d_K%d_pmut%.1f_alpha%.1f_B%d_u%.3f' %(n, K, p_mut, alpha, B, u)
+	sim_id = 'n%d_K%d_alpha%.1f_B%d_u%.3f' %(n, K, alpha, B, u)
 	outfile_A = open("%s/Parent_Dynamics_%s.csv" %(data_dir, sim_id), "w")
 	return outfile_A
 
@@ -34,18 +34,21 @@ def close_output_files(fileHandles):
 	"""
 	fileHandles.close()
 
-def found(K, K_adapt, pop, mut, remove_lost, remove):
+def found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n):
+
 	"""
 	This function creates a founding population from an ancestral one
 	"""
-	whofounds = np.random.choice(K, size = K_adapt, replace = False) #random choice of K_adapt founders from ancestral population 
-	popfound = pop[whofounds] #list of mutations held by each founding individual
-	if remove_lost and remove == 'any': #if removing ancestral mutations when lost
-		keep = popfound.any(axis = 0) #loci that have mutation in at least one founding individual
-		mutfound = mut[keep] #keep those mutations
-		popfound = pop[:, keep] #keep those loci
-	else:
-		mutfound = mut #else just keep all mutations (and all loci)
+	#make ancestor
+	if n_muts > 0:
+		probs = ancestor_freqs/ancestor_freqs.sum() #probability of choosing each mutation (make pdf)
+		mut_choice = np.random.choice(nmuts_max, size=n_muts, replace=False, p=probs) #indices of mutations to take from ancestor
+		mutfound = ancestor_muts[mut_choice] #mutational effects
+		p_mut = ancestor_freqs[mut_choice] #expected frequency of these mutations
+		popfound = np.random.binomial(1, p_mut, (K, n_muts)) #p_mut chance of having each of n_muts mutations, for all K individuals
+	else: #de novo only, even if p_mut>0
+		popfound = np.array([[1]] * K)
+		mutfound = np.array([[0] * n])
 	return [popfound, mutfound]
 
 def survival(dist):
@@ -116,27 +119,33 @@ n = 2 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
-##PARAMETERS TO MAKE ANCESTOR##
+##PARAMETERS OF ANCESTOR##
 ######################################################################
 
-K = 1000 #number of individuals (positive integer >=1)
-n_mut_list = list([0, 35]) #number of mutations in ancestor
-p_mut = 0.1 #probability of having mutation at any one locus (0<=p<=1) #set this to zero for de novo only
+n_reps = 5 #number of reps of ancestor that exist
+K = 10000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
+B = 2 #number of offspring per generation per parent (positive integer)
+u = 0.001 #mutation probability per generation per genome (0<u<1)
+sigma = 0.01 #selection strength
+burn_dir = 'data/burnins'
+rrep = np.random.choice(n_reps, nreps, replace=True) #randomly assign each rep an ancestor, without or with replacement (i.e., unique ancestor for each sim or not)
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATION##
 ######################################################################
 
-K_adapt = K #number of individuals (positive integer)
-alpha_adapt = alpha #mutational sd (positive real number)
-B = 2 #number of offspring per generation per parent (positive integer)
-u = 0.001 #mutation probability per generation per genome (0<u<1)
+n_mut_list = list(np.arange(0, 36, 35)) #starting nmuts, final n_muts, interval
 
-theta_list = np.array([[1,0]]) #optimum phenotypes for population
+K_adapt = 1000 #number of individuals (positive integer)
+alpha_adapt = alpha #mutational sd (positive real number)
+B_adapt = 2 #number of offspring per generation per parent (positive integer)
+u_adapt = 0.001 #mutation probability per generation per genome (0<u<1)
+
+theta_list = np.array([[0.6,0]]) #optimum phenotypes for population
 
 maxgen = 2000 #total number of generations population adapts for
-gen_rec = 100 #print and save after this many generations
+gen_rec = 20 #print and save after this many generations
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
@@ -148,7 +157,7 @@ remove = 'derived' #.. any derived (not from ancestor) mutation that is lost
 def main():
 
 	# open output files
-	fileHandles = open_output_files(n, K, p_mut, alpha, B, u, data_dir) 
+	fileHandles = open_output_files(n, K_adapt, alpha_adapt, B_adapt, u_adapt, data_dir) 
 
 	#loop over optima
 	j = 0
@@ -167,16 +176,18 @@ def main():
 			rep = 0
 			while rep < nreps:
 
-				#make ancestor
-				if n_muts > 0:
-					pop = np.random.binomial(1, p_mut, (K, n_muts)) #p_mut chance of having each of n_muts mutations, for all K individuals
-					mut = np.random.normal(0, alpha, (n_muts, n)) #create n_muts mutations, each with a random normal phenotypic effect in each n dimension with mean 0 and sd alpha
-				else: #de novo only, even if p_mut>0
-					pop = np.array([[1]] * K)
-					mut = np.array([[0] * n])
+				#load ancestor
+				burn_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.3f_rep%d' %(n, K, alpha, B, u, sigma, rrep[rep]+1)
+
+				filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
+				ancestor_muts = np.load(filename) #load mutations
+
+				filename = "%s/Freqs_%s.npy" %(burn_dir, burn_id)
+				ancestor_freqs = np.load(filename) #load frequencies
+				nmuts_max = len(ancestor_freqs) #number of mutations in ancestor
 
 				#found adapting population
-				[popfound, mutfound] = found(K, K_adapt, pop, mut, remove_lost, remove)
+				[popfound, mutfound] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
 
 				#initialize adapting population
 				[pop, mut] = [popfound, mutfound]
@@ -218,11 +229,20 @@ def main():
 
 						mean_dist = np.linalg.norm(np.mean(phenos, axis=0) - theta, axis=0) #mean euclidean distance to optimum
 
+						#parent fitness and load (use parent 1, but could be either)	
+						parents = np.random.randint(len(pop), size = K)
+						parent_phenos = np.dot(pop[parents],mut)	
+						dist = np.linalg.norm(parent_phenos - np.mean(parent_phenos, axis=0), axis=1) #phenotypic distance from mean
+						fitness = survival(dist) #viability
+						pfit = np.mean(fitness) #mean fitness
+						growth = np.log(fitness*B) #continuous time growth rates
+						pload = np.log(1*B) - np.mean(growth) #segregation load
+
 						#print update
-						print('opt=%r, n_muts=%d, rep=%d, gen=%d, segregating sites=%d, mean distance to opt = %.3f' %([round(x,2) for x in theta], n_muts,  rep+1, gen, numseg, mean_dist)) 
+						print('opt=%r, n_muts=%d, rep=%d, gen=%d, segregating sites=%d, mean distance to opt = %.3f, parent load =%.3f' %([round(x,2) for x in theta], n_muts,  rep+1, gen, numseg, mean_dist, pload)) 
 						
 						#save data
-						write_data_to_output(fileHandles, [theta, n_muts, rep+1,  gen, numseg, mean_dist])
+						write_data_to_output(fileHandles, [theta, n_muts, rep+1,  gen, numseg, mean_dist, pload])
 						
 					# go to next generation
 					gen += 1

@@ -47,7 +47,7 @@ def found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K_adapt, n):
 		mut_choice = np.random.choice(nmuts_max, size=n_muts, replace=False, p=probs) #indices of mutations to take from ancestor
 		mutfound = ancestor_muts[mut_choice] #mutational effects
 		p_mut = ancestor_freqs[mut_choice] #expected frequency of these mutations
-		popfound = np.random.binomial(1, p_mut, (K_adapt, n_muts)) #p_mut chance of having each of n_muts mutations, for all K_adapt individuals
+		popfound = np.random.binomial(1, p_mut, (K_adapt, n_muts)) #p_mut chance of having each of n_muts mutations, for all K individuals
 	else: #de novo only, even if p_mut>0
 		popfound = np.array([[1]] * K_adapt)
 		mutfound = np.array([[0] * n])
@@ -68,7 +68,7 @@ def viability(phenos, theta, pop, K_adapt):
 	rand = np.random.uniform(size = len(pop)) #random uniform number in [0,1] for each individual
 	surv = pop[rand < w] #survivors
 	if len(surv) > K_adapt:
-		surv = surv[np.random.randint(len(surv), size = K_adapt)] #randomly choose K_adapt individuals if more than K_adapt
+		surv = surv[np.random.randint(len(surv), size = K_adapt)] #randomly choose K individuals if more than K
 	return surv
 
 def recomb(surv, B):
@@ -117,14 +117,14 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ######################################################################
 
 nreps = 20 #number of replicates for each set of parameters
-n = 2 #phenotypic dimensions (positive integer >=1)
+n = 10 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
 ##PARAMETERS OF ANCESTOR##
 ######################################################################
 
-n_reps = 5 #number of reps of ancestor that exist
+n_reps = 1 #number of reps of ancestor that exist
 K = 10000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
@@ -138,18 +138,18 @@ rrep = np.random.choice(n_reps, nreps, replace=True) #randomly assign each rep a
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-n_mut_list = list(np.arange(0, 101, 5)) #starting nmuts, final n_muts, interval
+n_mut_list = list(np.arange(0, 161, 5)) #starting nmuts, final n_muts, interval
 
 K_adapt = 1000 #number of individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 B_adapt = B #number of offspring per generation per parent (positive integer)
 u_adapt = u #mutation probability per generation per genome (0<u<1)
 
-opt_dists = list(np.arange(0.6, 0.61, 0.1)) #distances to optima
+opt_dists = list(np.arange(1, 1.01, 0.1)) #distances to optima
 
 # selection = 'divergent' #divergent selection (angle = 180 deg)
-# selection = 'parallel' #parallel selection (angle = 0)
-selection = 'both' #both divergent and parallel selection
+selection = 'parallel' #parallel selection (angle = 0)
+# selection = 'both' #both divergent and parallel selection
 
 maxgen = 2000 #total number of generations populations adapt for
 
