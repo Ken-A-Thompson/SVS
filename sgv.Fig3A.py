@@ -247,6 +247,15 @@ def main():
 					# go to next generation
 					gen += 1
 
+				#parent fitness and load (use parent 1, but could be either)	
+				parents = np.random.randint(len(pop1), size = nHybrids)
+				parent_phenos = np.dot(pop1[parents],mut1)	
+				dist = np.linalg.norm(parent_phenos - np.mean(parent_phenos, axis=0), axis=1) #phenotypic distance from mean
+				fitness = survival(dist) #viability
+				pfit = np.mean(fitness) #mean parent fitness
+				growth = np.log(fitness*B) #continuous time growth rates
+				pload = np.log(1*B) - np.mean(growth) #segregation load
+
 				#make variables to hold offspring phenotypes
 				offphenos = dict()
 				offpheno = []
@@ -278,15 +287,25 @@ def main():
 					# offspring phenotype is collection of shared and random unshared mutations
 					offpheno.append(sum(np.append(sharedmuts, unsharedoffmuts, axis = 0)))
 
+				# variance load calculation
 				offpheno = np.array(offpheno) #reformat correctly
 				dist = np.linalg.norm(offpheno - np.mean(offpheno, axis=0), axis=1) #phenotypic distance from mean hybrid
 				hyload = np.log(1*B) - np.mean(np.log(survival(dist)*B)) #hybrid load as defined by Chevin et al 2014
 				
+				#mean hybrid fitness
+				dist1 = np.linalg.norm(offpheno - theta1, axis=1) #phenotypic distance from parental 1 optimum
+				dist2 = np.linalg.norm(offpheno - theta2, axis=1) #phenotypic distance from parental 2 optimum
+				dist = np.minimum(dist1, dist2) #distance to closest optimum
+				fitness = survival(dist) #viability
+				hyfit = np.mean(fitness) #mean fitness
+				rhyfit = hyfit/pfit #relative fitness
+				# percentilefit = np.percentile(fitness, 90) # max fitness over all hybrids (90th percentile ie top 10 per cent)
+
 				#print an update
 				print('angle=%r, rep=%d, n_muts=%d, hybrid load=%.3f, distance between optima=%.3f' %(round(angles[j]*180/math.pi,2), rep+1, n_muts, hyload, opt_dist * (2*(1-math.cos(angles[j])))**(0.5))) 
 				
 				#save data
-				write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, hyload, opt_dist * (2*(1-math.cos(angles[j])))**(0.5)])
+				write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, hyload, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), rhyfit])
 
 				# hyloads[rep] = hyload #save hybrid load for this replicate
 
