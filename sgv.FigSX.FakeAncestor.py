@@ -16,7 +16,7 @@ def open_output_files(n, K, p_mut, alpha, B, u, data_dir):
 	This function opens the output files and returns file
 	handles to each.
 	"""
-	sim_id = 'n%d_K%d_pmut%.1f_alpha%.1f_B%d_u%.3f' %(n, K, p_mut, alpha, B, u)
+	sim_id = 'FakeAncestor_n%d_K%d_pmut%.1f_alpha%.1f_B%d_u%.3f' %(n, K, p_mut, alpha, B, u)
 	outfile_A = open("%s/angle_hybrid_loads_%s.csv" %(data_dir, sim_id), "w")
 	return outfile_A
 
@@ -112,8 +112,8 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 10 #number of replicates for each set of parameters
-n = 2 #phenotypic dimensions (positive integer >=1)
+nreps = 20 #number of replicates for each set of parameters
+n = 10 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
@@ -121,7 +121,7 @@ data_dir = 'data'
 ######################################################################
 
 K = 1000 #number of individuals (positive integer >=1)
-n_mut_list = [0, 35] #number of mutations (positive integer >=1)
+n_mut_list = [0, 150] #number of mutations (positive integer >=1)
 p_mut = 0.1 #probability of having mutation at any one locus (0<=p<=1) #set this to zero for de novo only
 alpha = 0.1 #mutational sd (positive real number)
 
@@ -134,10 +134,10 @@ alpha_adapt = alpha #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 
-opt_dist = 0.6 #distance to optima
+opt_dist = 1 #distance to optima
 theta1 = np.append(opt_dist,[0]*(n-1)) #set one optima to be fixed
 
-n_angles = 20 #number of angles between optima to simulate (including 0 and 180)
+n_angles = 10 #number of angles between optima to simulate (including 0 and 180)
 angles = [math.pi*x/(n_angles-1) for x in range(n_angles)] #angles to use (in radians)
 if n == 2:
 	theta2_list = np.array([[opt_dist*math.cos(x), opt_dist*math.sin(x)] for x in angles]) #optima to use
@@ -198,13 +198,10 @@ def main():
 					pop = np.array([[1]] * K)
 					mut = np.array([[0] * n])
 
-				#found adapting populations
-				[popfound1, mutfound1] = found(K, K_adapt, pop, mut, remove_lost, remove)
-				[popfound2, mutfound2] = found(K, K_adapt, pop, mut, remove_lost, remove)
-
-				#initialize adapting populations
-				[pop1, mut1] = [popfound1, mutfound1]
-				[pop2, mut2] = [popfound2, mutfound2]
+				#found identical populations
+				[popfound, mutfound] = found(K, K_adapt, pop, mut, remove_lost, remove)
+				[pop1, mut1] = [popfound, mutfound]
+				[pop2, mut2] = [popfound, mutfound]
 
 				#intitialize generation counter
 				gen = 0
@@ -234,8 +231,8 @@ def main():
 					[pop2, mut2] = mutate(off2, u, alpha, n, mut2)
 
 					# remove lost mutations (all zero columns in pop)
-					[pop1, mut1] = remove_muts(remove, remove_lost, pop1, mut1, mutfound1)
-					[pop2, mut2] = remove_muts(remove, remove_lost, pop2, mut2, mutfound2)
+					[pop1, mut1] = remove_muts(remove, remove_lost, pop1, mut1, mutfound)
+					[pop2, mut2] = remove_muts(remove, remove_lost, pop2, mut2, mutfound)
 
 					# go to next generation
 					gen += 1
