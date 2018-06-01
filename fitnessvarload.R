@@ -21,8 +21,12 @@ integrand <- function(arg, theta, lambda) {
 
 points <- function(lambda, theta){
   varload <- -log(1/(1+lambda)) #variance load
-  deltaw <- cuhre(ndim=2, ncomp=1, integrand, theta=theta, lambda=lambda, lower=rep(-100,2), upper=rep(100,2), rel.tol=1e-3, abs.tol=1e-12, flags=list(verbose=2)) #effect on mean fitness
+  deltaw <- cuhre(ndim=2, ncomp=1, integrand, theta=theta, lambda=lambda, lower=rep(-100,2), upper=rep(100,2), rel.tol=1e-3, abs.tol=1e-12, flags=list(verbose=0,final=1)) #effect on mean fitness
   return(c(theta,varload,deltaw$value)) #return angle, variance load, and effect of variance on mean fitness
 }
 
-points(0.001,60)
+for(theta in c(0,60,180)){
+  for(lambda in c(seq(0.0001, 0.12, 0.01))){
+    print(points(lambda=lambda, theta=theta))
+  }
+}
