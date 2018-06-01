@@ -15,7 +15,7 @@ def open_output_file(n, K, alpha, B, u, sigma, data_dir):
 	This function opens the output files and returns file
 	handles to each.
 	"""
-	sim_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.1f' %(n, K, alpha, B, u, sigma)
+	sim_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.3f' %(n, K, alpha, B, u, sigma)
 	outfile_A = open("%s/PlotBurn_%s.csv" %(data_dir, sim_id), "w")
 	return outfile_A
 
@@ -86,14 +86,20 @@ def mutate(off, u, alpha, n, mut):
 	mut = np.append(mut, newmuts, axis=0) #append effect of new mutations to mutation list
 	return [pop, mut]
 
-def remove_muts(remove_lost, remove_fixed, pop, mut):
+def remove_lost_muts(remove_lost, pop, mut):
 	"""
-	This function creates mutations and updates population
+	This function removes lost mutations
 	"""
 	if remove_lost:
 		keep = pop.any(axis=0)
 		mut = mut[keep]
 		pop = pop[:, keep]
+	return [pop, mut]
+
+def remove_fixed_muts(remove_fixed, pop, mut):
+	"""
+	This function removes fixed mutations
+	"""
 	if remove_fixed:
 		keep = np.concatenate((np.array([True]), np.any(pop[:,1:]-1, axis=0))) #note this is a little more complicated because we want to keep the first, base, mutation despite it being fixed
 		mut = mut[keep]
@@ -104,7 +110,7 @@ def remove_muts(remove_lost, remove_fixed, pop, mut):
 ##PARAMETERS##
 ######################################################################
 
-n = 2 #phenotypic dimensions (positive integer >=1)
+n = 10 #phenotypic dimensions (positive integer >=1)
 K = 10000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
@@ -160,8 +166,8 @@ def main():
 			# mutation and population update
 			[pop, mut] = mutate(off, u, alpha, n, mut)
 
-			# remove lost mutations (all zero columns in pop)
-			[pop, mut] = remove_muts(remove_lost, remove_fixed, pop, mut)
+			# remove lost mutations
+			[pop, mut] = remove_lost_muts(remove_lost, pop, mut)
 
 			if gen % gen_rec == 0:
 				
@@ -174,6 +180,9 @@ def main():
 
 			# go to next generation
 			gen += 1
+
+		# remove fixed mutations
+		[pop, mut] = remove_fixed_muts(remove_fixed, pop, mut)
 
 		#save mutation and frequency data
 		save_arrays(n, K, alpha, B, u, sigma, rep, data_dir, mut, pop)

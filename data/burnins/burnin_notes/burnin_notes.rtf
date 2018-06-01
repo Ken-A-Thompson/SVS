@@ -63,6 +63,7 @@ mdist: 0.105, 0.116\
 \
 Equilibrium?: Yes\
 \
+Note: in sims, not a lot of parallel evolution here. Maybe too low frequency? You do get parallelism, but not non-parallelism from \'91excess\'92\
 #####\
 \
 #####\
@@ -96,7 +97,7 @@ Note: changes strength of seln to 0.05 from 0.1\
 #####\
 \
 
-\b 2018-04-25 Burnin1 parameters\
+\b 2018-04-26 Burnin1 parameters\
 \
 
 \b0 #####\
@@ -119,15 +120,50 @@ remove_fixed = True #If true, remove mutations that are fixed\
 reps = 1 #number of replicates (positive integer)\
 \
 Final vals\
-Seg:\
-Mfreq: \
-mdist:\
+Seg: 198\
+Mfreq: 0.094\
+mdist:0.114\
 \
-Equilibrium?:\
+Equilibrium?: no!\
+Note: output of files is too low decimal, need to round better\
 \
 Note: changes strength of seln to 0.05 from 0.01\
 \
 #####
 \b \
+\
+
+\b0 #####\
+\
+n = 2 #phenotypic dimensions (positive integer >=1)\
+K = 10000 #number of individuals (positive integer >=1)\
+alpha = 0.1 #mutational sd (positive real number)\
+B = 2 #number of offspring per generation per parent (positive integer)\
+u = 0.001 #mutation probability per generation per genome (0<=u<=1)\
+sigma = 0.05 #strength of selection (positive real number)\
+\
+theta = np.array([0]*n) #optimum phenotype (n real numbers)\
+\
+maxgen = 50000 #total number of generations population adapts for (positive integer)\
+gen_rec = 100 #print every this many generations (positve integer <=maxgen)\
+\
+remove_lost = True #If true, remove mutations that are lost\
+remove_fixed = True #If true, remove mutations that are fixed\
+\
+reps = 1 #number of replicates (positive integer)\
+\
+Final vals\
+Seg: \
+Mfreq: \
+mdist:\
+\
+Equilibrium?: \
+Note: output of files is too low decimal, need to round better\
+\
+Note: changes strength of seln to 0.01 from 0.05\
+\
+#####
+\b \
+\
 \
 Plan for tomorrow/tonight: have a smaller pop? Try to run sims with same parameters as before (i.e., opt 0.4) and look at results from set of sims.}

@@ -16,8 +16,8 @@ def open_output_files(n, K, alpha, B, u, data_dir):
 	This function opens the output files and returns file
 	handles to each.
 	"""
-	sim_id = 'n%d_K%d_alpha%.1f_B%d_u%.3f' %(n, K, alpha, B, u)
-	outfile_A = open("%s/angle_hybrid_loads_%s.csv" %(data_dir, sim_id), "w")
+	sim_id = 'n%d_K%d_alpha%.1f_B%d_u%.3f' %(n, K_adapt, alpha, B, u)
+	outfile_A = open("%s/Fig3_angle_hybrid_loads_%s.csv" %(data_dir, sim_id), "w")
 	return outfile_A
 
 def write_data_to_output(fileHandles, data):
@@ -35,7 +35,7 @@ def close_output_files(fileHandles):
 	"""
 	fileHandles.close()
 
-def found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n):
+def found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K_adapt, n):
 	"""
 	This function creates a founding population from an ancestral one
 	"""
@@ -46,9 +46,9 @@ def found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n):
 		mut_choice = np.random.choice(nmuts_max, size=n_muts, replace=False, p=probs) #choose n_muts different mutations
 		mutfound = ancestor_muts[mut_choice] #mutational effects
 		p_mut = ancestor_freqs[mut_choice] #expected frequency of these mutations
-		popfound = np.random.binomial(1, p_mut, (K, n_muts)) #p_mut chance of having each of n_muts mutations, for all K individuals
+		popfound = np.random.binomial(1, p_mut, (K_adapt, n_muts)) #p_mut chance of having each of n_muts mutations, for all K_adapt individuals
 	else: #de novo only, even if p_mut>0
-		popfound = np.array([[1]] * K)
+		popfound = np.array([[1]] * K_adapt)
 		mutfound = np.array([[0] * n])
 	return [popfound, mutfound]
 
@@ -115,7 +115,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 10 #number of replicates for each set of parameters
+nreps = 20 #number of replicates for each set of parameters
 n = 2 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
@@ -123,20 +123,20 @@ data_dir = 'data'
 ##PARAMETERS OF ANCESTOR##
 ######################################################################
 
-n_reps = 10 #number of reps of ancestor that exist
-K = 1000 #number of individuals (positive integer >=1)
+n_reps = 5 #number of reps of ancestor that exist
+K = 10000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
-sigma = 0.1 #selection strength
+sigma = 0.01 #selection strength
 burn_dir = 'data/burnins'
-rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep an ancestor
+rrep = np.random.choice(n_reps, nreps, replace=True) #randomly assign each rep an ancestor
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-K_adapt = K #number of individuals (positive integer)
+K_adapt = 1000 #number of individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 B = B #number of offspring per generation per parent (positive integer)
 u = u #mutation probability per generation per genome (0<u<1)
@@ -144,16 +144,16 @@ u = u #mutation probability per generation per genome (0<u<1)
 opt_dist = 1 #distance to optima
 theta1 = np.append(opt_dist,[0]*(n-1)) #set one optima to be fixed
 
-n_angles = 20 #number of angles between optima to simulate (including 0 and 180)
+n_angles = 30 #number of angles between optima to simulate (including 0 and 180)
 angles = [math.pi*x/(n_angles-1) for x in range(n_angles)] #angles to use (in radians)
 if n == 2:
 	theta2_list = np.array([[opt_dist*math.cos(x), opt_dist*math.sin(x)] for x in angles]) #optima to use
 elif n > 2:
 	theta2_list = np.array([np.append([opt_dist*math.cos(x), opt_dist*math.sin(x)], [0]*(n-2)) for x in angles]) #optima to use
 
-n_mut_list = list(np.arange(1, 2, 1))
+n_mut_list = list(np.arange(0, 51, 50)) # de novo and one SGV scenario
 
-maxgen = 200 #total number of generations populations adapt for
+maxgen = 2000 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
@@ -199,7 +199,7 @@ def main():
 			while rep < nreps:
 
 				#load ancestor
-				burn_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.1f_rep%d' %(n, K, alpha, B, u, sigma, rrep[rep]+1)
+				burn_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.3f_rep%d' %(n, K, alpha, B, u, sigma, rrep[rep]+1)
 
 				filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
 				ancestor_muts = np.load(filename) #load mutations
@@ -208,13 +208,10 @@ def main():
 				ancestor_freqs = np.load(filename) #load frequencies
 				nmuts_max = len(ancestor_freqs) #number of mutations in ancestor
 
-				#found adapting populations
-				[popfound1, mutfound1] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
-				[popfound2, mutfound2] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
-
-				#initialize adapting populations
-				[pop1, mut1] = [popfound1, mutfound1]
-				[pop2, mut2] = [popfound2, mutfound2]
+				#found identical populations
+				[popfound, mutfound] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K_adapt, n)
+				[pop1, mut1] = [popfound, mutfound]
+				[pop2, mut2] = [popfound, mutfound]
 
 				#intitialize generation counter
 				gen = 0
@@ -244,11 +241,20 @@ def main():
 					[pop2, mut2] = mutate(off2, u, alpha, n, mut2)
 
 					# remove lost mutations (all zero columns in pop)
-					[pop1, mut1] = remove_muts(remove, remove_lost, pop1, mut1, mutfound1)
-					[pop2, mut2] = remove_muts(remove, remove_lost, pop2, mut2, mutfound2)
+					[pop1, mut1] = remove_muts(remove, remove_lost, pop1, mut1, mutfound)
+					[pop2, mut2] = remove_muts(remove, remove_lost, pop2, mut2, mutfound)
 
 					# go to next generation
 					gen += 1
+
+				#parent fitness and load (use parent 1, but could be either)	
+				parents = np.random.randint(len(pop1), size = nHybrids)
+				parent_phenos = np.dot(pop1[parents],mut1)	
+				dist = np.linalg.norm(parent_phenos - np.mean(parent_phenos, axis=0), axis=1) #phenotypic distance from mean
+				fitness = survival(dist) #viability
+				pfit = np.mean(fitness) #mean parent fitness
+				growth = np.log(fitness*B) #continuous time growth rates
+				pload = np.log(1*B) - np.mean(growth) #segregation load
 
 				#make variables to hold offspring phenotypes
 				offphenos = dict()
@@ -281,15 +287,25 @@ def main():
 					# offspring phenotype is collection of shared and random unshared mutations
 					offpheno.append(sum(np.append(sharedmuts, unsharedoffmuts, axis = 0)))
 
+				# variance load calculation
 				offpheno = np.array(offpheno) #reformat correctly
 				dist = np.linalg.norm(offpheno - np.mean(offpheno, axis=0), axis=1) #phenotypic distance from mean hybrid
 				hyload = np.log(1*B) - np.mean(np.log(survival(dist)*B)) #hybrid load as defined by Chevin et al 2014
 				
+				#mean hybrid fitness
+				dist1 = np.linalg.norm(offpheno - theta1, axis=1) #phenotypic distance from parental 1 optimum
+				dist2 = np.linalg.norm(offpheno - theta2, axis=1) #phenotypic distance from parental 2 optimum
+				dist = np.minimum(dist1, dist2) #distance to closest optimum
+				fitness = survival(dist) #viability
+				hyfit = np.mean(fitness) #mean fitness
+				rhyfit = hyfit/pfit #relative fitness
+				# percentilefit = np.percentile(fitness, 90) # max fitness over all hybrids (90th percentile ie top 10 per cent)
+
 				#print an update
 				print('angle=%r, rep=%d, n_muts=%d, hybrid load=%.3f, distance between optima=%.3f' %(round(angles[j]*180/math.pi,2), rep+1, n_muts, hyload, opt_dist * (2*(1-math.cos(angles[j])))**(0.5))) 
 				
 				#save data
-				write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, hyload, opt_dist * (2*(1-math.cos(angles[j])))**(0.5)])
+				write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, hyload, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), rhyfit])
 
 				# hyloads[rep] = hyload #save hybrid load for this replicate
 
