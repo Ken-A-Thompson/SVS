@@ -144,7 +144,7 @@ u = u #mutation probability per generation per genome (0<u<1)
 opt_dist = 1 #distance to optima
 theta1 = np.append(opt_dist,[0]*(n-1)) #set one optima to be fixed
 
-n_angles = 30 #number of angles between optima to simulate (including 0 and 180)
+n_angles = 10 #number of angles between optima to simulate (including 0 and 180)
 angles = [math.pi*x/(n_angles-1) for x in range(n_angles)] #angles to use (in radians)
 if n == 2:
 	theta2_list = np.array([[opt_dist*math.cos(x), opt_dist*math.sin(x)] for x in angles]) #optima to use
