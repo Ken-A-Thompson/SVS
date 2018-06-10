@@ -115,7 +115,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 20 #number of replicates for each set of parameters
+nreps = 5 #number of replicates for each set of parameters
 n = 2 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
@@ -130,7 +130,7 @@ B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 sigma = 0.01 #selection strength
 burn_dir = 'data/burnins'
-rrep = np.random.choice(n_reps, nreps, replace=True) #randomly assign each rep an ancestor
+rrep = np.random.choice(n_reps, nreps, replace = False) #randomly assign each rep an ancestor
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATIONS##
@@ -145,6 +145,7 @@ opt_dist = 1 #distance to optima
 theta1 = np.append(opt_dist,[0]*(n-1)) #set one optima to be fixed
 
 n_angles = 10 #number of angles between optima to simulate (including 0 and 180)
+
 angles = [math.pi*x/(n_angles-1) for x in range(n_angles)] #angles to use (in radians)
 if n == 2:
 	theta2_list = np.array([[opt_dist*math.cos(x), opt_dist*math.sin(x)] for x in angles]) #optima to use
@@ -299,13 +300,14 @@ def main():
 				fitness = survival(dist) #viability
 				hyfit = np.mean(fitness) #mean fitness
 				rhyfit = hyfit/pfit #relative fitness
-				# percentilefit = np.percentile(fitness, 90) # max fitness over all hybrids (90th percentile ie top 10 per cent)
+				max_hyfit = np.percentile(fitness, 95) # max fitness over all hybrids (90th percentile ie top 10 per cent)
+				rel_max_hyfit = max_hyfit/pfit
 
 				#print an update
 				print('angle=%r, rep=%d, n_muts=%d, hybrid load=%.3f, distance between optima=%.3f' %(round(angles[j]*180/math.pi,2), rep+1, n_muts, hyload, opt_dist * (2*(1-math.cos(angles[j])))**(0.5))) 
 				
 				#save data
-				write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, hyload, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), rhyfit])
+				write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, hyload, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), rhyfit, rel_max_hyfit])
 
 				# hyloads[rep] = hyload #save hybrid load for this replicate
 

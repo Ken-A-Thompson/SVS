@@ -4,6 +4,7 @@ library("R2Cuba")
 install.packages("mvtnorm")
 library("mvtnorm")
 
+
 integrand <- function(arg, theta, lambda) {
   x <- arg[1] #trait 1
   y <- arg[2] #trait 2
@@ -30,3 +31,4 @@ for(theta in c(0,60,180)){
     print(points(lambda=lambda, theta=theta))
   }
 }
+
