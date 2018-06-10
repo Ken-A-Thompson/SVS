@@ -110,7 +110,7 @@ def remove_fixed_muts(remove_fixed, pop, mut):
 ##PARAMETERS##
 ######################################################################
 
-n = 2 #phenotypic dimensions (positive integer >=1)
+n = 10 #phenotypic dimensions (positive integer >=1)
 K = 10000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
@@ -119,13 +119,13 @@ sigma = 0.01 #strength of selection (positive real number)
 
 theta = np.array([0]*n) #optimum phenotype (n real numbers)
 
-maxgen = 100000 #total number of generations population adapts for (positive integer)
+maxgen = 50000 #total number of generations population adapts for (positive integer)
 gen_rec = 100 #print every this many generations (positve integer <=maxgen)
 
 remove_lost = True #If true, remove mutations that are lost
 remove_fixed = True #If true, remove mutations that are fixed
 
-reps = 5 #number of replicates (positive integer)
+reps = 1 #number of replicates (positive integer)
 
 data_dir = 'data/burnins' #where to save data
 

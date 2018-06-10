@@ -118,7 +118,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 1 #number of replicates for each set of parameters
+nreps = 20 #number of replicates for each set of parameters
 n = 2 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
@@ -146,7 +146,7 @@ alpha_adapt = alpha #mutational sd (positive real number)
 B_adapt = B #number of offspring per generation per parent (positive integer)
 u_adapt = u #mutation probability per generation per genome (0<u<1)
 
-opt_dists = list(np.arange(1, 1.01, 0.1)) #distances to optima
+opt_dists = list(np.arange(0.2, 1.01, 0.025)) #distances to optima
 
 # selection = 'divergent' #divergent selection (angle = 180 deg)
 selection = 'parallel' #parallel selection (angle = 0)
