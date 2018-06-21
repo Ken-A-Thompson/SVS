@@ -15,7 +15,7 @@ integrand <- function(arg, theta, lambda) {
   pxy <- dmvnorm( arg, mean = c((x1+x2)/2, (y1+y2)/2), sigma = lambda*diag(2), log=FALSE ) #distribution of traits (multivariate normal with mean exactly between parental optima and variance lambda in each direction, no covariance)
   wxy1 <- 2*pi*dmvnorm( arg, mean = c(x1, y1), sigma = diag(2), log=FALSE ) #fitness in enviro 1
   wxy2 <- 2*pi*dmvnorm( arg, mean = c(x2, y2), sigma = diag(2), log=FALSE ) #fitness in enviro 2
-  novar <- 2*pi*dmvnorm( c((x1+x2)/2, (y1+y2)/2), mean = c(x1, y2), sigma = diag(2), log=FALSE ) #mean fitness if no variation
+  novar <- 2*pi*dmvnorm( c((x1+x2)/2, (y1+y2)/2), mean = c(x1, y1), sigma = diag(2), log=FALSE ) #mean fitness if no variation
   ff <- max(wxy1,wxy2) * pxy / novar; #max fitness times density divided by no variance fitness (effect of variance on mean fitness)
   return(ff)
 }
@@ -23,21 +23,20 @@ integrand <- function(arg, theta, lambda) {
 #input lambda and theta and get back theta, variance load, and relative mean fitness of hybrids
 points <- function(lambda, theta){
   varload <- -log(1/(1+lambda)) #variance load
-  deltaw <- cuhre(ndim=2, ncomp=1, integrand, theta=theta, lambda=lambda, lower=rep(-100,2), upper=rep(100,2), rel.tol=1e-3, abs.tol=1e-12, flags=list(verbose=0,final=1)) #effect on mean fitness
+  deltaw <- cuhre(ndim=2, ncomp=1, integrand, theta=theta, lambda=lambda, lower=rep(-10,2), upper=rep(10,2), rel.tol=1e-6, abs.tol=1e-12, flags=list(verbose=0,final=1)) #effect on mean fitness
   return(c(theta,varload,deltaw$value)) #return angle, variance load, and effect of variance on mean fitness
 }
 
 #run this over a whole bunch of thetas and lambdas to get data to plot
-datalist <- list()
-i=1
-for(theta in c(0,60,180)){
-  for(lambda in c(seq(0.0001, 0.12, 0.01))){
-    
-    datalist[[i]] <- points(lambda=lambda, theta=theta)
-    
-    i <- i + 1          
+thetas <- c(0,60,180) #what angles to run over
+lambdas <- c(seq(0.01, 0.11, 0.025)) #what variances to run over
+
+data <- data.frame() #where to put data
+for(theta in thetas){
+  for(lambda in lambdas){
+    data <- rbind(data, points(lambda=lambda, theta=theta))
   }
 }
- 
-data
+colnames(data) <- c("theta", "varload", "deltaw") #nice header
 
+plot(x = data$varload, y = data$deltaw)
