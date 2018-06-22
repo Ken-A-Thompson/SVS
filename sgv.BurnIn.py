@@ -106,6 +106,30 @@ def remove_fixed_muts(remove_fixed, pop, mut):
 		pop = pop[:, keep]
 	return [pop, mut]
 
+def histogram_files(mut, theta, pop, alpha, n, K, B, u, sigma, rep, data_dir):
+	"""
+	Save csv of mutation sizes (in SGV and de novo) for plotting histograms
+	"""
+	if make_histogram_files:
+		sgv_dist = np.linalg.norm(mut[1:] - theta, axis=1) #phenotypic distance from optimum for each individual mutation in sgv
+		dist_sgv = np.repeat(sgv_dist, np.sum(pop[:,1:], axis=0)) #repeat distance for the number of copies of each mutation
+		newmuts = np.random.normal(0, alpha, (len(dist_sgv), n)) #phenotypic effect of new mutations (make same number as in sgv)
+		dist_denovo = np.linalg.norm(newmuts - theta, axis=1) #phenotypic distance from optimum for each individual de novo mutation
+		
+		sim_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.1f_rep%d' %(n, K, alpha, B, u, sigma, rep) #sim info
+		filename_sgv = "%s/sgv_muts_%s.csv" %(data_dir, sim_id) #filename for sgv mutations
+		filename_denovo = "%s/denovo_muts_%s.csv" %(data_dir, sim_id) #filename for de novo mutations
+
+		#write sgv csv
+		with open(filename_sgv, 'w') as csvfile:
+			writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+			writer.writerow(dist_sgv)
+
+	    #write de novo csv
+		with open(filename_denovo, 'w') as csvfile:
+			writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+			writer.writerow(dist_denovo)
+
 ######################################################################
 ##PARAMETERS##
 ######################################################################
@@ -119,15 +143,17 @@ sigma = 0.01 #strength of selection (positive real number)
 
 theta = np.array([0]*n) #optimum phenotype (n real numbers)
 
-maxgen = 50000 #total number of generations population adapts for (positive integer)
-gen_rec = 250 #print every this many generations (positve integer <=maxgen)
+maxgen = 50 #total number of generations population adapts for (positive integer)
+gen_rec = 10 #print every this many generations (positve integer <=maxgen)
 
 remove_lost = True #If true, remove mutations that are lost
 remove_fixed = False #If true, remove mutations that are fixed
 
-reps = 20 #number of replicates (positive integer)
+make_histogram_files = True #if true ouput mutation sizes for plotting 
 
-data_dir = 'data/burnins_jun7' #where to save data
+reps = 2 #number of replicates (positive integer)
+
+data_dir = 'data/test' #where to save data
 
 ######################################################################
 ##MAIN SIMULATION##
@@ -186,6 +212,9 @@ def main():
 
 		#save mutation and frequency data
 		save_arrays(n, K, alpha, B, u, sigma, rep, data_dir, mut, pop)
+
+		#save mutation sizes for plotting histogram
+		histogram_files(mut, theta, pop, alpha, n, K, B, u, sigma, rep, data_dir)
 
 		# go to next rep
 		rep += 1

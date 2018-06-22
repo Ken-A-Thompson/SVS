@@ -22,9 +22,9 @@ integrand <- function(arg, theta, lambda) {
 
 #input lambda and theta and get back theta, variance load, and relative mean fitness of hybrids
 points <- function(lambda, theta){
-  varload <- -log(1/(1+lambda)) #variance load
+  #varload <- -log(1/(1+lambda)) #variance load
   deltaw <- cuhre(ndim=2, ncomp=1, integrand, theta=theta, lambda=lambda, lower=rep(-10,2), upper=rep(10,2), rel.tol=1e-6, abs.tol=1e-12, flags=list(verbose=0,final=1)) #effect on mean fitness
-  return(c(theta,varload,deltaw$value)) #return angle, variance load, and effect of variance on mean fitness
+  return(c(theta,lambda,deltaw$value)) #return angle, lambda, and effect of variance on mean fitness
 }
 
 #run this over a whole bunch of thetas and lambdas to get data to plot
@@ -37,6 +37,6 @@ for(theta in thetas){
     data <- rbind(data, points(lambda=lambda, theta=theta))
   }
 }
-colnames(data) <- c("theta", "varload", "deltaw") #nice header
+colnames(data) <- c("theta", "lambda", "deltaw") #nice header
 
-plot(x = data$varload, y = data$deltaw)
+plot(x = data$lambda, y = data$deltaw)
