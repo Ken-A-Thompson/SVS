@@ -111,8 +111,12 @@ def histogram_files(mut, theta, pop, alpha, n, K, B, u, sigma, rep, data_dir):
 	Save csv of mutation sizes (in SGV and de novo) for plotting histograms
 	"""
 	if make_histogram_files:
-		sgv_dist = np.linalg.norm(mut[1:] - theta, axis=1) #phenotypic distance from optimum for each individual mutation in sgv
-		dist_sgv = np.repeat(sgv_dist, np.sum(pop[:,1:], axis=0)) #repeat distance for the number of copies of each mutation
+
+		#segregating mutations
+		keep = np.any(pop-1, axis=0)
+
+		sgv_dist = np.linalg.norm(mut[keep] - theta, axis=1) #phenotypic distance from optimum for each individual mutation in sgv
+		dist_sgv = np.repeat(sgv_dist, np.sum(pop[:, keep], axis=0)) #repeat distance for the number of copies of each mutation
 		newmuts = np.random.normal(0, alpha, (len(dist_sgv), n)) #phenotypic effect of new mutations (make same number as in sgv)
 		dist_denovo = np.linalg.norm(newmuts - theta, axis=1) #phenotypic distance from optimum for each individual de novo mutation
 		
