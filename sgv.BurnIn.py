@@ -116,8 +116,8 @@ def histogram_files(mut, theta, pop, alpha, n, K, B, u, sigma, rep, data_dir):
 		keep = np.any(pop-1, axis=0)
 
 		sgv_dist = np.linalg.norm(mut[keep] - theta, axis=1) #phenotypic distance from optimum for each individual mutation in sgv
-		dist_sgv = np.repeat(sgv_dist, np.sum(pop[:, keep], axis=0)) #repeat distance for the number of copies of each mutation
-		newmuts = np.random.normal(0, alpha, (len(dist_sgv), n)) #phenotypic effect of new mutations (make same number as in sgv)
+		sgv_freq = np.sum(pop[:, keep], axis=0) #number of copies of each mutation
+		newmuts = np.random.normal(0, alpha, (len(sgv_dist), n)) #phenotypic effect of new mutations (make same number as in sgv)
 		dist_denovo = np.linalg.norm(newmuts - theta, axis=1) #phenotypic distance from optimum for each individual de novo mutation
 		
 		sim_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.1f_rep%d' %(n, K, alpha, B, u, sigma, rep) #sim info
@@ -127,7 +127,8 @@ def histogram_files(mut, theta, pop, alpha, n, K, B, u, sigma, rep, data_dir):
 		#write sgv csv
 		with open(filename_sgv, 'w') as csvfile:
 			writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-			writer.writerow(dist_sgv)
+			writer.writerow(sgv_dist)
+			writer.writerow(sgv_freq)
 
 	    #write de novo csv
 		with open(filename_denovo, 'w') as csvfile:
