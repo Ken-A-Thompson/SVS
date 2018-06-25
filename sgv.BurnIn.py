@@ -117,7 +117,7 @@ def histogram_files(mut, theta, pop, alpha, n, K, B, u, sigma, rep, data_dir):
 
 		sgv_dist = np.linalg.norm(mut[keep] - theta, axis=1) #phenotypic distance from optimum for each individual mutation in sgv
 		sgv_freq = np.sum(pop[:, keep], axis=0) #number of copies of each mutation
-		newmuts = np.random.normal(0, alpha, (len(sgv_dist), n)) #phenotypic effect of new mutations (make same number as in sgv)
+		newmuts = np.random.normal(0, alpha, (len(sgv_dist)*10, n)) #phenotypic effect of new mutations (make 10 times number as in sgv to get clean distribution)
 		dist_denovo = np.linalg.norm(newmuts - theta, axis=1) #phenotypic distance from optimum for each individual de novo mutation
 		
 		sim_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.1f_rep%d' %(n, K, alpha, B, u, sigma, rep) #sim info
@@ -148,17 +148,17 @@ sigma = 0.01 #strength of selection (positive real number)
 
 theta = np.array([0]*n) #optimum phenotype (n real numbers)
 
-maxgen = 50 #total number of generations population adapts for (positive integer)
-gen_rec = 10 #print every this many generations (positve integer <=maxgen)
+maxgen = 100000 #total number of generations population adapts for (positive integer)
+gen_rec = 2500 #print every this many generations (positve integer <=maxgen)
 
 remove_lost = True #If true, remove mutations that are lost
 remove_fixed = False #If true, remove mutations that are fixed
 
 make_histogram_files = True #if true ouput mutation sizes for plotting 
 
-reps = 2 #number of replicates (positive integer)
+reps = 10 #number of replicates (positive integer)
 
-data_dir = 'data/test' #where to save data
+data_dir = 'data/burnins_jun24' #where to save data
 
 ######################################################################
 ##MAIN SIMULATION##
