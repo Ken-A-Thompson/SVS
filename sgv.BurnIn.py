@@ -197,7 +197,7 @@ def main():
 			# mutation and population update
 			[pop, mut] = mutate(off, u, alpha, n, mut)
 
-			# remove lost mutations
+			# remove lost mutations if doing so
 			[pop, mut] = remove_lost_muts(remove_lost, pop, mut)
 
 			if gen % gen_rec == 0:
@@ -207,7 +207,7 @@ def main():
 				print('rep=%d   gen=%d   seg=%d   mfreq=%.3f   mdist=%.3f' %(rep, gen, len(mut), np.mean(np.mean(pop[:,1:],axis=0)), np.mean(np.linalg.norm(mut - theta, axis=1))))
 
 				#save for plotting approach to MS balance (number of segregating mutations and avg frequency)
-				seg = np.any(pop-1, axis=0) #segregating mutations
+				seg = np.any(pop-1, axis=0) #segregating mutations only
 				mut_seg = mut[seg]
 				pop_seg = pop[:, seg]
 				write_data_to_output(fileHandles, [rep, gen, len(mut_seg), np.mean(np.mean(pop_seg,axis=0)), np.mean(np.linalg.norm(mut_seg - theta, axis=1))])
@@ -215,7 +215,7 @@ def main():
 			# go to next generation
 			gen += 1
 
-		# remove fixed mutations
+		# remove fixed mutations if doing so
 		[pop, mut] = remove_fixed_muts(remove_fixed, pop, mut)
 
 		#save mutation and frequency data

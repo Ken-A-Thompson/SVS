@@ -36,18 +36,24 @@ def close_output_files(fileHandles):
 	"""
 	fileHandles.close()
 
-def found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K_adapt, n):
+def found(n_muts, ancestor_muts, ancestor_freqs, K_adapt, n):
 	"""
 	This function creates a founding population from an ancestral one
 	"""
 
 	#make ancestor
 	if n_muts > 0:
-		probs = ancestor_freqs/ancestor_freqs.sum() #probability of choosing each mutation (make pdf)
+		seg_id = [ancestor_freqs < 1] #indices for segregating mutations in ancestor
+		nmuts_max = np.sum(seg_id) #number of segregating mutations in ancestor
+		probs = ancestor_freqs[seg_id]/ancestor_freqs[seg_id].sum() #probability of choosing each mutation in sgv (make pdf)
 		mut_choice = np.random.choice(nmuts_max, size=n_muts, replace=False, p=probs) #indices of mutations to take from ancestor
-		mutfound = ancestor_muts[mut_choice] #mutational effects
-		p_mut = ancestor_freqs[mut_choice] #expected frequency of these mutations
-		popfound = np.random.binomial(1, p_mut, (K_adapt, n_muts)) #p_mut chance of having each of n_muts mutations, for all K individuals
+		mutfound = (ancestor_muts[seg_id])[mut_choice] #mutational effects
+		p_mut = (ancestor_freqs[seg_id])[mut_choice] #expected frequency of these mutations
+		popfound = np.random.binomial(1, p_mut, (K_adapt, n_muts)) #p_mut chance of having each of n_muts mutations, for all K_adapt individuals
+		fix_id = [ancestor_freqs == 1] #indices for fixed mutations in ancestor
+		mutfound = np.append(mutfound, ancestor_muts[fix_id], axis=0) #add fixed mutations to founding mutation matrix
+		addpop = np.array([1]*K_adapt*np.sum(fix_id)).reshape(K_adapt,np.sum(fix_id)) #matrix of 1s for fixed mutations
+		popfound = np.append(popfound, addpop, axis=1) #add fixed mutations to founding pop matrix
 	else: #de novo only, even if p_mut>0
 		popfound = np.array([[1]] * K_adapt)
 		mutfound = np.array([[0] * n])
@@ -222,7 +228,6 @@ def main():
 
 					filename = "%s/Freqs_%s.npy" %(burn_dir, burn_id)
 					ancestor_freqs = np.load(filename) #load frequencies
-					nmuts_max = len(ancestor_freqs) #number of mutations in ancestor
 
 					#found adapting populations
 					# [popfound1, mutfound1] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
@@ -233,7 +238,7 @@ def main():
 					# [pop2, mut2] = [popfound2, mutfound2]
 
 					#found identical populations
-					[popfound, mutfound] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K_adapt, n)
+					[popfound, mutfound] = found(n_muts, ancestor_muts, ancestor_freqs, K_adapt, n)
 					[pop1, mut1] = [popfound, mutfound]
 					[pop2, mut2] = [popfound, mutfound]
 
