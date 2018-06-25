@@ -206,8 +206,11 @@ def main():
 				# print(np.mean(pop[:,1:],axis=0))
 				print('rep=%d   gen=%d   seg=%d   mfreq=%.3f   mdist=%.3f' %(rep, gen, len(mut), np.mean(np.mean(pop[:,1:],axis=0)), np.mean(np.linalg.norm(mut - theta, axis=1))))
 
-				#save for plotting approach to MS balance (number of mutations and avg frequency)
-				write_data_to_output(fileHandles, [rep, gen, len(mut), np.mean(np.mean(pop[:,1:],axis=0)), np.mean(np.linalg.norm(mut - theta, axis=1))])
+				#save for plotting approach to MS balance (number of segregating mutations and avg frequency)
+				seg = np.any(pop-1, axis=0) #segregating mutations
+				mut_seg = mut[seg]
+				pop_seg = pop[:, seg]
+				write_data_to_output(fileHandles, [rep, gen, len(mut_seg), np.mean(np.mean(pop_seg,axis=0)), np.mean(np.linalg.norm(mut_seg - theta, axis=1))])
 
 			# go to next generation
 			gen += 1
