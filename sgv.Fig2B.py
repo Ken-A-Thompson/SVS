@@ -124,7 +124,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 20 #number of replicates for each set of parameters
+nreps = 10 #number of replicates for each set of parameters
 n = 2 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
@@ -132,20 +132,20 @@ data_dir = 'data'
 ##PARAMETERS OF ANCESTOR##
 ######################################################################
 
-n_reps = 5 #number of reps of ancestor that exist
+n_reps = 10 #number of reps of ancestor that exist
 K = 10000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 sigma = 0.01 #selection strength
 burn_dir = 'data/burnins'
-rrep = np.random.choice(n_reps, nreps, replace=True) #randomly assign each rep an ancestor, without or with replacement (i.e., unique ancestor for each sim or not)
+rrep = np.random.choice(n_reps, nreps, replace = False) #randomly assign each rep an ancestor, without or with replacement (i.e., unique ancestor for each sim or not)
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-n_mut_list = list(np.arange(0, 101, 5)) #starting nmuts, final n_muts, interval
+n_mut_list = list(np.arange(0, 51, 3)) #starting nmuts, final n_muts, interval
 
 K_adapt = 1000 #number of individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
@@ -222,7 +222,7 @@ def main():
 				while rep < nreps:
 
 					#load ancestor
-					burn_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.3f_rep%d' %(n, K, alpha, B, u, sigma, rrep[rep]+1)
+					burn_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.2f_rep%d' %(n, K, alpha, B, u, sigma, rrep[rep]+1)
 
 					filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
 					ancestor_muts = np.load(filename) #load mutations
@@ -239,7 +239,7 @@ def main():
 					# [pop2, mut2] = [popfound2, mutfound2]
 
 					#found identical populations
-					[popfound, mutfound] = found(n_muts, ancestor_muts, ancestor_freqs, K, n)
+					[popfound, mutfound] = found(n_muts, ancestor_muts, ancestor_freqs, K_adapt, n)
 					[pop1, mut1] = [popfound, mutfound]
 					[pop2, mut2] = [popfound, mutfound]
 
@@ -310,13 +310,14 @@ def main():
 
 					offpheno = np.array(offpheno) #reformat correctly
 					dist = np.linalg.norm(offpheno - np.mean(offpheno, axis=0), axis=1) #phenotypic distance from mean hybrid
-					hyload = np.log(1*B) - np.mean(np.log(survival(dist)*B)) #hybrid load as defined by Chevin et al 2014
+					# hyload = np.log(1*B) - np.mean(np.log(survival(dist)*B)) #hybrid load as defined by Chevin et al 2014
+					segvar = np.mean(np.var(offpheno, axis = 0))
 					
 					#print an update
-					print('opt1=%r, opt2=%r, rep=%d, n_muts=%d, hybrid load=%.3f, distance=%.3f, selection=%r' %(theta1, theta2, rep+1, n_mut_list[i], hyload, opt_dists[j], ['parallel','divergent'][k])) 
+					print('opt1=%r, opt2=%r, rep=%d, n_muts=%d, segregation variance=%.3f, distance=%.3f, selection=%r' %(theta1, theta2, rep+1, n_mut_list[i], segvar, opt_dists[j], ['parallel','divergent'][k])) 
 					
 					#save data
-					write_data_to_output(fileHandles, [theta1, theta2, rep+1, n_mut_list[i], hyload, opt_dists[j], ['parallel','divergent'][k]])
+					write_data_to_output(fileHandles, [theta1, theta2, rep+1, n_mut_list[i], segvar, opt_dists[j], ['parallel','divergent'][k]])
 
 					# hyloads[rep] = hyload #save hybrid load for this replicate
 

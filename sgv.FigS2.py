@@ -128,7 +128,7 @@ data_dir = 'data'
 ##PARAMETERS OF ANCESTOR##
 ######################################################################
 
-n_reps = 5 #number of reps of ancestor that exist
+n_reps = 10 #number of reps of ancestor that exist
 K = 10000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)

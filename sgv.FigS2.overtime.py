@@ -17,8 +17,8 @@ def open_output_files(n, K, alpha, B, u, data_dir):
 	This function opens the output files and returns file
 	handles to each.
 	"""
-	sim_id = 'Fig_OVERTIME_n%d_K%d_alpha%.1f_B%d_u%.3f' %(n, K_adapt, alpha, B, u)
-	outfile_A = open("%s/hybrid_loads_%s.csv" %(data_dir, sim_id), "w")
+	sim_id = 'n%d_K%d_alpha%.1f_B%d_u%.3f' %(n, K, alpha, B, u)
+	outfile_A = open("%s/Fig2B.var_loads_%s.csv" %(data_dir, sim_id), "w")
 	return outfile_A
 
 def write_data_to_output(fileHandles, data):
@@ -65,7 +65,7 @@ def survival(dist):
 	"""
 	return np.exp(-0.5 * dist**2) #probability of survival
 
-def viability(phenos, theta, pop, K_adapt):
+def viability(phenos, theta, pop, K):
 	"""
 	This function determines which individuals survive viability selection
 	"""
@@ -73,8 +73,8 @@ def viability(phenos, theta, pop, K_adapt):
 	w = survival(dist) #probability of survival
 	rand = np.random.uniform(size = len(pop)) #random uniform number in [0,1] for each individual
 	surv = pop[rand < w] #survivors
-	if len(surv) > K_adapt:
-		surv = surv[np.random.randint(len(surv), size = K_adapt)] #randomly choose K_adapt individuals if more than K_adapt
+	if len(surv) > K:
+		surv = surv[np.random.randint(len(surv), size = K)] #randomly choose K individuals if more than K
 	return surv
 
 def recomb(surv, B):
@@ -122,7 +122,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 5 #number of replicates for each set of parameters
+nreps = 10 #number of replicates for each set of parameters
 n = 2 #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
@@ -130,15 +130,15 @@ data_dir = 'data'
 ##PARAMETERS OF ANCESTOR##
 ######################################################################
 
-n_reps = 5 #number of reps of ancestor that exist
+n_reps = 10 #number of reps of ancestor that exist
 K = 10000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 B = 2 #number of offspring per generation per parent (positive integer)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 sigma = 0.01 #selection strength
 
-burn_dir = 'data/burnins'
-rrep = np.random.choice(n_reps, nreps, replace=True) #randomly assign each rep an ancestor, without or with replacement (i.e., unique ancestor for each sim or not)
+burn_dir = 'data/burnins_jun25'
+rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep an ancestor, without or with replacement (i.e., unique ancestor for each sim or not)
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATIONS##
@@ -222,7 +222,7 @@ def main():
 				while rep < nreps:
 
 					#load ancestor
-					burn_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.3f_rep%d' %(n, K, alpha, B, u, sigma, rrep[rep]+1)
+					burn_id = 'n%d_K%d_alpha%.1f_B%d_u%.4f_sigma%.2f_rep%d' %(n, K, alpha, B, u, sigma, rrep[rep]+1)
 
 					filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
 					ancestor_muts = np.load(filename) #load mutations
@@ -310,13 +310,15 @@ def main():
 
 							offpheno = np.array(offpheno) #reformat correctly
 							dist = np.linalg.norm(offpheno - np.mean(offpheno, axis=0), axis=1) #phenotypic distance from mean hybrid
-							hyload = np.log(1*B) - np.mean(np.log(survival(dist)*B)) #hybrid load as defined by Chevin et al 2014
+							# hyload = np.log(1*B) - np.mean(np.log(survival(dist)*B)) #hybrid load as defined by Chevin et al 2014
+							segvar = np.mean(np.var(offpheno, axis = 0)) # segregation variance (mean of individual trait variances)
+
 							
 							#print an update
-							print('opt1=%r, opt2=%r, rep=%d, gen=%d, n_muts=%d, hybrid load=%.3f, distance=%.3f, selection=%r' %(theta1, theta2, rep+1, gen, n_mut_list[i], hyload, opt_dists[j], ['parallel','divergent'][k])) 
+							print('opt1=%r, opt2=%r, rep=%d, gen=%d, n_muts=%d, segregation varance=%.3f, distance=%.3f, selection=%r' %(theta1, theta2, rep+1, gen, n_mut_list[i], segvar, opt_dists[j], ['parallel','divergent'][k])) 
 							
 							#save data
-							write_data_to_output(fileHandles, [theta1, theta2, rep+1, gen, n_mut_list[i], hyload, opt_dists[j], ['parallel','divergent'][k]])
+							write_data_to_output(fileHandles, [theta1, theta2, rep+1, gen, n_mut_list[i], segvar, opt_dists[j], ['parallel','divergent'][k]])
 							
 						# go to next generation
 						gen += 1

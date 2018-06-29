@@ -158,7 +158,7 @@ make_histogram_files = True #if true ouput mutation sizes for plotting
 
 reps = 10 #number of replicates (positive integer)
 
-data_dir = 'data/burnins_jun24' #where to save data
+data_dir = 'data/burnins_jun25' #where to save data
 
 ######################################################################
 ##MAIN SIMULATION##
