@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[    375472,       7762]
-NotebookOptionsPosition[    367015,       7495]
-NotebookOutlinePosition[    367393,       7512]
-CellTagsIndexPosition[    367350,       7509]
+NotebookDataLength[    390247,       8166]
+NotebookOptionsPosition[    380594,       7864]
+NotebookOutlinePosition[    380973,       7881]
+CellTagsIndexPosition[    380930,       7878]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -6088,9 +6088,13 @@ v0/6f8EnnPY=
 
 Cell[CellGroupData[{
 
-Cell["over the walk", "Section",
+Cell["\<\
+over the walk (fraction of beneficial phenotypic space that is mutually \
+beneficial)\
+\>", "Section",
  CellChangeTimes->{{3.732990557805098*^9, 3.732990561275272*^9}, {
-  3.732990597380826*^9, 3.732990598116604*^9}}],
+  3.732990597380826*^9, 3.732990598116604*^9}, {3.7397097866608543`*^9, 
+  3.739709828446081*^9}}],
 
 Cell[BoxData[
  RowBox[{"Clear", "[", 
@@ -6666,7 +6670,372 @@ Cell[BoxData[
    RowBox[{"\[DifferentialD]", "f"}]}]}]], "Output",
  CellChangeTimes->{3.732992608421482*^9, 3.733511774507874*^9}]
 }, Open  ]]
-}, Closed]]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+over the walk (fraction of beneficial mutations that are mutually beneficial)\
+\
+\>", "Section",
+ CellChangeTimes->{{3.732990557805098*^9, 3.732990561275272*^9}, {
+  3.732990597380826*^9, 3.732990598116604*^9}, {3.7397097866608543`*^9, 
+  3.739709839118375*^9}}],
+
+Cell[BoxData[
+ RowBox[{"Clear", "[", 
+  RowBox[{"c1", ",", "c2", ",", "V"}], "]"}]], "Input",
+ CellChangeTimes->{{3.72693404865525*^9, 3.726934051460037*^9}, {
+  3.726934609758028*^9, 3.726934611638834*^9}}],
+
+Cell["\<\
+Here we are interested in the volume of the intersection between two \
+m-dimensional spheres, with centres at distance d, with radii r1 and r2. We \
+follow Matt\[CloseCurlyQuote]s answer at \
+https://math.stackexchange.com/questions/162250/how-to-compute-the-volume-of-\
+intersection-between-two-hyperspheres\
+\>", "Text",
+ CellChangeTimes->{{3.726934256850663*^9, 3.726934322090904*^9}}],
+
+Cell["\<\
+The volume of the intersection is the volume of two spherical caps, glued at \
+a hyperplane.\
+\>", "Text",
+ CellChangeTimes->{{3.7269343428766747`*^9, 3.726934367499281*^9}}],
+
+Cell["The heights of the cap bases are ", "Text",
+ CellChangeTimes->{{3.726934144479258*^9, 3.726934182902323*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"c1", "[", 
+   RowBox[{"d_", ",", "r1_", ",", "r2_"}], "]"}], ":=", 
+  FractionBox[
+   RowBox[{
+    SuperscriptBox["d", "2"], "+", 
+    SuperscriptBox["r1", "2"], "-", 
+    SuperscriptBox["r2", "2"]}], 
+   RowBox[{"2", "d"}]]}]], "Input",
+ CellChangeTimes->{{3.726934191227734*^9, 3.726934216722145*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"c2", "[", 
+   RowBox[{"d_", ",", "r1_", ",", "r2_"}], "]"}], ":=", 
+  FractionBox[
+   RowBox[{
+    SuperscriptBox["d", "2"], "-", 
+    SuperscriptBox["r1", "2"], "+", 
+    SuperscriptBox["r2", "2"]}], 
+   RowBox[{"2", "d"}]]}]], "Input",
+ CellChangeTimes->{{3.72693422433197*^9, 3.726934234130858*^9}}],
+
+Cell["\<\
+Computing the volume of these caps requires some fancy integration ( Concise \
+Formulas for the Area and Volume of a Hyperspherical Cap, Shengqiao Li, Asian \
+Journal of Mathematics and Statistics 4(1), 66-70, 2011). Turns out the \
+volume of a cap is\
+\>", "Text",
+ CellChangeTimes->{{3.726934414679351*^9, 3.726934458630702*^9}, {
+  3.7269345283204517`*^9, 3.7269345345930634`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"V", "[", 
+   RowBox[{"m_", ",", "r_", ",", "a_"}], "]"}], ":=", 
+  RowBox[{"If", "[", 
+   RowBox[{
+    RowBox[{"a", "\[GreaterEqual]", "0"}], ",", 
+    RowBox[{
+     FractionBox["1", "2"], 
+     FractionBox[
+      SuperscriptBox["\[Pi]", 
+       RowBox[{"m", "/", "2"}]], 
+      RowBox[{"Gamma", "[", 
+       RowBox[{
+        FractionBox["m", "2"], "+", "1"}], "]"}]], 
+     SuperscriptBox["r", "m"], 
+     RowBox[{"BetaRegularized", "[", 
+      RowBox[{
+       RowBox[{"1", "-", 
+        RowBox[{
+         SuperscriptBox["a", "2"], "/", 
+         SuperscriptBox["r", "2"]}]}], ",", 
+       FractionBox[
+        RowBox[{"m", "+", "1"}], "2"], ",", 
+       FractionBox["1", "2"]}], "]"}]}], ",", 
+    RowBox[{
+     RowBox[{
+      FractionBox[
+       SuperscriptBox["\[Pi]", 
+        RowBox[{"m", "/", "2"}]], 
+       RowBox[{"Gamma", "[", 
+        RowBox[{
+         FractionBox["m", "2"], "+", "1"}], "]"}]], 
+      SuperscriptBox["r", "m"]}], "-", 
+     RowBox[{
+      FractionBox["1", "2"], 
+      FractionBox[
+       SuperscriptBox["\[Pi]", 
+        RowBox[{"m", "/", "2"}]], 
+       RowBox[{"Gamma", "[", 
+        RowBox[{
+         FractionBox["m", "2"], "+", "1"}], "]"}]], 
+      SuperscriptBox["r", "m"], 
+      RowBox[{"BetaRegularized", "[", 
+       RowBox[{
+        RowBox[{"1", "-", 
+         RowBox[{
+          SuperscriptBox["a", "2"], "/", 
+          SuperscriptBox["r", "2"]}]}], ",", 
+        FractionBox[
+         RowBox[{"m", "+", "1"}], "2"], ",", 
+        FractionBox["1", "2"]}], "]"}]}]}]}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.72693383714892*^9, 3.7269340008209753`*^9}, {
+  3.726934044503016*^9, 3.726934045158896*^9}, {3.726934495396943*^9, 
+  3.726934567619012*^9}}],
+
+Cell["where a is the height of the cap base.", "Text",
+ CellChangeTimes->{{3.7269345735319443`*^9, 3.726934581634309*^9}}],
+
+Cell["Thus the volume of the intersection is", "Text",
+ CellChangeTimes->{{3.726934467710885*^9, 3.72693447495124*^9}, {
+  3.72693458646661*^9, 3.726934593818706*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Vint", "=", 
+   RowBox[{
+    RowBox[{"V", "[", 
+     RowBox[{"m", ",", "r1", ",", 
+      RowBox[{"c1", "[", 
+       RowBox[{"d", ",", "r1", ",", "r2"}], "]"}]}], "]"}], "+", 
+    RowBox[{"V", "[", 
+     RowBox[{"m", ",", "r2", ",", 
+      RowBox[{"c2", "[", 
+       RowBox[{"d", ",", "r1", ",", "r2"}], "]"}]}], "]"}]}]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.726934480640053*^9, 3.726934483401046*^9}, {
+   3.726934597156065*^9, 3.7269346833027*^9}, 3.7269350779594584`*^9}],
+
+Cell[TextData[{
+ "In our case we will assume both populations adapt at the same speed and \
+thus both hyperspheres have the same radii. The distance between the centres \
+of the hyperspheres depends on that radius and the angle between them \
+\[Theta] (which we can restrict between 0 and 180 because 180 to 360 is just \
+the same thing). The distance between the centres begins as ",
+ Cell[BoxData[
+  RowBox[{"d0", 
+   SqrtBox[
+    RowBox[{"2", 
+     RowBox[{"(", 
+      RowBox[{"1", "-", 
+       RowBox[{"Cos", "[", "\[Theta]", "]"}]}], ")"}]}]]}]],
+  CellChangeTimes->{{3.732991147044746*^9, 3.732991182994479*^9}, {
+   3.732991248227474*^9, 3.7329912602273293`*^9}, {3.7329913618661413`*^9, 
+   3.7329913726200123`*^9}, {3.732991496162167*^9, 3.7329915028924837`*^9}}],
+ " where d0 is the initial distance from the mean ancestor phenotype to an \
+optimum. This is reduced as the populations adapt. If we let f the the \
+fraction of adaptation completed, the distance between the centres is ",
+ Cell[BoxData[
+  RowBox[{"d0", 
+   RowBox[{"(", 
+    RowBox[{"1", "-", "f"}], ")"}], 
+   SqrtBox[
+    RowBox[{"2", 
+     RowBox[{"(", 
+      RowBox[{"1", "-", 
+       RowBox[{"Cos", "[", "\[Theta]", "]"}]}], ")"}]}]]}]],
+  CellChangeTimes->{{3.732991147044746*^9, 3.732991182994479*^9}, {
+   3.732991248227474*^9, 3.7329912602273293`*^9}, {3.7329913618661413`*^9, 
+   3.7329913726200123`*^9}, {3.732991496162167*^9, 3.7329915028924837`*^9}}],
+ " and the radius of the hyperspheres is d0(1-f)"
+}], "Text",
+ CellChangeTimes->{{3.726935283793537*^9, 3.72693531720929*^9}, {
+  3.726935711825852*^9, 3.72693573848249*^9}, {3.7329955042465963`*^9, 
+  3.7329955831510677`*^9}, {3.7397099132830257`*^9, 3.7397099884658947`*^9}, {
+  3.739710040564352*^9, 3.739710055395948*^9}, {3.739710452930813*^9, 
+  3.739710507194449*^9}, {3.73971055076539*^9, 3.739710612411084*^9}, {
+  3.739710649958778*^9, 3.739710669803341*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"VintUs", "=", 
+  RowBox[{"Simplify", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{
+      RowBox[{"Vint", "/.", 
+       RowBox[{"d", "\[Rule]", 
+        RowBox[{"d", 
+         SqrtBox[
+          RowBox[{"2", 
+           RowBox[{"(", 
+            RowBox[{"1", "-", 
+             RowBox[{"Cos", "[", "\[Theta]", "]"}]}], ")"}]}]]}]}]}], "/.", 
+      RowBox[{"r1", "\[Rule]", "d"}]}], "/.", 
+     RowBox[{"r2", "\[Rule]", "d"}]}], ",", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"d", ">", "0"}], ",", 
+      RowBox[{"m", ">", "0"}], ",", 
+      RowBox[{"0", "\[LessEqual]", "\[Theta]", "\[LessEqual]", "\[Pi]"}], ",", 
+      RowBox[{"d0", ">", "0"}], ",", 
+      RowBox[{"0", "\[LessEqual]", "f", "\[LessEqual]", "1"}]}], "}"}]}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.739710186567832*^9, 3.7397101873663*^9}, 
+   3.739710541169199*^9, {3.739710679558936*^9, 3.7397107390844507`*^9}, 
+   3.739710843634419*^9}],
+
+Cell[BoxData[
+ FractionBox[
+  RowBox[{
+   SuperscriptBox["d", "m"], " ", 
+   SuperscriptBox["\[Pi]", 
+    RowBox[{"m", "/", "2"}]], " ", 
+   RowBox[{"BetaRegularized", "[", 
+    RowBox[{
+     SuperscriptBox[
+      RowBox[{"Cos", "[", 
+       FractionBox["\[Theta]", "2"], "]"}], "2"], ",", 
+     FractionBox[
+      RowBox[{"1", "+", "m"}], "2"], ",", 
+     FractionBox["1", "2"]}], "]"}]}], 
+  RowBox[{"Gamma", "[", 
+   RowBox[{"1", "+", 
+    FractionBox["m", "2"]}], "]"}]]], "Output",
+ CellChangeTimes->{
+  3.739710187841012*^9, {3.739710711135054*^9, 3.739710740223194*^9}, 
+   3.7397108439807796`*^9}]
+}, Open  ]],
+
+Cell["\<\
+It looks like things are working (check areas/volumes of circle/sphere)\
+\>", "Text",
+ CellChangeTimes->{{3.7269350849226313`*^9, 3.726935104946698*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"VintUs", "/.", 
+   RowBox[{"\[Theta]", "\[Rule]", "0"}]}], "/.", 
+  RowBox[{"m", "\[Rule]", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "3"}], "}"}]}]}]], "Input",
+ CellChangeTimes->{{3.72693503249265*^9, 3.726935068917179*^9}, {
+  3.726935106679359*^9, 3.726935108878891*^9}, {3.726935339292719*^9, 
+  3.726935339455789*^9}, {3.726935398821889*^9, 3.726935400352387*^9}, {
+  3.7269356738184443`*^9, 3.726935674013741*^9}, {3.726935761030375*^9, 
+  3.7269357614053087`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{
+    SuperscriptBox["d", "2"], " ", "\[Pi]"}], ",", 
+   FractionBox[
+    RowBox[{"4", " ", 
+     SuperscriptBox["d", "3"], " ", "\[Pi]"}], "3"]}], "}"}]], "Output",
+ CellChangeTimes->{{3.7269350199984426`*^9, 3.726935069137694*^9}, 
+   3.726935109141416*^9, 3.726935340258143*^9, {3.726935400870172*^9, 
+   3.726935408209566*^9}, 3.7269354414083*^9, 3.726935674474936*^9, 
+   3.726935761925003*^9, 3.727810151757272*^9, 3.72867344494552*^9, 
+   3.732991273854293*^9, 3.732991377358088*^9, 3.7329915885891953`*^9, 
+   3.7335117530914307`*^9, {3.739710821795038*^9, 3.739710845781394*^9}}]
+}, Open  ]],
+
+Cell["\<\
+and no overlap if angle is 180deg and we are at the initial step\
+\>", "Text",
+ CellChangeTimes->{{3.726935251696825*^9, 3.726935263015491*^9}, {
+  3.726935352411889*^9, 3.726935352706101*^9}, {3.732992141531172*^9, 
+  3.7329921459789333`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Simplify", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"VintUs", "/.", 
+     RowBox[{"\[Theta]", "\[Rule]", "\[Pi]"}]}], "/.", 
+    RowBox[{"d", "\[Rule]", "d0"}]}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"d", ">", "0"}], ",", 
+     RowBox[{"m", ">", "0"}]}], "}"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.726935124863653*^9, 3.726935247039892*^9}, {
+   3.726935343446248*^9, 3.7269353435844917`*^9}, {3.7269356764525957`*^9, 
+   3.726935676647972*^9}, {3.726935763501696*^9, 3.726935763885611*^9}, 
+   3.732991295461873*^9, {3.732991622169471*^9, 3.732991660032061*^9}, {
+   3.732991737187812*^9, 3.732991760540657*^9}, {3.732991851331959*^9, 
+   3.732991882494246*^9}, {3.732991915947041*^9, 3.732991950113699*^9}, {
+   3.732992138831465*^9, 3.7329921389580584`*^9}}],
+
+Cell[BoxData["0"], "Output",
+ CellChangeTimes->{{3.726935126101323*^9, 3.726935172340225*^9}, {
+   3.726935203471883*^9, 3.726935247894785*^9}, 3.7269353439934483`*^9, {
+   3.726935412610427*^9, 3.726935442475878*^9}, 3.726935676966209*^9, 
+   3.726935764208787*^9, 3.727810151808775*^9, 3.728673446245871*^9, {
+   3.732991278991251*^9, 3.7329912965082808`*^9}, 3.7329913833288107`*^9, {
+   3.7329916263830957`*^9, 3.7329916603804083`*^9}, {3.732991738660739*^9, 
+   3.732991788955925*^9}, {3.732991852377659*^9, 3.732991883260314*^9}, {
+   3.732991919574795*^9, 3.732991950943206*^9}, {3.732992084484886*^9, 
+   3.732992139307988*^9}, 3.733511753156322*^9, 3.739710848013702*^9}]
+}, Open  ]],
+
+Cell["Then the fraction overlap is", "Text",
+ CellChangeTimes->{{3.726935669273848*^9, 3.72693567070405*^9}, {
+  3.7269357549974213`*^9, 3.726935757139179*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Vfraction", "=", 
+  RowBox[{"Simplify", "[", 
+   RowBox[{
+    RowBox[{
+     FractionBox["VintUs", 
+      RowBox[{"VintUs", "/.", 
+       RowBox[{"\[Theta]", "\[Rule]", "0"}]}]], "/.", 
+     RowBox[{"d", "\[Rule]", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"1", "-", "f"}], ")"}], " ", "d0"}]}]}], ",", 
+    RowBox[{"m", "\[GreaterEqual]", "1"}]}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.726935758388949*^9, 3.7269357944220543`*^9}, {
+  3.7329921603818827`*^9, 3.732992162021234*^9}, {3.732992209126993*^9, 
+  3.732992214828713*^9}, {3.7329956343479223`*^9, 3.7329956367632236`*^9}, {
+  3.733511758301742*^9, 3.7335117682365513`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"BetaRegularized", "[", 
+  RowBox[{
+   SuperscriptBox[
+    RowBox[{"Cos", "[", 
+     FractionBox["\[Theta]", "2"], "]"}], "2"], ",", 
+   FractionBox[
+    RowBox[{"1", "+", "m"}], "2"], ",", 
+   FractionBox["1", "2"]}], "]"}]], "Output",
+ CellChangeTimes->{{3.726935770096477*^9, 3.726935795809393*^9}, 
+   3.727810151878778*^9, 3.7286734472955*^9, {3.732991281742347*^9, 
+   3.7329912985928383`*^9}, 3.732991397104995*^9, 3.73299211904281*^9, 
+   3.732992215190009*^9, 3.7329956373706512`*^9, {3.73351175322264*^9, 
+   3.733511774672472*^9}, 3.73351196890244*^9, 3.739710853550589*^9}]
+}, Open  ]],
+
+Cell["\<\
+which is the same regardless of how far adaptation has proceeded (which makes \
+sense since adaptation essentially just reduces the distance to the optima, \
+and the fraction of overlap is independent of this distance - in effect, as \
+the overlap gets smaller so too does the radii and thus the volume of the \
+hyperspheres, and these cancel out).\
+\>", "Text",
+ CellChangeTimes->{{3.739710891173558*^9, 3.739710893692046*^9}, {
+  3.739710938885639*^9, 3.7397110465527573`*^9}}]
+}, Open  ]]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -6902,7 +7271,7 @@ Extensions:
 3) adaptive walk\
 \>", "Text",
  CellChangeTimes->{{3.732996517992156*^9, 3.732996557464241*^9}}]
-}, Open  ]],
+}, Closed]],
 
 Cell[CellGroupData[{
 
@@ -7490,11 +7859,11 @@ PH3pCDXvj/0npo7U6nBzqHn/7HNKpu/aL6kLNY/BYZYW3xJlO0WoegaHdqGg
    3.733514335800376*^9, 3.7335143557394743`*^9}, 3.733514493197178*^9, 
    3.733514523909844*^9}]
 }, Open  ]]
-}, Open  ]]
+}, Closed]]
 }, Open  ]]
 },
-WindowSize->{740, 651},
-WindowMargins->{{Automatic, 184}, {Automatic, 20}},
+WindowSize->{1280, 979},
+WindowMargins->{{1280, Automatic}, {Automatic, 0}},
 ShowSelection->True,
 FrontEndVersion->"9.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (January 25, \
 2013)",
@@ -7657,112 +8026,147 @@ Cell[257282, 5093, 56838, 991, 231, "Output"]
 }, Open  ]]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[314169, 6090, 147, 2, 50, "Section"],
-Cell[314319, 6094, 207, 4, 28, "Input"],
-Cell[314529, 6100, 398, 7, 87, "Text"],
-Cell[314930, 6109, 184, 4, 30, "Text"],
-Cell[315117, 6115, 115, 1, 30, "Text"],
-Cell[315235, 6118, 338, 10, 51, "Input"],
-Cell[315576, 6130, 337, 10, 51, "Input"],
-Cell[315916, 6142, 394, 7, 68, "Text"],
-Cell[316313, 6151, 1731, 54, 111, "Input"],
-Cell[318047, 6207, 122, 1, 30, "Text"],
-Cell[318172, 6210, 167, 2, 30, "Text"],
-Cell[318342, 6214, 515, 14, 28, "Input"],
-Cell[318860, 6230, 965, 20, 90, "Text"],
+Cell[314169, 6090, 278, 6, 50, "Section"],
+Cell[314450, 6098, 207, 4, 28, "Input"],
+Cell[314660, 6104, 398, 7, 49, "Text"],
+Cell[315061, 6113, 184, 4, 30, "Text"],
+Cell[315248, 6119, 115, 1, 30, "Text"],
+Cell[315366, 6122, 338, 10, 51, "Input"],
+Cell[315707, 6134, 337, 10, 51, "Input"],
+Cell[316047, 6146, 394, 7, 49, "Text"],
+Cell[316444, 6155, 1731, 54, 59, "Input"],
+Cell[318178, 6211, 122, 1, 30, "Text"],
+Cell[318303, 6214, 167, 2, 30, "Text"],
+Cell[318473, 6218, 515, 14, 28, "Input"],
+Cell[318991, 6234, 965, 20, 71, "Text"],
 Cell[CellGroupData[{
-Cell[319850, 6254, 922, 24, 68, "Input"],
-Cell[320775, 6280, 855, 26, 69, "Output"]
+Cell[319981, 6258, 922, 24, 40, "Input"],
+Cell[320906, 6284, 855, 26, 69, "Output"]
 }, Open  ]],
-Cell[321645, 6309, 163, 3, 30, "Text"],
+Cell[321776, 6313, 163, 3, 30, "Text"],
 Cell[CellGroupData[{
-Cell[321833, 6316, 505, 11, 28, "Input"],
-Cell[322341, 6329, 592, 13, 50, "Output"]
+Cell[321964, 6320, 505, 11, 28, "Input"],
+Cell[322472, 6333, 592, 13, 50, "Output"]
 }, Open  ]],
-Cell[322948, 6345, 254, 5, 30, "Text"],
+Cell[323079, 6349, 254, 5, 30, "Text"],
 Cell[CellGroupData[{
-Cell[323227, 6354, 802, 17, 28, "Input"],
-Cell[324032, 6373, 658, 9, 28, "Output"]
+Cell[323358, 6358, 802, 17, 28, "Input"],
+Cell[324163, 6377, 658, 9, 28, "Output"]
 }, Open  ]],
-Cell[324705, 6385, 160, 2, 30, "Text"],
+Cell[324836, 6389, 160, 2, 30, "Text"],
 Cell[CellGroupData[{
-Cell[324890, 6391, 670, 16, 49, "Input"],
-Cell[325563, 6409, 770, 20, 51, "Output"]
+Cell[325021, 6395, 670, 16, 49, "Input"],
+Cell[325694, 6413, 770, 20, 51, "Output"]
 }, Open  ]],
-Cell[326348, 6432, 210, 4, 30, "Text"],
-Cell[326561, 6438, 203, 4, 30, "Text"],
+Cell[326479, 6436, 210, 4, 30, "Text"],
+Cell[326692, 6442, 203, 4, 30, "Text"],
 Cell[CellGroupData[{
-Cell[326789, 6446, 661, 16, 28, "Input"],
-Cell[327453, 6464, 8779, 152, 238, "Output"]
+Cell[326920, 6450, 661, 16, 28, "Input"],
+Cell[327584, 6468, 8779, 152, 238, "Output"]
 }, Open  ]],
-Cell[336247, 6619, 186, 4, 30, "Text"],
-Cell[336436, 6625, 194, 4, 30, "Text"],
+Cell[336378, 6623, 186, 4, 30, "Text"],
+Cell[336567, 6629, 194, 4, 30, "Text"],
 Cell[CellGroupData[{
-Cell[336655, 6633, 217, 5, 28, "Input"],
-Cell[336875, 6640, 843, 26, 69, "Output"]
+Cell[336786, 6637, 217, 5, 28, "Input"],
+Cell[337006, 6644, 843, 26, 69, "Output"]
+}, Open  ]]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[337898, 6676, 272, 6, 50, "Section"],
+Cell[338173, 6684, 207, 4, 28, "Input"],
+Cell[338383, 6690, 398, 7, 49, "Text"],
+Cell[338784, 6699, 184, 4, 30, "Text"],
+Cell[338971, 6705, 115, 1, 30, "Text"],
+Cell[339089, 6708, 338, 10, 51, "Input"],
+Cell[339430, 6720, 337, 10, 51, "Input"],
+Cell[339770, 6732, 394, 7, 49, "Text"],
+Cell[340167, 6741, 1731, 54, 59, "Input"],
+Cell[341901, 6797, 122, 1, 30, "Text"],
+Cell[342026, 6800, 167, 2, 30, "Text"],
+Cell[342196, 6804, 515, 14, 28, "Input"],
+Cell[342714, 6820, 1909, 38, 93, "Text"],
+Cell[CellGroupData[{
+Cell[344648, 6862, 940, 26, 40, "Input"],
+Cell[345591, 6890, 605, 19, 66, "Output"]
+}, Open  ]],
+Cell[346211, 6912, 163, 3, 30, "Text"],
+Cell[CellGroupData[{
+Cell[346399, 6919, 505, 11, 28, "Input"],
+Cell[346907, 6932, 638, 13, 50, "Output"]
+}, Open  ]],
+Cell[347560, 6948, 254, 5, 30, "Text"],
+Cell[CellGroupData[{
+Cell[347839, 6957, 802, 17, 28, "Input"],
+Cell[348644, 6976, 680, 9, 28, "Output"]
+}, Open  ]],
+Cell[349339, 6988, 160, 2, 30, "Text"],
+Cell[CellGroupData[{
+Cell[349524, 6994, 670, 16, 49, "Input"],
+Cell[350197, 7012, 608, 13, 48, "Output"]
+}, Open  ]],
+Cell[350820, 7028, 489, 8, 49, "Text"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[351358, 7042, 99, 1, 92, "Title"],
+Cell[CellGroupData[{
+Cell[351482, 7047, 187, 4, 80, "Section"],
+Cell[351672, 7053, 378, 7, 49, "Text"],
+Cell[352053, 7062, 809, 28, 35, "Input"],
+Cell[352865, 7092, 310, 5, 49, "Text"],
+Cell[CellGroupData[{
+Cell[353200, 7101, 547, 16, 63, "Input"],
+Cell[353750, 7119, 142, 3, 32, "Output"]
+}, Open  ]],
+Cell[353907, 7125, 421, 7, 49, "Text"],
+Cell[CellGroupData[{
+Cell[354353, 7136, 1846, 50, 108, "Input"],
+Cell[356202, 7188, 312, 7, 49, "Output"]
+}, Open  ]],
+Cell[356529, 7198, 222, 5, 30, "Text"],
+Cell[CellGroupData[{
+Cell[356776, 7207, 1755, 50, 108, "Input"],
+Cell[358534, 7259, 168, 4, 50, "Output"]
+}, Open  ]],
+Cell[358717, 7266, 174, 6, 87, "Text"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[358928, 7277, 212, 3, 50, "Section"],
+Cell[359143, 7282, 378, 7, 49, "Text"],
+Cell[359524, 7291, 886, 29, 35, "Input"],
+Cell[360413, 7322, 310, 5, 49, "Text"],
+Cell[CellGroupData[{
+Cell[360748, 7331, 625, 18, 63, "Input"],
+Cell[361376, 7351, 168, 4, 32, "Output"]
+}, Open  ]],
+Cell[361559, 7358, 421, 7, 49, "Text"],
+Cell[CellGroupData[{
+Cell[362005, 7369, 1841, 48, 93, "Input"],
+Cell[363849, 7419, 440, 9, 49, "Output"]
+}, Open  ]],
+Cell[364304, 7431, 621, 10, 49, "Text"],
+Cell[CellGroupData[{
+Cell[364950, 7445, 1948, 52, 93, "Input"],
+Cell[366901, 7499, 1143, 34, 49, "Output"]
+}, Open  ]],
+Cell[368059, 7536, 786, 13, 87, "Text"],
+Cell[CellGroupData[{
+Cell[368870, 7553, 2821, 89, 257, "Input"],
+Cell[371694, 7644, 414, 6, 28, "Output"],
+Cell[372111, 7652, 412, 6, 28, "Output"]
+}, Open  ]],
+Cell[372538, 7661, 142, 3, 30, "Text"],
+Cell[CellGroupData[{
+Cell[372705, 7668, 3085, 87, 435, "Input"],
+Cell[375793, 7757, 602, 11, 60, "Message"],
+Cell[376398, 7770, 602, 11, 60, "Message"],
+Cell[377003, 7783, 602, 11, 60, "Message"],
+Cell[377608, 7796, 559, 11, 24, "Message"],
+Cell[378170, 7809, 604, 11, 60, "Message"],
+Cell[378777, 7822, 605, 11, 60, "Message"],
+Cell[379385, 7835, 1169, 24, 234, "Output"]
 }, Open  ]]
 }, Closed]]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[337779, 6673, 99, 1, 92, "Title"],
-Cell[CellGroupData[{
-Cell[337903, 6678, 187, 4, 80, "Section"],
-Cell[338093, 6684, 378, 7, 68, "Text"],
-Cell[338474, 6693, 809, 28, 35, "Input"],
-Cell[339286, 6723, 310, 5, 68, "Text"],
-Cell[CellGroupData[{
-Cell[339621, 6732, 547, 16, 63, "Input"],
-Cell[340171, 6750, 142, 3, 32, "Output"]
-}, Open  ]],
-Cell[340328, 6756, 421, 7, 68, "Text"],
-Cell[CellGroupData[{
-Cell[340774, 6767, 1846, 50, 193, "Input"],
-Cell[342623, 6819, 312, 7, 49, "Output"]
-}, Open  ]],
-Cell[342950, 6829, 222, 5, 30, "Text"],
-Cell[CellGroupData[{
-Cell[343197, 6838, 1755, 50, 193, "Input"],
-Cell[344955, 6890, 168, 4, 50, "Output"]
-}, Open  ]],
-Cell[345138, 6897, 174, 6, 87, "Text"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[345349, 6908, 212, 3, 80, "Section"],
-Cell[345564, 6913, 378, 7, 68, "Text"],
-Cell[345945, 6922, 886, 29, 51, "Input"],
-Cell[346834, 6953, 310, 5, 68, "Text"],
-Cell[CellGroupData[{
-Cell[347169, 6962, 625, 18, 63, "Input"],
-Cell[347797, 6982, 168, 4, 32, "Output"]
-}, Open  ]],
-Cell[347980, 6989, 421, 7, 68, "Text"],
-Cell[CellGroupData[{
-Cell[348426, 7000, 1841, 48, 178, "Input"],
-Cell[350270, 7050, 440, 9, 49, "Output"]
-}, Open  ]],
-Cell[350725, 7062, 621, 10, 68, "Text"],
-Cell[CellGroupData[{
-Cell[351371, 7076, 1948, 52, 150, "Input"],
-Cell[353322, 7130, 1143, 34, 49, "Output"]
-}, Open  ]],
-Cell[354480, 7167, 786, 13, 144, "Text"],
-Cell[CellGroupData[{
-Cell[355291, 7184, 2821, 89, 285, "Input"],
-Cell[358115, 7275, 414, 6, 28, "Output"],
-Cell[358532, 7283, 412, 6, 28, "Output"]
-}, Open  ]],
-Cell[358959, 7292, 142, 3, 30, "Text"],
-Cell[CellGroupData[{
-Cell[359126, 7299, 3085, 87, 435, "Input"],
-Cell[362214, 7388, 602, 11, 60, "Message"],
-Cell[362819, 7401, 602, 11, 60, "Message"],
-Cell[363424, 7414, 602, 11, 60, "Message"],
-Cell[364029, 7427, 559, 11, 24, "Message"],
-Cell[364591, 7440, 604, 11, 60, "Message"],
-Cell[365198, 7453, 605, 11, 60, "Message"],
-Cell[365806, 7466, 1169, 24, 234, "Output"]
-}, Open  ]]
-}, Open  ]]
 }, Open  ]]
 }
 ]
