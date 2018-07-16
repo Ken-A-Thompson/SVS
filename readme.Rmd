@@ -1,13 +1,13 @@
 # Standing Genetic Variation & Speciation (SVS)
-## Ken A. Thompson, Matthew M. Osmond, Dolph Schluter
+## Ken A. Thompson, Matthew M. Osmond, and Dolph Schluter
 
-### Background
+### Abstract
 
-Models of ecological speciation (when natural selection generates reproductive isolation between independently evolving populations) typically assume that populations adapt only from new mutation, and that these mutations drawn from an effectively infinite random distribution. However, empirical studies of adaptation demonstrate that much adaptation (especially rapid adaptation) is from standing genetic variation, and also that the number of possible mutations is a 'list' (i.e., finite and discrete) rather than a continuous distribution. The goal of this project was to understand how incorporating standing variation into models of 'speciation-by-selection' affects our predictions about the evolution of reproductive isolation.
+When isolated populations adapt to novel environments, they may do so using the same or different alleles. Use of the same alleles—parallel genetic evolution—is increasingly likely if populations have shared ancestral standing genetic variation. Here, we investigate the conditions under which populations undergo parallel genetic evolution from standing variation and the associated implications for speciation via environment-specific hybrid fitness. Using computer simulations, we find that populations adapting to identical environments tend to fix the same alleles from standing variation unless there is a deficient or excess amount of variation in the founding population. We also find that the degree of parallel genetic adaptation decreases faster-than-linearly as selection deviates from fully parallel toward divergent. This rapid decrease in parallelism occurs because seemingly small environmental differences among populations correspond to steep reductions in the fraction of alleles that are mutually beneficial. Lastly, we show that adaptation from standing variation reduces the phenotypic segregation variance of hybrids under both parallel and divergent selection. Under parallel selection, parental populations fix the same alleles which do not segregate in hybrids. In addition, adaptation from standing variation proceeds via a greater number of alleles with individually smaller effects than when adaptation is from new mutation—this further reduces segregation variance even under divergent selection. This reduced segregation variance improves mean hybrid fitness when parents adapt to similar environments but reduces mean hybrid fitness under divergent adaptation. Therefore adaptation from standing variation forestalls speciation via parallel selection and promotes speciation via divergent selection.
 
 ### Reproducing this study
 
-To plot the data we used in the paper, simply open the included R project, and use the script in the 'scripts' folder.
+To plot the data we used in the paper, simply open the included R project, and use the script in the 'scripts' folder. The data plotted in the paper is in the enclosed 'data' folder.
 
 To re-run simulations, first install python on your machine. Then simply use python to execute the figure-specific scripts. On a Mac, open the terminal and navigate to the directory containing the scripts ('SVS' folder).
 
@@ -15,10 +15,21 @@ To re-run simulations, first install python on your machine. Then simply use pyt
 cd Documents/Projects/SVS
 ```
 
-Still in terminal, execute a particular script (here the script generating data for Fig. 2).
+Still in terminal, execute a particular script (here the script generating data for Fig. 2). For example: 
 
 ```
-python sgv.Fig2.py
+python sgv.Fig2A.py
 ```
 
 This data is now ready to visualize. 
+
+### Specifics of simulation scripts / notebooks used for each figure.
+
+* sgv.Fig2A.py
+    + Figure 2A
+* sgv.Fig2B.py
+    + Figure 2B
+* sgv.Fig3A.py
+    + Figure 3A, 4A&B, S3, S5
+* sgv.Fig2B.py
+    + Figure 2B

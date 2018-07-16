@@ -1,0 +1,891 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 9.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[     33468,        882]
+NotebookOptionsPosition[     32014,        831]
+NotebookOutlinePosition[     32372,        847]
+CellTagsIndexPosition[     32329,        844]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["\<\
+effect of variance \[OpenCurlyDoubleQuote]load\[CloseCurlyDoubleQuote] on \
+hybrid fitness\
+\>", "Title",
+ CellChangeTimes->{{3.737646094136984*^9, 3.7376461192783012`*^9}}],
+
+Cell["\<\
+distribution of hybrid traits assumed to be mutlivariate normal, centered at \
+average between two parental optima with variance \[Lambda] in each direction \
+and no covariance\
+\>", "Text",
+ CellChangeTimes->{{3.737646127527523*^9, 3.737646187088438*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"pxy", "=", 
+  RowBox[{"PDF", "[", 
+   RowBox[{
+    RowBox[{"MultinormalDistribution", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{
+        FractionBox[
+         RowBox[{"\[Theta]x1", "+", "\[Theta]x2"}], "2"], ",", 
+        FractionBox[
+         RowBox[{"\[Theta]y1", "+", "\[Theta]y2"}], "2"]}], "}"}], ",", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"\[Lambda]", ",", "0"}], "}"}], ",", 
+        RowBox[{"{", 
+         RowBox[{"0", ",", "\[Lambda]"}], "}"}]}], "}"}]}], "]"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"x", ",", "y"}], "}"}]}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.7368759675799503`*^9, 3.736876002893332*^9}, {
+  3.736876248213386*^9, 3.736876249091798*^9}, {3.736877835457584*^9, 
+  3.7368778505384617`*^9}}],
+
+Cell[BoxData[
+ FractionBox[
+  SuperscriptBox["\[ExponentialE]", 
+   RowBox[{
+    FractionBox["1", "2"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"-", 
+       FractionBox[
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{"x", "+", 
+           RowBox[{
+            FractionBox["1", "2"], " ", 
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{"-", "\[Theta]x1"}], "-", "\[Theta]x2"}], ")"}]}]}], 
+          ")"}], " ", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"2", " ", "x"}], "-", "\[Theta]x1", "-", "\[Theta]x2"}], 
+          ")"}]}], 
+        RowBox[{"2", " ", "\[Lambda]"}]]}], "-", 
+      FractionBox[
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"y", "+", 
+          RowBox[{
+           FractionBox["1", "2"], " ", 
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{"-", "\[Theta]y1"}], "-", "\[Theta]y2"}], ")"}]}]}], 
+         ")"}], " ", 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"2", " ", "y"}], "-", "\[Theta]y1", "-", "\[Theta]y2"}], 
+         ")"}]}], 
+       RowBox[{"2", " ", "\[Lambda]"}]]}], ")"}]}]], 
+  RowBox[{"2", " ", "\[Pi]", " ", 
+   SqrtBox[
+    SuperscriptBox["\[Lambda]", "2"]]}]]], "Output",
+ CellChangeTimes->{3.736876003466193*^9, 3.73687625104383*^9, 
+  3.7368778508796997`*^9, 3.737383254986628*^9, 3.73764628149279*^9}]
+}, Open  ]],
+
+Cell["\<\
+the fitness functions of each parent environment\
+\>", "Text",
+ CellChangeTimes->{{3.737646190344483*^9, 3.737646202152814*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{"wxy1", "=", 
+  RowBox[{"2", " ", "\[Pi]", " ", 
+   RowBox[{"PDF", "[", 
+    RowBox[{
+     RowBox[{"MultinormalDistribution", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"\[Theta]x1", ",", "\[Theta]y1"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"1", ",", "0"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"0", ",", "1"}], "}"}]}], "}"}]}], "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"x", ",", "y"}], "}"}]}], "]"}]}]}], "\[IndentingNewLine]", 
+ RowBox[{"wxy2", "=", 
+  RowBox[{"2", " ", "\[Pi]", " ", 
+   RowBox[{"PDF", "[", 
+    RowBox[{
+     RowBox[{"MultinormalDistribution", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"\[Theta]x2", ",", "\[Theta]y2"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"1", ",", "0"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"0", ",", "1"}], "}"}]}], "}"}]}], "]"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"x", ",", "y"}], "}"}]}], "]"}]}]}]}], "Input",
+ CellChangeTimes->{{3.736876161368559*^9, 3.736876169056485*^9}, {
+   3.736876225876849*^9, 3.736876254060066*^9}, 3.7368765891997538`*^9, {
+   3.736876711665216*^9, 3.736876724532123*^9}}],
+
+Cell[BoxData[
+ SuperscriptBox["\[ExponentialE]", 
+  RowBox[{
+   FractionBox["1", "2"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"-", 
+      SuperscriptBox[
+       RowBox[{"(", 
+        RowBox[{"x", "-", "\[Theta]x1"}], ")"}], "2"]}], "-", 
+     SuperscriptBox[
+      RowBox[{"(", 
+       RowBox[{"y", "-", "\[Theta]y1"}], ")"}], "2"]}], ")"}]}]]], "Output",
+ CellChangeTimes->{
+  3.7368761711285257`*^9, {3.7368762270147257`*^9, 3.736876254697028*^9}, 
+   3.7368765897503843`*^9, 3.736876724848832*^9, 3.7368778527589083`*^9, 
+   3.737383255551498*^9, 3.737646282822103*^9}],
+
+Cell[BoxData[
+ SuperscriptBox["\[ExponentialE]", 
+  RowBox[{
+   FractionBox["1", "2"], " ", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"-", 
+      SuperscriptBox[
+       RowBox[{"(", 
+        RowBox[{"x", "-", "\[Theta]x2"}], ")"}], "2"]}], "-", 
+     SuperscriptBox[
+      RowBox[{"(", 
+       RowBox[{"y", "-", "\[Theta]y2"}], ")"}], "2"]}], ")"}]}]]], "Output",
+ CellChangeTimes->{
+  3.7368761711285257`*^9, {3.7368762270147257`*^9, 3.736876254697028*^9}, 
+   3.7368765897503843`*^9, 3.736876724848832*^9, 3.7368778527589083`*^9, 
+   3.737383255551498*^9, 3.737646282824682*^9}]
+}, Open  ]],
+
+Cell["\<\
+mean fitness of population on a peak with variance \[Lambda] and its \
+logarithm (chevin\[CloseCurlyQuote]s variance load)\
+\>", "Text",
+ CellChangeTimes->{{3.7376462184734087`*^9, 3.737646278235615*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{"Integrate", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{"wxy1", " ", 
+      RowBox[{"PDF", "[", 
+       RowBox[{
+        RowBox[{"MultinormalDistribution", "[", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"\[Theta]x1", ",", "\[Theta]y1"}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"{", 
+             RowBox[{"\[Lambda]", ",", "0"}], "}"}], ",", 
+            RowBox[{"{", 
+             RowBox[{"0", ",", "\[Lambda]"}], "}"}]}], "}"}]}], "]"}], ",", 
+        RowBox[{"{", 
+         RowBox[{"x", ",", "y"}], "}"}]}], "]"}]}], "/.", 
+     RowBox[{"\[Theta]x1", "\[Rule]", "0"}]}], "/.", 
+    RowBox[{"\[Theta]y1", "\[Rule]", "0"}]}], ",", 
+   RowBox[{"{", 
+    RowBox[{"x", ",", 
+     RowBox[{"-", "\[Infinity]"}], ",", "\[Infinity]"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"y", ",", 
+     RowBox[{"-", "\[Infinity]"}], ",", "\[Infinity]"}], "}"}], ",", 
+   RowBox[{"Assumptions", "\[Rule]", 
+    RowBox[{"\[Lambda]", ">", "0"}]}]}], "]"}], "\[IndentingNewLine]", 
+ RowBox[{"varload", "=", 
+  RowBox[{"-", 
+   RowBox[{"Log", "[", "%", "]"}]}]}]}], "Input",
+ CellChangeTimes->{{3.736878184908173*^9, 3.736878243800909*^9}, {
+  3.7368784971848373`*^9, 3.736878534050541*^9}, {3.736878578821286*^9, 
+  3.736878612162512*^9}}],
+
+Cell[BoxData[
+ FractionBox["1", 
+  RowBox[{"1", "+", "\[Lambda]"}]]], "Output",
+ CellChangeTimes->{{3.736878190070499*^9, 3.736878245829838*^9}, {
+   3.736878501362615*^9, 3.736878540928616*^9}, {3.736878586755478*^9, 
+   3.7368786131530247`*^9}, 3.737383257119667*^9, 3.737646285117176*^9}],
+
+Cell[BoxData[
+ RowBox[{"-", 
+  RowBox[{"Log", "[", 
+   FractionBox["1", 
+    RowBox[{"1", "+", "\[Lambda]"}]], "]"}]}]], "Output",
+ CellChangeTimes->{{3.736878190070499*^9, 3.736878245829838*^9}, {
+   3.736878501362615*^9, 3.736878540928616*^9}, {3.736878586755478*^9, 
+   3.7368786131530247`*^9}, 3.737383257119667*^9, 3.737646285118478*^9}]
+}, Open  ]],
+
+Cell["\<\
+we will use the above result to convert between variance \[Lambda] and \
+variance load.\
+\>", "Text",
+ CellChangeTimes->{{3.737646296379559*^9, 3.737646319364263*^9}}],
+
+Cell["\<\
+plot mean hybrid fitness relative to mean hybrid fitness in absence of \
+phenotypic variation across different amounts of variance for 3 amounts of \
+divergent selection\
+\>", "Text",
+ CellChangeTimes->{{3.737646287589075*^9, 3.737646288027371*^9}, {
+  3.7376463245004187`*^9, 3.7376464097591257`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"colors", "=", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"Directive", "[", 
+      RowBox[{"Thick", ",", "Blue"}], "]"}], ",", 
+     RowBox[{"Directive", "[", 
+      RowBox[{"Thick", ",", "Red"}], "]"}], ",", 
+     RowBox[{"Directive", "[", 
+      RowBox[{"Thick", ",", "Black"}], "]"}]}], "}"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"legend", "=", 
+   RowBox[{"{", 
+    RowBox[{
+    "\"\<\[Theta]=180\>\"", ",", "\"\<\[Theta]=60\>\"", ",", 
+     "\"\<\[Theta]=0\>\""}], "}"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"\[Theta]x1", "=", "1"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"\[Theta]y1", "=", "0"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"\[Theta]x2", "=", 
+   RowBox[{"Cos", "[", 
+    RowBox[{"\[Theta]", "*", 
+     RowBox[{"\[Pi]", "/", "180"}]}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"\[Theta]y2", "=", 
+   RowBox[{"Sin", "[", 
+    RowBox[{"\[Theta]", "*", 
+     RowBox[{"\[Pi]", "/", "180"}]}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"\[Theta]s", "=", 
+    RowBox[{"{", 
+     RowBox[{"180", ",", "60", ",", "0"}], "}"}]}], ";", 
+   RowBox[{"n\[Theta]", "=", 
+    RowBox[{"Length", "[", "\[Theta]s", "]"}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"novar", "=", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"wxy1", "/.", 
+       RowBox[{"x", "\[Rule]", 
+        FractionBox[
+         RowBox[{"\[Theta]x1", "+", "\[Theta]x2"}], "2"]}]}], "/.", 
+      RowBox[{"y", "\[Rule]", 
+       FractionBox[
+        RowBox[{"\[Theta]y1", "+", "\[Theta]y2"}], "2"]}]}], ")"}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Table", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"varload", ",", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"NIntegrate", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{
+            RowBox[{"Max", "[", 
+             RowBox[{"wxy1", ",", "wxy2"}], "]"}], "pxy"}], "/.", 
+           RowBox[{"\[Theta]", "\[Rule]", 
+            RowBox[{"\[Theta]s", "[", 
+             RowBox[{"[", "i", "]"}], "]"}]}]}], ",", 
+          RowBox[{"{", 
+           RowBox[{"x", ",", 
+            RowBox[{"-", "\[Infinity]"}], ",", "\[Infinity]"}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"y", ",", 
+            RowBox[{"-", "\[Infinity]"}], ",", "\[Infinity]"}], "}"}]}], 
+         "]"}], "/", "novar"}], "/.", 
+       RowBox[{"\[Theta]", "\[Rule]", 
+        RowBox[{"\[Theta]s", "[", 
+         RowBox[{"[", "i", "]"}], "]"}]}]}]}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"i", ",", 
+      RowBox[{"Length", "[", "\[Theta]s", "]"}]}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"\[Lambda]", ",", 
+      SuperscriptBox["10", 
+       RowBox[{"-", "3"}]], ",", "0.12", ",", "0.005"}], "}"}]}], "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{"ListPlot", "[", 
+  RowBox[{"%", ",", 
+   RowBox[{"Joined", "\[Rule]", "True"}], ",", 
+   RowBox[{"PlotRange", "\[Rule]", "All"}], ",", 
+   RowBox[{"Frame", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{"True", ",", "True", ",", "False", ",", "False"}], "}"}]}], ",", 
+   
+   RowBox[{"FrameLabel", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"Style", "[", 
+       RowBox[{"\"\<Variance load\>\"", ",", "16"}], "]"}], ",", 
+      RowBox[{"Style", "[", 
+       RowBox[{"\"\<Relative mean hybrid fitness\>\"", ",", "16"}], "]"}]}], 
+     "}"}]}], ",", 
+   RowBox[{"PlotStyle", "\[Rule]", "colors"}], ",", 
+   RowBox[{"PlotLegends", "\[Rule]", 
+    RowBox[{"Placed", "[", 
+     RowBox[{
+      RowBox[{"LineLegend", "[", 
+       RowBox[{"colors", ",", "legend"}], "]"}], ",", "Right"}], "]"}]}], ",", 
+   RowBox[{"FrameStyle", "\[Rule]", 
+    RowBox[{"Directive", "[", 
+     RowBox[{"FontSize", "\[Rule]", "16"}], "]"}]}]}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"Export", "[", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"NotebookDirectory", "[", "]"}], "<>", "\"\<loadfit.pdf\>\""}], 
+     ",", "%"}], "]"}], ";"}], "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{"Clear", "[", 
+  RowBox[{
+  "\[Theta]x1", ",", "\[Theta]x2", ",", "\[Theta]y1", ",", "\[Theta]y2", ",", 
+   "\[Theta]s", ",", "\[Theta]"}], "]"}]}], "Input",
+ CellChangeTimes->CompressedData["
+1:eJxTTMoPSmViYGAQBWIQvWTniTtt1187nvjbcQ9ER81VeAKiA8zk2NqB9IYF
+0QIgWoD1vSCIbtnOKQ6ib9+5oQGi+7Ru6oBokRxbQxCtxV1kCqJLFbrNQPS2
+eRetQPSFp//DQPTS5qXRIPrVu0WxIPqw9LIUEO1sfaIGRG9a9WwniH76kGsX
+iDayrD0G5s9adhxEy1StOgui41K8LoBozq3e+zqB9B/THftBtIyou07dDaD5
+OVYWIJrBeqVOPZA+dczJAEQ/Vrs2DUQrXWTYAaJ/b5i3D0R3V9ccBNH+LKtX
+/QPSfEzu20H0onZlx/9A2u6BkBuILvXODADR12rkgkH0gimb4kF0M/vvBBAN
+ACjlwRQ=
+  "]],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"NIntegrate", "::", "slwcon"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Numerical integration converging too slowly; suspect one \
+of the following: singularity, value of the integration is 0, highly \
+oscillatory integrand, or WorkingPrecision too small. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/NIntegrate/slwcon\\\", ButtonNote -> \
+\\\"NIntegrate::slwcon\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{
+  3.7368780554520893`*^9, 3.736878547201069*^9, {3.736878630629705*^9, 
+   3.736878655383731*^9}, {3.736878703663952*^9, 3.736878723619089*^9}, {
+   3.736882679727889*^9, 3.7368826909492607`*^9}, 3.737383261104525*^9, 
+   3.7373833682588377`*^9, 3.737385354046913*^9, {3.737386371103973*^9, 
+   3.7373864337202253`*^9}, 3.737386518189827*^9, 3.7376465370326843`*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"NIntegrate", "::", "slwcon"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Numerical integration converging too slowly; suspect one \
+of the following: singularity, value of the integration is 0, highly \
+oscillatory integrand, or WorkingPrecision too small. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/NIntegrate/slwcon\\\", ButtonNote -> \
+\\\"NIntegrate::slwcon\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{
+  3.7368780554520893`*^9, 3.736878547201069*^9, {3.736878630629705*^9, 
+   3.736878655383731*^9}, {3.736878703663952*^9, 3.736878723619089*^9}, {
+   3.736882679727889*^9, 3.7368826909492607`*^9}, 3.737383261104525*^9, 
+   3.7373833682588377`*^9, 3.737385354046913*^9, {3.737386371103973*^9, 
+   3.7373864337202253`*^9}, 3.737386518189827*^9, 3.737646537911256*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"NIntegrate", "::", "slwcon"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Numerical integration converging too slowly; suspect one \
+of the following: singularity, value of the integration is 0, highly \
+oscillatory integrand, or WorkingPrecision too small. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/NIntegrate/slwcon\\\", ButtonNote -> \
+\\\"NIntegrate::slwcon\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{
+  3.7368780554520893`*^9, 3.736878547201069*^9, {3.736878630629705*^9, 
+   3.736878655383731*^9}, {3.736878703663952*^9, 3.736878723619089*^9}, {
+   3.736882679727889*^9, 3.7368826909492607`*^9}, 3.737383261104525*^9, 
+   3.7373833682588377`*^9, 3.737385354046913*^9, {3.737386371103973*^9, 
+   3.7373864337202253`*^9}, 3.737386518189827*^9, 3.737646538842925*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"General", "::", "stop"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Further output of \
+\[NoBreak]\\!\\(\\*StyleBox[\\(NIntegrate :: slwcon\\), \
+\\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during this calculation. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, ButtonData:>\\\"paclet:ref/message/General/stop\\\", \
+ButtonNote -> \\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{
+  3.7368780554520893`*^9, 3.736878547201069*^9, {3.736878630629705*^9, 
+   3.736878655383731*^9}, {3.736878703663952*^9, 3.736878723619089*^9}, {
+   3.736882679727889*^9, 3.7368826909492607`*^9}, 3.737383261104525*^9, 
+   3.7373833682588377`*^9, 3.737385354046913*^9, {3.737386371103973*^9, 
+   3.7373864337202253`*^9}, 3.737386518189827*^9, 3.737646538867334*^9}],
+
+Cell[BoxData[
+ TemplateBox[{GraphicsBox[{{}, {{
+       RGBColor[0, 0, 1], 
+       Thickness[Large], 
+       LineBox[CompressedData["
+1:eJwBkQFu/iFib1JlAgAAABgAAAACAAAAIjyMTzVgUD8L0In2LWXwPzNyeiOo
+gHg/gbW0SR7v8D/IkHrlrWeGP+ghcA7yO/E/flsEbhpBkD+U53KgJ3XxP+aZ
+d5gESJU/P3w0/HGj8T/de2NTpUiaP38tP/h6yvE/SS7KRAxDnz91XeSZOOzx
+PwOoRGykG6I/6G/v2t0J8j+RS7wgtZKkP/otCOA2JPI/LM9Avb8Gpz+X4qp4
+1DvyPyiA2KPLd6k/AV7toCBR8j/pfqAb4OWrP9baQfFtZPI/AelOUQRRrj8C
+0XwQ/XXyP0T72KufXLA/6UiR0v6F8j/wDRYUTI+xPzMcqtiglPI/pqSW0YrA
+sj9vcyA+BaLyP7ysVEhf8LM/YdSrwUmu8j+84kXQzB61P20rANOHufI/+VeU
+tdZLtj8bA31p1cPyP5qt1TiAd7c/iPoJjkXN8j8/DUGPzKG4P3xxkg/p1fI/
+pOnj4r7KuT9b6v6uzt3yP5aN1VJa8ro/2fjFjQPl8j97g2nzoRi8P894OoqT
+6/I/mDrI2Q==
+        "]]}, {
+       RGBColor[1, 0, 0], 
+       Thickness[Large], 
+       LineBox[CompressedData["
+1:eJwBkQFu/iFib1JlAgAAABgAAAACAAAAIjyMTzVgUD/aI6oEkCzwPzNyeiOo
+gHg/oU8M/hxo8D/IkHrlrWeGPycBSaGxgfA/flsEbhpBkD8c+m9wiZHwP+aZ
+d5gESJU/8i38SgGc8D/de2NTpUiaPwEjdTzwovA/SS7KRAxDnz/3jxgaUqfw
+PwOoRGykG6I/8kSxM8Gp8D+RS7wgtZKkPzzkFBqkqvA/LM9Avb8Gpz8dXm2d
+Q6rwPyiA2KPLd6k/hjcSedWo8D/pfqAb4OWrP5gM89+BpvA/AelOUQRRrj9N
+At3YaaPwP0T72KufXLA/rIp1pqaf8D/wDRYUTI+xPwwTm9hNm/A/pqSW0YrA
+sj88FmTccJbwP7ysVEhf8LM/hSvSax6R8D+84kXQzB61P0CFyk9ji/A/+VeU
+tdZLtj+F4J8DSoXwP5qt1TiAd7c/NVofM9x+8D8/DUGPzKG4P6+D5/ghePA/
+pOnj4r7KuT8OoRR6InHwP5aN1VJa8ro/aC2zWeRp8D97g2nzoRi8P/nhpwJt
+YvA/B1O+vg==
+        "]]}, {
+       GrayLevel[0], 
+       Thickness[Large], 
+       LineBox[CompressedData["
+1:eJwBkQFu/iFib1JlAgAAABgAAAACAAAAIjyMTzVgUD+nDtca0ffvPzNyeiOo
+gHg//S8RNCTP7z/IkHrlrWeGP2bQXXPepu8/flsEbhpBkD8Sf4wG/n7vP+aZ
+d5gESJU/XQN2FoJX7z/de2NTpUiaP6EzCsVnMO8/SS7KRAxDnz8VbtA3rwnv
+PwOoRGykG6I/AaMjglbj7j+RS7wgtZKkP3Tz3TJbve4/LM9Avb8Gpz/QiSZo
+vZfuPyiA2KPLd6k/9rxeUHty7j/pfqAb4OWrP1It8Y2TTe4/AelOUQRRrj+d
+quHbBCnuP0T72KufXLA/2LxBos0E7j/wDRYUTI+xP4OkYCjt4O0/pqSW0YrA
+sj98UWgQYr3tP7ysVEhf8LM/4AoMcCua7T+84kXQzB61Pwe7gUtHd+0/+VeU
+tdZLtj+ngKJGtVTtP5qt1TiAd7c/t2A043Qy7T8/DUGPzKG4P5lxOWyCEO0/
+pOnj4r7KuT+iQf8z3+7sP5aN1VJa8ro/K5VYlYnN7D97g2nzoRi8P1BysnqA
+rOw/8jvAAw==
+        "]]}}, {}}, AspectRatio -> 
+    NCache[GoldenRatio^(-1), 0.6180339887498948], Axes -> True, 
+    AxesOrigin -> {0.000999500333083388, 0.8960573574473276}, 
+    Frame -> {True, True, False, False}, FrameLabel -> {{
+       FormBox[
+        StyleBox[
+        "\"Relative mean hybrid fitness\"", 16, StripOnInput -> False], 
+        TraditionalForm], None}, {
+       FormBox[
+        StyleBox["\"Variance load\"", 16, StripOnInput -> False], 
+        TraditionalForm], None}}, FrameStyle -> Directive[FontSize -> 16], 
+    Method -> {}, PlotRangeClipping -> True],
+   TemplateBox[{"\"\[Theta]=180\"", "\"\[Theta]=60\"", "\"\[Theta]=0\""}, 
+    "LineLegend", DisplayFunction -> (StyleBox[
+      StyleBox[
+       PaneBox[
+        TagBox[
+         GridBox[{{
+            TagBox[
+             GridBox[{{
+                GraphicsBox[{{
+                   Directive[
+                    EdgeForm[{
+                    Opacity[0.3], 
+                    GrayLevel[0]}], 
+                    Thickness[Large], 
+                    RGBColor[0, 0, 1]], {
+                    LineBox[{{0, 10}, {20, 10}}]}}, {
+                   Directive[
+                    EdgeForm[{
+                    Opacity[0.3], 
+                    GrayLevel[0]}], 
+                    Thickness[Large], 
+                    RGBColor[0, 0, 1]], {}}}, AspectRatio -> Full, 
+                 ImageSize -> {20, 10}, PlotRangePadding -> None, 
+                 ImagePadding -> 1, 
+                 BaselinePosition -> (Scaled[0.1] -> Baseline)], #}, {
+                GraphicsBox[{{
+                   Directive[
+                    EdgeForm[{
+                    Opacity[0.3], 
+                    GrayLevel[0]}], 
+                    Thickness[Large], 
+                    RGBColor[1, 0, 0]], {
+                    LineBox[{{0, 10}, {20, 10}}]}}, {
+                   Directive[
+                    EdgeForm[{
+                    Opacity[0.3], 
+                    GrayLevel[0]}], 
+                    Thickness[Large], 
+                    RGBColor[1, 0, 0]], {}}}, AspectRatio -> Full, 
+                 ImageSize -> {20, 10}, PlotRangePadding -> None, 
+                 ImagePadding -> 1, 
+                 BaselinePosition -> (Scaled[0.1] -> Baseline)], #2}, {
+                GraphicsBox[{{
+                   Directive[
+                    EdgeForm[{
+                    Opacity[0.3], 
+                    GrayLevel[0]}], 
+                    Thickness[Large], 
+                    GrayLevel[0]], {
+                    LineBox[{{0, 10}, {20, 10}}]}}, {
+                   Directive[
+                    EdgeForm[{
+                    Opacity[0.3], 
+                    GrayLevel[0]}], 
+                    Thickness[Large], 
+                    GrayLevel[0]], {}}}, AspectRatio -> Full, 
+                 ImageSize -> {20, 10}, PlotRangePadding -> None, 
+                 ImagePadding -> 1, 
+                 BaselinePosition -> (Scaled[0.1] -> Baseline)], #3}}, 
+              GridBoxAlignment -> {
+               "Columns" -> {Center, Left}, "Rows" -> {{Baseline}}}, 
+              AutoDelete -> False, 
+              GridBoxDividers -> {
+               "Columns" -> {{False}}, "Rows" -> {{False}}}, 
+              GridBoxItemSize -> {"Columns" -> {{All}}, "Rows" -> {{All}}}, 
+              GridBoxSpacings -> {"Columns" -> {{0.5}}, "Rows" -> {{0.8}}}], 
+             "Grid"]}}, 
+          GridBoxAlignment -> {"Columns" -> {{Left}}, "Rows" -> {{Top}}}, 
+          AutoDelete -> False, 
+          GridBoxItemSize -> {
+           "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+          GridBoxSpacings -> {"Columns" -> {{1}}, "Rows" -> {{0}}}], "Grid"], 
+        Alignment -> Left, AppearanceElements -> None, 
+        ImageMargins -> {{5, 5}, {5, 5}}, ImageSizeAction -> "ResizeToFit"], 
+       LineIndent -> 0, StripOnInput -> False], {FontFamily -> "Times"}, 
+      Background -> Automatic, StripOnInput -> False]& ), Editable -> True, 
+    InterpretationFunction :> (RowBox[{"LineLegend", "[", 
+       RowBox[{
+         RowBox[{"{", 
+           RowBox[{
+             RowBox[{"Directive", "[", 
+               RowBox[{
+                 RowBox[{"Thickness", "[", "Large", "]"}], ",", 
+                 RowBox[{"RGBColor", "[", 
+                   RowBox[{"0", ",", "0", ",", "1"}], "]"}]}], "]"}], ",", 
+             RowBox[{"Directive", "[", 
+               RowBox[{
+                 RowBox[{"Thickness", "[", "Large", "]"}], ",", 
+                 RowBox[{"RGBColor", "[", 
+                   RowBox[{"1", ",", "0", ",", "0"}], "]"}]}], "]"}], ",", 
+             RowBox[{"Directive", "[", 
+               RowBox[{
+                 RowBox[{"Thickness", "[", "Large", "]"}], ",", 
+                 RowBox[{"GrayLevel", "[", "0", "]"}]}], "]"}]}], "}"}], ",", 
+         
+         RowBox[{"{", 
+           RowBox[{#, ",", #2, ",", #3}], "}"}], ",", 
+         RowBox[{"LegendLayout", "\[Rule]", "\"Column\""}], ",", 
+         RowBox[{"LegendMarkers", "\[Rule]", "False"}]}], "]"}]& )]},
+  "Legended",
+  DisplayFunction->(GridBox[{{
+      TagBox[
+       ItemBox[
+        PaneBox[
+         TagBox[#, "SkipImageSizeLevel"], Alignment -> {Center, Baseline}, 
+         BaselinePosition -> Baseline], DefaultBaseStyle -> "Labeled"], 
+       "SkipImageSizeLevel"], 
+      ItemBox[#2, DefaultBaseStyle -> "LabeledLabel"]}}, 
+    GridBoxAlignment -> {"Columns" -> {{Center}}, "Rows" -> {{Center}}}, 
+    AutoDelete -> False, GridBoxItemSize -> Automatic, 
+    BaselinePosition -> {1, 1}]& ),
+  Editable->True,
+  InterpretationFunction->(RowBox[{"Legended", "[", 
+     RowBox[{#, ",", 
+       RowBox[{"Placed", "[", 
+         RowBox[{#2, ",", "Right"}], "]"}]}], "]"}]& )]], "Output",
+ CellChangeTimes->{{3.736876913240399*^9, 3.7368769311337433`*^9}, {
+   3.736876998111904*^9, 3.736877035380624*^9}, {3.736877081074046*^9, 
+   3.736877091279291*^9}, {3.736877266136764*^9, 3.736877291124673*^9}, 
+   3.736877322639258*^9, {3.736877355801749*^9, 3.736877383241788*^9}, {
+   3.7368774151884317`*^9, 3.736877450298164*^9}, {3.736877485260523*^9, 
+   3.736877492730492*^9}, {3.736877533694044*^9, 3.736877548917626*^9}, {
+   3.736877585733148*^9, 3.736877752809393*^9}, {3.73687779045877*^9, 
+   3.73687780547583*^9}, {3.736877853941996*^9, 3.7368779236760283`*^9}, {
+   3.7368779874625473`*^9, 3.736878060574597*^9}, 3.736878552314493*^9, 
+   3.7368786357478743`*^9, 3.7368786833677473`*^9, {3.736878714316579*^9, 
+   3.736878736810151*^9}, 3.736882686655752*^9, 3.7368828336505404`*^9, 
+   3.7373833639019537`*^9, 3.737383511116955*^9, 3.73738549441333*^9, {
+   3.737386372719385*^9, 3.737386426366024*^9}, 3.737386460715357*^9, 
+   3.737386537408691*^9, 3.737646559146022*^9}]
+}, Open  ]],
+
+Cell["save data for plotting in R", "Text",
+ CellChangeTimes->{{3.73764961199144*^9, 3.7376496168120537`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"colors", "=", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"Directive", "[", 
+      RowBox[{"Thick", ",", "Blue"}], "]"}], ",", 
+     RowBox[{"Directive", "[", 
+      RowBox[{"Thick", ",", "Red"}], "]"}], ",", 
+     RowBox[{"Directive", "[", 
+      RowBox[{"Thick", ",", "Black"}], "]"}]}], "}"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"legend", "=", 
+   RowBox[{"{", 
+    RowBox[{
+    "\"\<\[Theta]=180\>\"", ",", "\"\<\[Theta]=60\>\"", ",", 
+     "\"\<\[Theta]=0\>\""}], "}"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"\[Theta]x1", "=", "1"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"\[Theta]y1", "=", "0"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"\[Theta]x2", "=", 
+   RowBox[{"Cos", "[", 
+    RowBox[{"\[Theta]", "*", 
+     RowBox[{"\[Pi]", "/", "180"}]}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"\[Theta]y2", "=", 
+   RowBox[{"Sin", "[", 
+    RowBox[{"\[Theta]", "*", 
+     RowBox[{"\[Pi]", "/", "180"}]}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"\[Theta]s", "=", 
+    RowBox[{"{", 
+     RowBox[{"180", ",", "60", ",", "0"}], "}"}]}], ";", 
+   RowBox[{"n\[Theta]", "=", 
+    RowBox[{"Length", "[", "\[Theta]s", "]"}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"novar", "=", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"wxy1", "/.", 
+       RowBox[{"x", "\[Rule]", 
+        FractionBox[
+         RowBox[{"\[Theta]x1", "+", "\[Theta]x2"}], "2"]}]}], "/.", 
+      RowBox[{"y", "\[Rule]", 
+       FractionBox[
+        RowBox[{"\[Theta]y1", "+", "\[Theta]y2"}], "2"]}]}], ")"}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Table", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"\[Theta]s", "[", 
+       RowBox[{"[", "i", "]"}], "]"}], ",", "varload", ",", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"NIntegrate", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{
+            RowBox[{"Max", "[", 
+             RowBox[{"wxy1", ",", "wxy2"}], "]"}], "pxy"}], "/.", 
+           RowBox[{"\[Theta]", "\[Rule]", 
+            RowBox[{"\[Theta]s", "[", 
+             RowBox[{"[", "i", "]"}], "]"}]}]}], ",", 
+          RowBox[{"{", 
+           RowBox[{"x", ",", 
+            RowBox[{"-", "\[Infinity]"}], ",", "\[Infinity]"}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"y", ",", 
+            RowBox[{"-", "\[Infinity]"}], ",", "\[Infinity]"}], "}"}]}], 
+         "]"}], "/", "novar"}], "/.", 
+       RowBox[{"\[Theta]", "\[Rule]", 
+        RowBox[{"\[Theta]s", "[", 
+         RowBox[{"[", "i", "]"}], "]"}]}]}]}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"i", ",", 
+      RowBox[{"Length", "[", "\[Theta]s", "]"}]}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"\[Lambda]", ",", 
+      SuperscriptBox["10", 
+       RowBox[{"-", "3"}]], ",", "0.12", ",", "0.005"}], "}"}]}], "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Flatten", "[", 
+   RowBox[{"%", ",", "1"}], "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"Export", "[", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"NotebookDirectory", "[", "]"}], "<>", "\"\<loadfit.csv\>\""}], 
+     ",", "%", ",", "\"\<CSV\>\""}], "]"}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{"Clear", "[", 
+  RowBox[{
+  "\[Theta]x1", ",", "\[Theta]x2", ",", "\[Theta]y1", ",", "\[Theta]y2", ",", 
+   "\[Theta]s", ",", "\[Theta]"}], "]"}]}], "Input",
+ CellChangeTimes->CompressedData["
+1:eJxTTMoPSmViYGAQA2IQvWTniTtt1187nvjbcQ9ER81VeAKiA8zk2NqB9IYF
+0QIgWoD1vSCIbtnOKQ6ib9+5oQGi+7Ru6oBokRxbQxCtxV1kCqJLFbrNQPS2
+eRetQPSFp//DQPTS5qXRIPrVu0WxIPqw9LIUEO1sfaIGRG9a9WwniH76kGsX
+iDayrD0G5s9adhxEy1StOgui41K8LoBozq3e+zqB9B/THftBtIyou07dDaD5
+OVYWIJrBeqVOPZA+dczJAEQ/Vrs2DUQrXWTYAaJ/b5i3D0R3V9ccBNH+LKtX
+/QPSfEzu20H0onZlx/9A2u6BkBuILvXODADR12rkgkH0gimb4kH0Cqlj6SBa
+xPmrOcPN145d3wQtQTQAeMrIdg==
+  "]],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"NIntegrate", "::", "slwcon"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Numerical integration converging too slowly; suspect one \
+of the following: singularity, value of the integration is 0, highly \
+oscillatory integrand, or WorkingPrecision too small. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/NIntegrate/slwcon\\\", ButtonNote -> \
+\\\"NIntegrate::slwcon\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.737647946189444*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"NIntegrate", "::", "slwcon"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Numerical integration converging too slowly; suspect one \
+of the following: singularity, value of the integration is 0, highly \
+oscillatory integrand, or WorkingPrecision too small. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/NIntegrate/slwcon\\\", ButtonNote -> \
+\\\"NIntegrate::slwcon\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.737647947109095*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"NIntegrate", "::", "slwcon"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Numerical integration converging too slowly; suspect one \
+of the following: singularity, value of the integration is 0, highly \
+oscillatory integrand, or WorkingPrecision too small. \\!\\(\\*ButtonBox[\\\"\
+\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", ButtonFrame->None, \
+ButtonData:>\\\"paclet:ref/message/NIntegrate/slwcon\\\", ButtonNote -> \
+\\\"NIntegrate::slwcon\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.737647948070278*^9}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox[
+   RowBox[{"General", "::", "stop"}], "MessageName"], 
+  RowBox[{
+  ":", " "}], "\<\"Further output of \
+\[NoBreak]\\!\\(\\*StyleBox[\\(NIntegrate :: slwcon\\), \
+\\\"MessageName\\\"]\\)\[NoBreak] will be suppressed during this calculation. \
+\\!\\(\\*ButtonBox[\\\"\[RightSkeleton]\\\", ButtonStyle->\\\"Link\\\", \
+ButtonFrame->None, ButtonData:>\\\"paclet:ref/message/General/stop\\\", \
+ButtonNote -> \\\"General::stop\\\"]\\)\"\>"}]], "Message", "MSG",
+ CellChangeTimes->{3.737647948099235*^9}]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1440, 855},
+WindowMargins->{{1366, Automatic}, {Automatic, 0}},
+FrontEndVersion->"9.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (January 25, \
+2013)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[579, 22, 183, 4, 92, "Title"],
+Cell[765, 28, 266, 5, 30, "Text"],
+Cell[CellGroupData[{
+Cell[1056, 37, 796, 22, 48, "Input"],
+Cell[1855, 61, 1356, 42, 87, "Output"]
+}, Open  ]],
+Cell[3226, 106, 138, 3, 30, "Text"],
+Cell[CellGroupData[{
+Cell[3389, 113, 1257, 35, 46, "Input"],
+Cell[4649, 150, 582, 16, 39, "Output"],
+Cell[5234, 168, 582, 16, 39, "Output"]
+}, Open  ]],
+Cell[5831, 187, 214, 4, 30, "Text"],
+Cell[CellGroupData[{
+Cell[6070, 195, 1313, 35, 46, "Input"],
+Cell[7386, 232, 291, 5, 47, "Output"],
+Cell[7680, 239, 342, 7, 47, "Output"]
+}, Open  ]],
+Cell[8037, 249, 177, 4, 30, "Text"],
+Cell[8217, 255, 312, 6, 30, "Text"],
+Cell[CellGroupData[{
+Cell[8554, 265, 4710, 132, 311, "Input"],
+Cell[13267, 399, 923, 16, 24, "Message"],
+Cell[14193, 417, 921, 16, 24, "Message"],
+Cell[15117, 435, 921, 16, 24, "Message"],
+Cell[16041, 453, 878, 16, 24, "Message"],
+Cell[16922, 471, 8673, 184, 248, "Output"]
+}, Open  ]],
+Cell[25610, 658, 110, 1, 30, "Text"],
+Cell[CellGroupData[{
+Cell[25745, 663, 3960, 112, 294, "Input"],
+Cell[29708, 777, 578, 11, 24, "Message"],
+Cell[30289, 790, 578, 11, 24, "Message"],
+Cell[30870, 803, 578, 11, 24, "Message"],
+Cell[31451, 816, 535, 11, 24, "Message"]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)

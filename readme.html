@@ -123,20 +123,41 @@ $(document).ready(function () {
 
 <div id="standing-genetic-variation-speciation-svs" class="section level1">
 <h1>Standing Genetic Variation &amp; Speciation (SVS)</h1>
-<div id="ken-a.-thompson-matthew-m.-osmond-dolph-schluter" class="section level2">
-<h2>Ken A. Thompson, Matthew M. Osmond, Dolph Schluter</h2>
-<div id="background" class="section level3">
-<h3>Background</h3>
-<p>Models of ecological speciation (when natural selection generates reproductive isolation between independently evolving populations) typically assume that populations adapt only from new mutation, and that these mutations drawn from an effectively infinite random distribution. However, empirical studies of adaptation demonstrate that much adaptation (especially rapid adaptation) is from standing genetic variation, and also that the number of possible mutations is a ‘list’ (i.e., finite and discrete) rather than a continuous distribution. The goal of this project was to understand how incorporating standing variation into models of ‘speciation-by-selection’ affects our predictions about the evolution of reproductive isolation.</p>
+<div id="ken-a.-thompson-matthew-m.-osmond-and-dolph-schluter" class="section level2">
+<h2>Ken A. Thompson, Matthew M. Osmond, and Dolph Schluter</h2>
+<div id="abstract" class="section level3">
+<h3>Abstract</h3>
+<p>When isolated populations adapt to novel environments, they may do so using the same or different alleles. Use of the same alleles—parallel genetic evolution—is increasingly likely if populations have shared ancestral standing genetic variation. Here, we investigate the conditions under which populations undergo parallel genetic evolution from standing variation and the associated implications for speciation via environment-specific hybrid fitness. Using computer simulations, we find that populations adapting to identical environments tend to fix the same alleles from standing variation unless there is a deficient or excess amount of variation in the founding population. We also find that the degree of parallel genetic adaptation decreases faster-than-linearly as selection deviates from fully parallel toward divergent. This rapid decrease in parallelism occurs because seemingly small environmental differences among populations correspond to steep reductions in the fraction of alleles that are mutually beneficial. Lastly, we show that adaptation from standing variation reduces the phenotypic segregation variance of hybrids under both parallel and divergent selection. Under parallel selection, parental populations fix the same alleles which do not segregate in hybrids. In addition, adaptation from standing variation proceeds via a greater number of alleles with individually smaller effects than when adaptation is from new mutation—this further reduces segregation variance even under divergent selection. This reduced segregation variance improves mean hybrid fitness when parents adapt to similar environments but reduces mean hybrid fitness under divergent adaptation. Therefore adaptation from standing variation forestalls speciation via parallel selection and promotes speciation via divergent selection.</p>
 </div>
 <div id="reproducing-this-study" class="section level3">
 <h3>Reproducing this study</h3>
-<p>To plot the data we used in the paper, simply open the included R project, and use the script in the ‘scripts’ folder.</p>
+<p>To plot the data we used in the paper, simply open the included R project, and use the script in the ‘scripts’ folder. The data plotted in the paper is in the enclosed ‘data’ folder.</p>
 <p>To re-run simulations, first install python on your machine. Then simply use python to execute the figure-specific scripts. On a Mac, open the terminal and navigate to the directory containing the scripts (‘SVS’ folder).</p>
 <pre><code>cd Documents/Projects/SVS</code></pre>
-<p>Still in terminal, execute a particular script (here the script generating data for Fig. 2).</p>
-<pre><code>python sgv.Fig2.py</code></pre>
+<p>Still in terminal, execute a particular script (here the script generating data for Fig. 2). For example:</p>
+<pre><code>python sgv.Fig2A.py</code></pre>
 <p>This data is now ready to visualize.</p>
+</div>
+<div id="specifics-of-simulation-scripts-notebooks-used-for-each-figure." class="section level3">
+<h3>Specifics of simulation scripts / notebooks used for each figure.</h3>
+<ul>
+<li>sgv.Fig2A.py
+<ul>
+<li>Figure 2A</li>
+</ul></li>
+<li>Item 2
+<ul>
+<li>Item 2a</li>
+<li>Item 2b</li>
+</ul></li>
+<li>sgv.Fig2A.py</li>
+<li>Figure 2A</li>
+<li>sgv.Fig2A.py</li>
+<li>Figure 2B</li>
+<li>sgv.Fig2B.py</li>
+<li>Figure 2A</li>
+<li>sgv.Fig2A.py</li>
+</ul>
 </div>
 </div>
 </div>
