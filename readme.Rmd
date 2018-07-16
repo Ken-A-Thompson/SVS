@@ -25,11 +25,4 @@ This data is now ready to visualize.
 
 ### Specifics of simulation scripts / notebooks used for each figure.
 
-* sgv.Fig2A.py
-    + Figure 2A
-* sgv.Fig2B.py
-    + Figure 2B
-* sgv.Fig3A.py
-    + Figure 3A, 4A&B, S3, S5
-* sgv.Fig2B.py
-    + Figure 2B
+All figures generate their namesake figures, with the exception of 'sgv.Fig3A.py, which generates data for Figs. 3A, 4A&B, S3, S4 (dash line), and S5.
