@@ -64,14 +64,15 @@ def recomb(surv):
 	off = np.append(off_1, off_2, axis=0) #each product of meiosis
 	return off
 
-def mutate(off, u, alpha, m, mut):
+def mutate(off, u, mean_mut, cov_mut, m, mut):
 	"""
 	This function creates mutations and updates population
 	"""
 	rand3 = np.random.uniform(size = len(off)) #random uniform number in [0,1] for each offspring
 	nmuts = sum(rand3 < u) # mutate if random number is below mutation rate; returns number of new mutations
 	whomuts = np.where(rand3 < u) #indices of mutants
-	newmuts = np.random.normal(0, alpha, (nmuts, m)) #phenotypic effect of new mutations
+	newmuts = np.random.multivariate_normal(mean_mut, cov_mut, nmuts)
+	# newmuts = np.random.normal(0, alpha, (nmuts, m)) #phenotypic effect of new mutations
 	pop = np.append(off, np.transpose(np.identity(len(off), dtype=int)[whomuts[0]]), axis=1) #add new loci and identify mutants
 	mut = np.append(mut, newmuts, axis=0) #append effect of new mutations to mutation list
 	return [pop, mut]
@@ -109,8 +110,8 @@ def histogram_files(mut, theta, pop, alpha, m, N, u, sigma, rep, data_dir):
 		sgv_freq = np.sum(pop[:, keep], axis=0) #number of copies of each mutation
 		newmuts = np.random.normal(0, alpha, (len(sgv_dist)*10, m)) #phenotypic effect of new mutations (make 10 times number as in sgv to get clean distribution)
 		dist_denovo = np.linalg.norm(newmuts - theta, axis=1) #phenotypic distance from optimum for each individual de novo mutation
-		
-		sim_id = 'm%d_N%d_alpha%.1f_u%.4f_sigma%.1f_rep%d' %(m, N, alpha, u, sigma, rep) #sim info
+
+		sim_id = 'm%d_N%d_alpha%.1f_u%.4f_sigma%.3f_rep%d' %(m, N, alpha, u, sigma, rep) #sim info
 		filename_sgv = "%s/sgv_muts_%s.csv" %(data_dir, sim_id) #filename for sgv mutations
 		filename_denovo = "%s/denovo_muts_%s.csv" %(data_dir, sim_id) #filename for de novo mutations
 
@@ -125,29 +126,37 @@ def histogram_files(mut, theta, pop, alpha, m, N, u, sigma, rep, data_dir):
 			writer = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
 			writer.writerow(dist_denovo)
 
+		#distribution of trait values among individuals
+		z = np.dot(pop, mut) #phenotypes		
+		filename_z = "%s/z_%s.csv" %(data_dir, sim_id) #filename
+		np.savetxt(filename_z, z)
+
 ######################################################################
 ##PARAMETERS##
 ######################################################################
 
-m = 10 #phenotypic dimensions (positive integer >=1)
-N = 100000 #number of individuals (positive integer >=1)
-alpha = 0.1 #mutational sd (positive real number)
-u = 0.0001 #mutation probability per generation per genome (0<=u<=1)
-sigma = 1 #strength of selection (positive real number)
+m = 1 #phenotypic dimensions (positive integer >=1)
+N = 10000 #number of haploid individuals (positive integer >=1)
+u = 0.001 #mutation probability per generation per genome (0<=u<=1)
+sigma = 0.01 #strength of selection (positive real number)
+
+mean_mut = [0] * m #mean mutational effect in each dimension (real^n)
+alpha = 0.1 #mutational sd in each trait dimension (positive real number)
+cov_mut = np.identity(m) * alpha**2 #mutational covariance matrix (real^nxn)
 
 theta = np.array([0]*m) #optimum phenotype (n real numbers)
 
-maxgen = 100 #total number of generations population adapts for (positive integer)
-gen_rec = 10 #print every this many generations (positve integer <=maxgen)
+maxgen = 10000 #total number of generations population adapts for (positive integer)
+gen_rec = 100 #print every this many generations (positve integer <=maxgen)
 
 remove_lost = True #If true, remove mutations that are lost
 remove_fixed = False #If true, remove mutations that are fixed
 
-make_histogram_files = True #if true ouput mutation sizes for plotting 
+make_histogram_files = False #if true ouput mutation sizes for plotting 
 
 reps = 1 #number of replicates (positive integer)
 
-data_dir = 'data/dnm_dist' #where to save data
+data_dir = 'data/' #where to save data
 
 ######################################################################
 ##MAIN SIMULATION##
@@ -179,11 +188,11 @@ def main():
 			parents = np.random.multinomial(N, w/sum(w)) #number of times each parent chosen
 			off = np.repeat(pop, parents, axis=0) #offspring genotypes
 
-			# recombination
+			# mating and recombination
 			off = recomb(off)
 
 			# mutation and population update
-			[pop, mut] = mutate(off, u, alpha, m, mut)
+			[pop, mut] = mutate(off, u, mean_mut, cov_mut, m, mut)
 
 			# remove lost mutations if doing so
 			[pop, mut] = remove_lost_muts(remove_lost, pop, mut)
