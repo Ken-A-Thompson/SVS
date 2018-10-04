@@ -114,19 +114,19 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 2 #number of replicates for each set of parameters
-ns = [2, 5, 10] #phenotypic dimensions (positive integer >=1)
+nreps = 1 #number of replicates for each set of parameters
+ns = [2] #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
 ##PARAMETERS OF ANCESTOR##
 ######################################################################
 
-n_reps = 2 #number of reps of ancestor that exist
-N = 10**4 #number of individuals (positive integer >=1)
-alpha = 2*10**(-1) #mutational sd (positive real number)
+n_reps = 1 #number of reps of ancestor that exist
+N = 10**3 #number of individuals (positive integer >=1)
+alpha = 10**(-2) #mutational sd (positive real number)
 u = 10**(-3) #mutation probability per generation per genome (0<u<1)
-sigma = 10**(-2) #selection strength
+sigma = 10**(0) #selection strength
 burn_dir = 'data/'
 rrep = np.random.choice(n_reps, nreps, replace = False) #randomly assign each rep an ancestor, without or with replacement (i.e., unique ancestor for each sim or not)
 
@@ -135,22 +135,22 @@ rrep = np.random.choice(n_reps, nreps, replace = False) #randomly assign each re
 ######################################################################
 
 # n_mut_list = list(np.arange(0, 51, 3)) #starting nmuts, final n_muts, interval
-n_mut_list = [list(np.arange(0, 2, 1)), list(np.arange(0, 2, 1)), list(np.arange(0, 2, 1))] #starting nmuts, final n_muts, interval
+n_mut_list = [[10]] #list for each n value
 
-N_adapts = [10**3, 10**4] #number of haploid individuals (positive integer)
+N_adapts = [10**3] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 u_adapt = u #mutation probability per generation per genome (0<u<1)
-sigma_adapts = [10**(-1), 10**0] #selection strengths
+sigma_adapts = [10**0] #selection strengths
 
 # opt_dists = list(np.arange(0.2, 1.01, 0.025)) #distances to optima
-opt_dists = list(np.arange(0, 1.01, 0.5)) #distances to optima
+opt_dists = [0.1] #distances to optima
 
 # selection = 'divergent' #divergent selection (angle = 180 deg)
 selection = 'parallel' #parallel selection (angle = 0)
 # selection = 'both' #both divergent and parallel selection
 
 # maxgen = 2000 #total number of generations populations adapt for
-maxgen = 20 #total number of generations populations adapt for
+maxgen = 10**3 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
@@ -320,12 +320,28 @@ def main():
 								dist = np.linalg.norm(offpheno - np.mean(offpheno, axis=0), axis=1) #phenotypic distance from mean hybrid
 								# hyload = np.log(1*B) - np.mean(np.log(survival(dist)*B)) #hybrid load as defined by Chevin et al 2014
 								segvar = np.mean(np.var(offpheno, axis = 0))
+
+								#calculate genetic parallelism across ancestrally-segregating loci that have been segregating in adapting populations since divergence
+								p = sum(pop1[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop1
+								q = sum(pop2[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop2
+								EH = np.mean(p*(1-q)+(1-p)*q) #expected heterozygosity in hybrids
+								P = 1 - EH #our measure of parallelism (expected homozygosity in F1 diploid hybrids; will be 0 if fixed all different alleles, 1 if fixed all same alleles)
+
+								#calculate genetic parallelism across ancestrally-shared segregating that have been segregating in adapting populations since divergence plus those loci that have mutations unique to one adapting population
+								p = sum(pop1[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop1 
+								q = sum(pop2[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop2
+								EH_1 = p*(1-q)+(1-p)*q #expected heterozygosities at those loci
+								p = sum(pop1[:, len(mutfound):]) / N_adapt #frequency of unique derived alleles in pop1 = expected heterozygosity at loci with mutations unique to pop1
+								q = sum(pop2[:, len(mutfound):]) / N_adapt #frequency of unique derived alleles in pop2 = expected heterozygosity at loci with mutations unique to pop2
+								EH_2 = np.append(p,q) #list of expected heterozygosities at unique loci
+								EH = np.mean(np.append(EH_1,EH_2)) #expected heterozygosity across all loci considered
+								P_all = 1 - EH #our measure of parallelism
 								
 								#print an update
-								print('N=%d, sigma=%.2f, n=%d, opt1=%r, opt2=%r, rep=%d, n_muts=%d, segregation variance=%.3f, distance=%.3f, selection=%r' %(N_adapt, sigma_adapt, n, theta1, theta2, rep+1, n_muts, segvar, opt_dists[j], ['parallel','divergent'][k])) 
+								print('N=%d, sigma=%.2f, n=%d, opt1=%r, opt2=%r, rep=%d, n_muts=%d, distance=%.3f, selection=%r, segregation variance=%.3f, parallelism=%.4f, parallelism_all=%.4f' %(N_adapt, sigma_adapt, n, theta1, theta2, rep+1, n_muts, opt_dists[j], ['parallel','divergent'][k], segvar, P, P_all)) 
 								
 								#save data
-								write_data_to_output(fileHandles, [theta1, theta2, rep+1, n_muts, segvar, opt_dists[j], ['parallel','divergent'][k]])
+								write_data_to_output(fileHandles, [theta1, theta2, rep+1, n_muts, opt_dists[j], ['parallel','divergent'][k], segvar, P, P_all])
 
 								# hyloads[rep] = hyload #save hybrid load for this replicate
 

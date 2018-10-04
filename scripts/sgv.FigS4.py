@@ -102,16 +102,16 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 2 #number of replicates for each set of parameters
-ns = [2, 5, 10] #phenotypic dimensions (positive integer >=1)
+nreps = 1 #number of replicates for each set of parameters
+ns = [2] #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
 ##PARAMETERS TO MAKE ANCESTOR##
 ######################################################################
 
-N = 10**4 #number of individuals (positive integer >=1)
-n_mut_list = [[0, 150], [0, 150], [0, 150]] #number of mutations (positive integer >=1)
+N = 10**3 #number of individuals (positive integer >=1)
+n_mut_list = [[0, 10]] #number of mutations (positive integer >=1)
 p_mut = 10**(-2) #probability of having mutation at any one locus (0<=p<=1) #set this to zero for de novo only
 alpha = 10**(-2) #mutational sd (positive real number)
 
@@ -119,17 +119,17 @@ alpha = 10**(-2) #mutational sd (positive real number)
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-N_adapts = [10**3, 10**4] #number of haploid individuals (positive integer)
+N_adapts = [10**3] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 u_adapt = 10**(-3) #mutation probability per generation per genome (0<u<1)
-sigma_adapts = [10**(-1), 10**0] #selection strengths
+sigma_adapts = [10**0] #selection strengths
 
 opt_dist = 1 #distance to optima
 
 n_angles = 2 #number of angles between optima to simulate (including 0 and 180)
 angles = [math.pi*x/(n_angles-1) for x in range(n_angles)] #angles to use (in radians)
 
-maxgen = 20 #total number of generations populations adapt for
+maxgen = 10**3 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
@@ -279,12 +279,28 @@ def main():
 							mean_offpheno = np.mean(offpheno, axis=0)
 							offfit  = fitness(offpheno, mean_offpheno, sigma_adapt)
 							hyload = -np.mean(np.log(offfit)) #hybrid load as defined by Chevin et al 2014
-							
+
+							#calculate genetic parallelism across ancestrally-segregating loci that have been segregating in adapting populations since divergence
+							p = sum(pop1[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop1
+							q = sum(pop2[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop2
+							EH = np.mean(p*(1-q)+(1-p)*q) #expected heterozygosity in hybrids
+							P = 1 - EH #our measure of parallelism (expected homozygosity in F1 diploid hybrids; will be 0 if fixed all different alleles, 1 if fixed all same alleles)
+
+							#calculate genetic parallelism across ancestrally-shared segregating that have been segregating in adapting populations since divergence plus those loci that have mutations unique to one adapting population
+							p = sum(pop1[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop1 
+							q = sum(pop2[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop2
+							EH_1 = p*(1-q)+(1-p)*q #expected heterozygosities at those loci
+							p = sum(pop1[:, len(mutfound):]) / N_adapt #frequency of unique derived alleles in pop1 = expected heterozygosity at loci with mutations unique to pop1
+							q = sum(pop2[:, len(mutfound):]) / N_adapt #frequency of unique derived alleles in pop2 = expected heterozygosity at loci with mutations unique to pop2
+							EH_2 = np.append(p,q) #list of expected heterozygosities at unique loci
+							EH = np.mean(np.append(EH_1,EH_2)) #expected heterozygosity across all loci considered
+							P_all = 1 - EH #our measure of parallelism
+
 							#print an update
-							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, hybrid load=%.3f, distance between optima=%.3f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, hyload, opt_dist * (2*(1-math.cos(angles[j])))**(0.5))) 
+							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, distance between optima=%.3f,  hybrid load=%.3f, parallelism=%.4f, parallelism_all=%.4f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), hyload, P, P_all)) 
 							
 							#save data
-							write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, hyload, opt_dist * (2*(1-math.cos(angles[j])))**(0.5)])
+							write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), hyload, P, P_all])
 
 							# hyloads[rep] = hyload #save hybrid load for this replicate
 
