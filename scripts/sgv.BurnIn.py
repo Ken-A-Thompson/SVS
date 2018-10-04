@@ -139,9 +139,9 @@ def histogram_files(pop, mut, theta, mean_mut, cov_mut, n, N, alpha, u, sigma, r
 ######################################################################
 
 ns = [2, 5, 10] #phenotypic dimensions (positive integer >=1)
-N = 10**4 #number of haploid individuals (positive integer >=1)
+Ns = [10**3, 10**4] #number of haploid individuals (positive integer >=1)
 u = 10**(-3) #mutation probability per generation per genome (0<=u<=1)
-sigma = 10**(-2) #strength of selection (positive real number)
+sigmas = [10**(-2), 10**(-1)] #strength of selection (positive real number)
 alpha = 2*10**(-1) #mutational sd in each trait dimension (positive real number)
 
 maxgen = 10**1 #total number of generations population adapts for (positive integer)
@@ -162,85 +162,100 @@ data_dir = 'data/' #where to save data
 
 def main():
 
+	#loop over population size
+	i_N = 0
+	while i_N < len(Ns):
+		N = Ns[i_N]
 
-	#loop over dimensions
-	i = 0
-	while i < len(ns):
-		n = ns[i]
-		
-		#set the n-dependent parameters
-		mean_mut = [0] * n #mean mutational effect in each dimension (real^n)
-		cov_mut = np.identity(n) * alpha**2 #mutational covariance matrix (real^nxn)
-		theta = np.array([0] * n) #optimum phenotype (n real numbers)
+		#loop over selection strength
+		i_sigma = 0
+		while i_sigma < len(sigmas):
+			sigma = sigmas[i_sigma]
 
-		#open files for saving data
-		fileHandles = open_output_file(n, N, alpha, u, sigma, data_dir)
+			#loop over dimensions
+			i = 0
+			while i < len(ns):
+				n = ns[i]
+				
+				#set the n-dependent parameters
+				mean_mut = [0] * n #mean mutational effect in each dimension (real^n)
+				cov_mut = np.identity(n) * alpha**2 #mutational covariance matrix (real^nxn)
+				theta = np.array([0] * n) #optimum phenotype (n real numbers)
 
-		#loop over replicates
-		rep = 1
-		while rep < reps + 1:
+				#open files for saving data
+				fileHandles = open_output_file(n, N, alpha, u, sigma, data_dir)
 
-			#initialize the population
-			pop = np.array([[1]] * N) #start all individuals with one "mutation"
-			mut = np.array([[0] * n]) #but let the "mutation" do nothing (ie put all phenotypes at origin)
+				#loop over replicates
+				rep = 1
+				while rep < reps + 1:
 
-			#intitialize generation counter
-			gen = 0
+					#initialize the population
+					pop = np.array([[1]] * N) #start all individuals with one "mutation"
+					mut = np.array([[0] * n]) #but let the "mutation" do nothing (ie put all phenotypes at origin)
 
-			#run until maxgen
-			while gen < maxgen + 1:
+					#intitialize generation counter
+					gen = 0
 
-				# genotype to phenotype
-				z = np.dot(pop, mut) #sum mutations held by each individual (ie additivity in phenotype)
+					#run until maxgen
+					while gen < maxgen + 1:
 
-				# phenotype to fitness
-				w = fitness(z, theta, sigma)
+						# genotype to phenotype
+						z = np.dot(pop, mut) #sum mutations held by each individual (ie additivity in phenotype)
 
-				# wright-fisher (multinomial) sampling
-				parents = np.random.multinomial(N, w/sum(w)) #number of times each parent chosen
-				off = np.repeat(pop, parents, axis=0) #offspring genotypes
+						# phenotype to fitness
+						w = fitness(z, theta, sigma)
 
-				# mating and recombination
-				off = recomb(off)
+						# wright-fisher (multinomial) sampling
+						parents = np.random.multinomial(N, w/sum(w)) #number of times each parent chosen
+						off = np.repeat(pop, parents, axis=0) #offspring genotypes
 
-				# mutation and population update
-				[pop, mut] = mutate(off, u, mean_mut, cov_mut, mut)
+						# mating and recombination
+						off = recomb(off)
 
-				# remove lost mutations if doing so
-				[pop, mut] = remove_lost_muts(remove_lost, pop, mut)
+						# mutation and population update
+						[pop, mut] = mutate(off, u, mean_mut, cov_mut, mut)
 
-				#print update every gen_rec generations	
-				if gen % gen_rec == 0:
-					
-					# print(np.mean(pop[:,1:],axis=0))
-					print('n=%d   rep=%d   gen=%d   num_seg=%d   mean_freq=%.3f   mean_dist=%.3f' %(n, rep, gen, len(mut), np.mean(np.mean(pop[:,1:],axis=0)), np.mean(np.linalg.norm(mut - theta, axis=1))))
+						# remove lost mutations if doing so
+						[pop, mut] = remove_lost_muts(remove_lost, pop, mut)
 
-					#save for plotting approach to MS balance (number of segregating mutations, avg frequency)
-					seg = np.any(pop-1, axis=0) #segregating mutations only
-					mut_seg = mut[seg] #which mutations segregating
-					pop_seg = pop[:, seg] #only look at those sites which are segregating
-					write_data_to_output(fileHandles, [rep, gen, len(mut_seg), np.mean(np.mean(pop_seg,axis=0)), np.mean(np.linalg.norm(mut_seg - theta, axis=1))]) #save replicate, generation, number of segregating mutations, avg frequency, and average departure from optimum
+						#print update every gen_rec generations	
+						if gen % gen_rec == 0:
+							
+							# print(np.mean(pop[:,1:],axis=0))
+							print('N=%d, sigma=%.2f, n=%d   rep=%d   gen=%d   num_seg=%d   mean_freq=%.3f   mean_dist=%.3f' %(N, sigma, n, rep, gen, len(mut), np.mean(np.mean(pop[:,1:],axis=0)), np.mean(np.linalg.norm(mut - theta, axis=1))))
 
-				# go to next generation
-				gen += 1
+							#save for plotting approach to MS balance (number of segregating mutations, avg frequency)
+							seg = np.any(pop-1, axis=0) #segregating mutations only
+							mut_seg = mut[seg] #which mutations segregating
+							pop_seg = pop[:, seg] #only look at those sites which are segregating
+							write_data_to_output(fileHandles, [rep, gen, len(mut_seg), np.mean(np.mean(pop_seg,axis=0)), np.mean(np.linalg.norm(mut_seg - theta, axis=1))]) #save replicate, generation, number of segregating mutations, avg frequency, and average departure from optimum
 
-			# remove fixed mutations if doing so
-			[pop, mut] = remove_fixed_muts(remove_fixed, pop, mut)
+						# go to next generation
+						gen += 1
 
-			#save mutation and frequency data
-			save_arrays(n, N, alpha, u, sigma, rep, data_dir, mut, pop)
+					# remove fixed mutations if doing so
+					[pop, mut] = remove_fixed_muts(remove_fixed, pop, mut)
 
-			#save mutation sizes for plotting histogram
-			histogram_files(pop, mut, theta, mean_mut, cov_mut, n, N, alpha, u, sigma, rep, data_dir)
+					#save mutation and frequency data
+					save_arrays(n, N, alpha, u, sigma, rep, data_dir, mut, pop)
 
-			# go to next rep
-			rep += 1
+					#save mutation sizes for plotting histogram
+					histogram_files(pop, mut, theta, mean_mut, cov_mut, n, N, alpha, u, sigma, rep, data_dir)
 
-		#clean up
-		close_output_files(fileHandles)
+					# go to next rep
+					rep += 1
 
-		#go to next m value
-		i += 1
+				#clean up
+				close_output_files(fileHandles)
+
+				#go to next n value
+				i += 1
+
+			#go to next sigma value
+			i_sigma += 1
+
+		#go to next N value
+		i_N += 1
 
 ######################################################################
 ##RUN SIMULATIONS##
