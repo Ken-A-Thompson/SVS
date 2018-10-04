@@ -223,9 +223,9 @@ def main():
 					w2 = fitness(phenos2, theta2, sigma_adapt)
 
 					# wright-fisher (multinomial) sampling
-					parents1 = np.random.multinomial(N, w1/sum(w1)) #number of times each parent chosen
+					parents1 = np.random.multinomial(N_adapt, w1/sum(w1)) #number of times each parent chosen
 					off1 = np.repeat(pop1, parents1, axis=0) #offspring genotypes
-					parents2 = np.random.multinomial(N, w2/sum(w2)) #number of times each parent chosen
+					parents2 = np.random.multinomial(N_adapt, w2/sum(w2)) #number of times each parent chosen
 					off2 = np.repeat(pop2, parents2, axis=0) #offspring genotypes
 
 					# mating and recombination

@@ -196,17 +196,17 @@ def main():
 					phenos = np.dot(pop, mut) #sum mutations held by each individual
 
 					# phenotype to fitness
-					w = fitness(phenos, theta, sigma)
+					w = fitness(phenos, theta, sigma_adapt)
 
 					# wright-fisher (multinomial) sampling
-					parents = np.random.multinomial(N, w/sum(w)) #number of times each parent chosen
+					parents = np.random.multinomial(N_adapt, w/sum(w)) #number of times each parent chosen
 					off = np.repeat(pop, parents, axis=0) #offspring genotypes
 
 					# mating and recombination
 					off = recomb(off)
 
 					# mutation and population update
-					[pop, mut] = mutate(off, u, alpha, n, mut)
+					[pop, mut] = mutate(off, u_adapt, alpha_adapt, n, mut)
 
 					# remove lost mutations (all zero columns in pop)
 					[pop, mut] = remove_muts(remove, remove_lost, pop, mut, mutfound)
@@ -224,7 +224,7 @@ def main():
 
 						#parent fitness and load (use parent 1, but could be either)	
 						parents = np.random.randint(len(pop), size = N_adapt)
-						parent_phenos = np.dot(pop[parents],mut)	
+						parent_phenos = np.dot(pop[parents], mut)	
 						# mean_parent_pheno = np.mean(parent_phenos, axis=0)
 						# parent_fitnesses = fitness(parent_phenos, mean_parent_pheno, sigma_adapt) #parent fitnesses
 						psegvar = np.mean(np.var(parent_phenos, axis = 0)) # segregation variance (mean of individual trait variances)

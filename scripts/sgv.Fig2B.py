@@ -246,13 +246,13 @@ def main():
 						phenos2 = np.dot(pop2, mut2) #sum mutations held by each individual
 
 						# phenotype to fitness
-						w1 = fitness(phenos1, theta1, sigma)
-						w2 = fitness(phenos2, theta2, sigma)
+						w1 = fitness(phenos1, theta1, sigma_adapt)
+						w2 = fitness(phenos2, theta2, sigma_adapt)
 
 						# wright-fisher (multinomial) sampling
-						parents1 = np.random.multinomial(N, w1/sum(w1)) #number of times each parent chosen
+						parents1 = np.random.multinomial(N_adapt, w1/sum(w1)) #number of times each parent chosen
 						off1 = np.repeat(pop1, parents1, axis=0) #offspring genotypes
-						parents2 = np.random.multinomial(N, w2/sum(w2)) #number of times each parent chosen
+						parents2 = np.random.multinomial(N_adapt, w2/sum(w2)) #number of times each parent chosen
 						off2 = np.repeat(pop2, parents2, axis=0) #offspring genotypes
 
 						# mating and recombination
@@ -260,8 +260,8 @@ def main():
 						off2 = recomb(off2)
 
 						# mutation and population update
-						[pop1, mut1] = mutate(off1, u, alpha, n, mut1)
-						[pop2, mut2] = mutate(off2, u, alpha, n, mut2)
+						[pop1, mut1] = mutate(off1, u_adapt, alpha_adapt, n, mut1)
+						[pop2, mut2] = mutate(off2, u_adapt, alpha_adapt, n, mut2)
 
 						# remove lost mutations (all zero columns in pop)
 						[pop1, mut1] = remove_muts(remove, remove_lost, pop1, mut1, mutfound)
