@@ -113,7 +113,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ######################################################################
 
 nreps = 2 #number of replicates for each set of parameters
-n = 2 #phenotypic dimensions (positive integer >=1)
+ns = [2, 5, 10] #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
@@ -133,7 +133,7 @@ rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep 
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-n_mut_list = list(np.arange(0, 2, 1)) #starting nmuts, final n_muts, interval
+n_mut_list = [list(np.arange(0, 2, 1)), list(np.arange(0, 2, 1)), list(np.arange(0, 2, 1))] #starting nmuts, final n_muts, interval
 
 N_adapt = 10**4 #number of individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
@@ -164,176 +164,184 @@ nHybrids = 100 #number of hybrids to make at end of each replicate
 
 def main():
 
-	# open output files
-	fileHandles = open_output_files(n, N_adapt, alpha_adapt, u_adapt, sigma_adapt, data_dir) 
+	#loop over dimensions
+	l = 0
+	while l < len(ns):
+		n = ns[l]
 
-	if selection == 'both':
-		k = 0
-		kmax = 1
-	elif selection == 'parallel':
-		k = 0
-		kmax = 0
-	elif selection == 'divergent':
-		k = 1
-		kmax = 1
+		# open output files
+		fileHandles = open_output_files(n, N_adapt, alpha_adapt, u_adapt, sigma_adapt, data_dir) 
 
-	#loop of selection styles
-	while k < kmax + 1:
+		if selection == 'both':
+			k = 0
+			kmax = 1
+		elif selection == 'parallel':
+			k = 0
+			kmax = 0
+		elif selection == 'divergent':
+			k = 1
+			kmax = 1
 
-		#loop over optima
-		j = 0
-		while j < len(opt_dists):
-			
-			#set optima
-			theta1 = np.append(opt_dists[j],[0]*(n-1)) #set one optima
+		#loop of selection styles
+		while k < kmax + 1:
 
-			if k == 0: #parallel
-				theta2 = theta1
-			elif k == 1: #divergent
-				theta2 = np.append(-opt_dists[j],[0]*(n-1))
+			#loop over optima
+			j = 0
+			while j < len(opt_dists):
 				
-			# #set up plot of hybrid load versus number of ancestral mutations (n_muts)
-			# plt.axis([0, max(n_mut_list)+1, 0, 0.1])
-			# plt.ylabel('hybrid load at generation %d (mean $\pm$ SD of %d replicates)' %(maxgen,nreps))
-			# plt.xlabel('number of ancestral mutations')
-			# plt.ion()
+				#set optima
+				theta1 = np.append(opt_dists[j],[0]*(n-1)) #set one optima
 
-			#loop over all n_muts values
-			i = 0
-			while i < len(n_mut_list):
+				if k == 0: #parallel
+					theta2 = theta1
+				elif k == 1: #divergent
+					theta2 = np.append(-opt_dists[j],[0]*(n-1))
+					
+				# #set up plot of hybrid load versus number of ancestral mutations (n_muts)
+				# plt.axis([0, max(n_mut_list)+1, 0, 0.1])
+				# plt.ylabel('hybrid load at generation %d (mean $\pm$ SD of %d replicates)' %(maxgen,nreps))
+				# plt.xlabel('number of ancestral mutations')
+				# plt.ion()
 
-				n_muts = n_mut_list[i] #set number of mutations in ancestor (ie how much SGV)
+				#loop over all n_muts values
+				i = 0
+				while i < len(n_mut_list[l]):
 
-				# hyloads = [0] * nreps #initialize vector to store hybrid loads in from each replicate
+					n_muts = n_mut_list[l][i] #set number of mutations in ancestor (ie how much SGV)
 
-				#loop over all replicates
-				rep = 0
-				while rep < nreps:
+					# hyloads = [0] * nreps #initialize vector to store hybrid loads in from each replicate
 
-					#load ancestor
-					burn_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f_rep%d' %(n, N, alpha, u, sigma, rrep[rep]+1)
+					#loop over all replicates
+					rep = 0
+					while rep < nreps:
 
-					filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
-					ancestor_muts = np.load(filename) #load mutations
+						#load ancestor
+						burn_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f_rep%d' %(n, N, alpha, u, sigma, rrep[rep]+1)
 
-					filename = "%s/Freqs_%s.npy" %(burn_dir, burn_id)
-					ancestor_freqs = np.load(filename) #load frequencies
+						filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
+						ancestor_muts = np.load(filename) #load mutations
 
-					#found adapting populations
-					# [popfound1, mutfound1] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
-					# [popfound2, mutfound2] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
+						filename = "%s/Freqs_%s.npy" %(burn_dir, burn_id)
+						ancestor_freqs = np.load(filename) #load frequencies
 
-					#initialize adapting populations
-					# [pop1, mut1] = [popfound1, mutfound1]
-					# [pop2, mut2] = [popfound2, mutfound2]
+						#found adapting populations
+						# [popfound1, mutfound1] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
+						# [popfound2, mutfound2] = found(n_muts, nmuts_max, ancestor_muts, ancestor_freqs, K, n)
 
-					#found identical populations
-					[popfound, mutfound] = found(n_muts, ancestor_muts, ancestor_freqs, N_adapt, n)
-					[pop1, mut1] = [popfound, mutfound]
-					[pop2, mut2] = [popfound, mutfound]
+						#initialize adapting populations
+						# [pop1, mut1] = [popfound1, mutfound1]
+						# [pop2, mut2] = [popfound2, mutfound2]
 
-					#intitialize generation counter
-					gen = 0
+						#found identical populations
+						[popfound, mutfound] = found(n_muts, ancestor_muts, ancestor_freqs, N_adapt, n)
+						[pop1, mut1] = [popfound, mutfound]
+						[pop2, mut2] = [popfound, mutfound]
 
-					#run until maxgen
-					while gen < maxgen + 1:
+						#intitialize generation counter
+						gen = 0
 
-						# genotype to phenotype
-						phenos1 = np.dot(pop1, mut1) #sum mutations held by each individual
-						phenos2 = np.dot(pop2, mut2) #sum mutations held by each individual
+						#run until maxgen
+						while gen < maxgen + 1:
 
-						# phenotype to fitness
-						w1 = fitness(phenos1, theta1, sigma_adapt)
-						w2 = fitness(phenos2, theta2, sigma_adapt)
+							# genotype to phenotype
+							phenos1 = np.dot(pop1, mut1) #sum mutations held by each individual
+							phenos2 = np.dot(pop2, mut2) #sum mutations held by each individual
 
-						# wright-fisher (multinomial) sampling
-						parents1 = np.random.multinomial(N_adapt, w1/sum(w1)) #number of times each parent chosen
-						off1 = np.repeat(pop1, parents1, axis=0) #offspring genotypes
-						parents2 = np.random.multinomial(N_adapt, w2/sum(w2)) #number of times each parent chosen
-						off2 = np.repeat(pop2, parents2, axis=0) #offspring genotypes
+							# phenotype to fitness
+							w1 = fitness(phenos1, theta1, sigma_adapt)
+							w2 = fitness(phenos2, theta2, sigma_adapt)
 
-						# mating and recombination
-						off1 = recomb(off1)
-						off2 = recomb(off2)
+							# wright-fisher (multinomial) sampling
+							parents1 = np.random.multinomial(N_adapt, w1/sum(w1)) #number of times each parent chosen
+							off1 = np.repeat(pop1, parents1, axis=0) #offspring genotypes
+							parents2 = np.random.multinomial(N_adapt, w2/sum(w2)) #number of times each parent chosen
+							off2 = np.repeat(pop2, parents2, axis=0) #offspring genotypes
 
-						# mutation and population update
-						[pop1, mut1] = mutate(off1, u_adapt, alpha_adapt, n, mut1)
-						[pop2, mut2] = mutate(off2, u_adapt, alpha_adapt, n, mut2)
+							# mating and recombination
+							off1 = recomb(off1)
+							off2 = recomb(off2)
 
-						# remove lost mutations (all zero columns in pop)
-						[pop1, mut1] = remove_muts(remove, remove_lost, pop1, mut1, mutfound)
-						[pop2, mut2] = remove_muts(remove, remove_lost, pop2, mut2, mutfound)
+							# mutation and population update
+							[pop1, mut1] = mutate(off1, u_adapt, alpha_adapt, n, mut1)
+							[pop2, mut2] = mutate(off2, u_adapt, alpha_adapt, n, mut2)
+
+							# remove lost mutations (all zero columns in pop)
+							[pop1, mut1] = remove_muts(remove, remove_lost, pop1, mut1, mutfound)
+							[pop2, mut2] = remove_muts(remove, remove_lost, pop2, mut2, mutfound)
 
 
-						if gen % gen_rec == 0:
-							
-							#make variables to hold offspring phenotypes
-							offphenos = dict()
-							offpheno = []
+							if gen % gen_rec == 0:
+								
+								#make variables to hold offspring phenotypes
+								offphenos = dict()
+								offpheno = []
 
-							#make each of nHybrids hybrids
-							for m in range(nHybrids):
-							    # choose random parents
-								randpar1 = pop1[np.random.choice(len(pop1))] 
-								randpar2 = pop2[np.random.choice(len(pop2))]
-								# get random parent phenotypes
-								phenpar1 = np.dot(randpar1, mut1) 
-								phenpar2 = np.dot(randpar2, mut2)
-								# get mutations held by random parents
-								mutpar1 = mut1 * randpar1[:, None]
-								mutpar2 = mut2 * randpar2[:, None]
-								setA = set(tuple(x) for x in mutpar1)
-								setB = set(tuple(x) for x in mutpar2)
-								# find mutations shared by two parents (all in offspring)
-								sharedmuts = np.array([x for x in setA & setB])
-								if len(sharedmuts) < 1:
-									sharedmuts = np.array([[0] * n]) #give something in case empty
-								# find mutations not shared by two parents
-								unsharedmuts = np.array([x for x in setA ^ setB])
-								# which unshared mutations in offspring (free recombination between all loci, therefore gets each with 0.5 probability)
-								randmuts = np.random.randint(2, size = (len(unsharedmuts)))	
-								unsharedoffmuts = unsharedmuts * randmuts[:, None]
-								if len(unsharedoffmuts) < 1:
-								    unsharedoffmuts = np.array([[0] * n]) #give something in case empty
-								# offspring phenotype is collection of shared and random unshared mutations
-								offpheno.append(sum(np.append(sharedmuts, unsharedoffmuts, axis = 0)))
+								#make each of nHybrids hybrids
+								for m in range(nHybrids):
+								    # choose random parents
+									randpar1 = pop1[np.random.choice(len(pop1))] 
+									randpar2 = pop2[np.random.choice(len(pop2))]
+									# get random parent phenotypes
+									phenpar1 = np.dot(randpar1, mut1) 
+									phenpar2 = np.dot(randpar2, mut2)
+									# get mutations held by random parents
+									mutpar1 = mut1 * randpar1[:, None]
+									mutpar2 = mut2 * randpar2[:, None]
+									setA = set(tuple(x) for x in mutpar1)
+									setB = set(tuple(x) for x in mutpar2)
+									# find mutations shared by two parents (all in offspring)
+									sharedmuts = np.array([x for x in setA & setB])
+									if len(sharedmuts) < 1:
+										sharedmuts = np.array([[0] * n]) #give something in case empty
+									# find mutations not shared by two parents
+									unsharedmuts = np.array([x for x in setA ^ setB])
+									# which unshared mutations in offspring (free recombination between all loci, therefore gets each with 0.5 probability)
+									randmuts = np.random.randint(2, size = (len(unsharedmuts)))	
+									unsharedoffmuts = unsharedmuts * randmuts[:, None]
+									if len(unsharedoffmuts) < 1:
+									    unsharedoffmuts = np.array([[0] * n]) #give something in case empty
+									# offspring phenotype is collection of shared and random unshared mutations
+									offpheno.append(sum(np.append(sharedmuts, unsharedoffmuts, axis = 0)))
 
-							offpheno = np.array(offpheno) #reformat correctly
-							dist = np.linalg.norm(offpheno - np.mean(offpheno, axis=0), axis=1) #phenotypic distance from mean hybrid
-							# hyload = np.log(1*B) - np.mean(np.log(survival(dist)*B)) #hybrid load as defined by Chevin et al 2014
-							segvar = np.mean(np.var(offpheno, axis = 0)) # segregation variance (mean of individual trait variances)
+								offpheno = np.array(offpheno) #reformat correctly
+								dist = np.linalg.norm(offpheno - np.mean(offpheno, axis=0), axis=1) #phenotypic distance from mean hybrid
+								# hyload = np.log(1*B) - np.mean(np.log(survival(dist)*B)) #hybrid load as defined by Chevin et al 2014
+								segvar = np.mean(np.var(offpheno, axis = 0)) # segregation variance (mean of individual trait variances)
 
-							
-							#print an update
-							print('opt1=%r, opt2=%r, rep=%d, gen=%d, n_muts=%d, segregation varance=%.3f, distance=%.3f, selection=%r' %(theta1, theta2, rep+1, gen, n_mut_list[i], segvar, opt_dists[j], ['parallel','divergent'][k])) 
-							
-							#save data
-							write_data_to_output(fileHandles, [theta1, theta2, rep+1, gen, n_mut_list[i], segvar, opt_dists[j], ['parallel','divergent'][k]])
-							
-						# go to next generation
-						gen += 1
+								
+								#print an update
+								print('n=%d, opt1=%r, opt2=%r, rep=%d, gen=%d, n_muts=%d, segregation varance=%.3f, distance=%.3f, selection=%r' %(n, theta1, theta2, rep+1, gen, n_muts, segvar, opt_dists[j], ['parallel','divergent'][k])) 
+								
+								#save data
+								write_data_to_output(fileHandles, [theta1, theta2, rep+1, gen, n_muts, segvar, opt_dists[j], ['parallel','divergent'][k]])
+								
+							# go to next generation
+							gen += 1
 
-					# go to next rep
-					rep += 1
+						# go to next rep
+						rep += 1
 
-				# #plot mean and SD hybrid load over all replicates for this n_muts value
-				# plt.errorbar(n_mut_list[i], np.mean(hyloads), yerr=np.var(hyloads)**0.5, fmt='o', color='k')
-				# plt.pause(0.01)
+					# #plot mean and SD hybrid load over all replicates for this n_muts value
+					# plt.errorbar(n_mut_list[i], np.mean(hyloads), yerr=np.var(hyloads)**0.5, fmt='o', color='k')
+					# plt.pause(0.01)
 
-				#go to next n_muts value
-				i += 1
+					#go to next n_muts value
+					i += 1
 
-			# plt.pause(1) #pause on finished plot for a second
-			# plt.savefig('Figs/HLvsNMUT.png') #save finished plot
+				# plt.pause(1) #pause on finished plot for a second
+				# plt.savefig('Figs/HLvsNMUT.png') #save finished plot
 
-			#go to next optima
-			j += 1
+				#go to next optima
+				j += 1
 
-		#go to next type of selection
-		k += 1
+			#go to next type of selection
+			k += 1
 
-	# cleanup
-	close_output_files(fileHandles)
+		# cleanup
+		close_output_files(fileHandles)
+
+		#next dimension
+		l += 1
 
 ######################################################################
 ##RUNNING ADAPTATION FUNCTION##

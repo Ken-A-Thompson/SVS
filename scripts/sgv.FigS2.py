@@ -111,7 +111,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ######################################################################
 
 nreps = 2 #number of replicates for each set of parameters
-n = 2 #phenotypic dimensions (positive integer >=1)
+ns = [2, 5, 10] #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
@@ -130,14 +130,12 @@ rrep = np.random.choice(n_reps, nreps, replace=True) #randomly assign each rep a
 ##PARAMETERS FOR ADAPTING POPULATION##
 ######################################################################
 
-n_mut_list = list(np.arange(0, 2, 1)) #starting nmuts, final n_muts, interval
+n_mut_list = [list(np.arange(0, 2, 1)), list(np.arange(0, 2, 1)), list(np.arange(0, 2, 1))] #starting nmuts, final n_muts, interval
 
 N_adapt = 10**4 #number of individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 u_adapt = 0.001 #mutation probability per generation per genome (0<u<1)
 sigma_adapt = 1
-
-theta_list = np.array([[1,0]]) #optimum phenotypes for population
 
 maxgen = 20 #total number of generations population adapts for
 gen_rec = 5 #print and save after this many generations
@@ -151,104 +149,115 @@ remove = 'derived' #.. any derived (not from ancestor) mutation that is lost
 
 def main():
 
-	# open output files
-	fileHandles = open_output_files(n, N_adapt, alpha_adapt, u_adapt, sigma_adapt, data_dir) 
+	#loop over dimensions
+	l = 0
+	while l < len(ns):
+		n = ns[l]
 
-	#loop over optima
-	j = 0
-	while j < len(theta_list):
-		
-		#set optimum
-		theta = theta_list[j]
+		#set n-dependent parameters
+		theta_list = [np.append(1,[0]*(n-1))] #optimum
+
+		# open output files
+		fileHandles = open_output_files(n, N_adapt, alpha_adapt, u_adapt, sigma_adapt, data_dir) 
+
+		#loop over optima
+		j = 0
+		while j < len(theta_list):
 			
-		#loop over all n_muts values
-		i = 0
-		while i < len(n_mut_list):
+			#set optimum
+			theta = theta_list[j]
+				
+			#loop over all n_muts values
+			i = 0
+			while i < len(n_mut_list[l]):
 
-			n_muts = n_mut_list[i] #set number of mutations in ancestor (ie how much SGV)
+				n_muts = n_mut_list[l][i] #set number of mutations in ancestor (ie how much SGV)
 
-			#loop over all replicates
-			rep = 0
-			while rep < nreps:
+				#loop over all replicates
+				rep = 0
+				while rep < nreps:
 
-				#load ancestor
-				burn_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f_rep%d' %(n, N, alpha, u, sigma, rrep[rep]+1)
+					#load ancestor
+					burn_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f_rep%d' %(n, N, alpha, u, sigma, rrep[rep]+1)
 
-				filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
-				ancestor_muts = np.load(filename) #load mutations
+					filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
+					ancestor_muts = np.load(filename) #load mutations
 
-				filename = "%s/Freqs_%s.npy" %(burn_dir, burn_id)
-				ancestor_freqs = np.load(filename) #load frequencies
+					filename = "%s/Freqs_%s.npy" %(burn_dir, burn_id)
+					ancestor_freqs = np.load(filename) #load frequencies
 
-				#found adapting population
-				[popfound, mutfound] = found(n_muts, ancestor_muts, ancestor_freqs, N_adapt, n)
+					#found adapting population
+					[popfound, mutfound] = found(n_muts, ancestor_muts, ancestor_freqs, N_adapt, n)
 
-				#initialize adapting population
-				[pop, mut] = [popfound, mutfound]
+					#initialize adapting population
+					[pop, mut] = [popfound, mutfound]
 
-				#intitialize generation counter
-				gen = 0
+					#intitialize generation counter
+					gen = 0
 
-				#run until maxgen
-				while gen < maxgen + 1:
+					#run until maxgen
+					while gen < maxgen + 1:
 
-					# genotype to phenotype
-					phenos = np.dot(pop, mut) #sum mutations held by each individual
+						# genotype to phenotype
+						phenos = np.dot(pop, mut) #sum mutations held by each individual
 
-					# phenotype to fitness
-					w = fitness(phenos, theta, sigma_adapt)
+						# phenotype to fitness
+						w = fitness(phenos, theta, sigma_adapt)
 
-					# wright-fisher (multinomial) sampling
-					parents = np.random.multinomial(N_adapt, w/sum(w)) #number of times each parent chosen
-					off = np.repeat(pop, parents, axis=0) #offspring genotypes
+						# wright-fisher (multinomial) sampling
+						parents = np.random.multinomial(N_adapt, w/sum(w)) #number of times each parent chosen
+						off = np.repeat(pop, parents, axis=0) #offspring genotypes
 
-					# mating and recombination
-					off = recomb(off)
+						# mating and recombination
+						off = recomb(off)
 
-					# mutation and population update
-					[pop, mut] = mutate(off, u_adapt, alpha_adapt, n, mut)
+						# mutation and population update
+						[pop, mut] = mutate(off, u_adapt, alpha_adapt, n, mut)
 
-					# remove lost mutations (all zero columns in pop)
-					[pop, mut] = remove_muts(remove, remove_lost, pop, mut, mutfound)
+						# remove lost mutations (all zero columns in pop)
+						[pop, mut] = remove_muts(remove, remove_lost, pop, mut, mutfound)
 
-					if gen % gen_rec == 0:
-						
-						#calculate number of segregating sites
-						notlost = pop.any(axis=0) #sites not lost
-						fixed = -1*(pop-1)
-						notfixed = fixed.any(axis=0) #sites not fixed
-						segregating = notlost*notfixed #sites not lost or fixed (segregating)
-						numseg = sum(segregating) #number of segregating sites
+						if gen % gen_rec == 0:
+							
+							#calculate number of segregating sites
+							notlost = pop.any(axis=0) #sites not lost
+							fixed = -1*(pop-1)
+							notfixed = fixed.any(axis=0) #sites not fixed
+							segregating = notlost*notfixed #sites not lost or fixed (segregating)
+							numseg = sum(segregating) #number of segregating sites
 
-						mean_dist = np.linalg.norm(np.mean(phenos, axis=0) - theta, axis=0) #mean euclidean distance to optimum
+							mean_dist = np.linalg.norm(np.mean(phenos, axis=0) - theta, axis=0) #mean euclidean distance to optimum
 
-						#parent fitness and load (use parent 1, but could be either)	
-						parents = np.random.randint(len(pop), size = N_adapt)
-						parent_phenos = np.dot(pop[parents], mut)	
-						# mean_parent_pheno = np.mean(parent_phenos, axis=0)
-						# parent_fitnesses = fitness(parent_phenos, mean_parent_pheno, sigma_adapt) #parent fitnesses
-						psegvar = np.mean(np.var(parent_phenos, axis = 0)) # segregation variance (mean of individual trait variances)
+							#parent fitness and load (use parent 1, but could be either)	
+							parents = np.random.randint(len(pop), size = N_adapt)
+							parent_phenos = np.dot(pop[parents], mut)	
+							# mean_parent_pheno = np.mean(parent_phenos, axis=0)
+							# parent_fitnesses = fitness(parent_phenos, mean_parent_pheno, sigma_adapt) #parent fitnesses
+							psegvar = np.mean(np.var(parent_phenos, axis = 0)) # segregation variance (mean of individual trait variances)
 
-						#print update
-						print('opt=%r, n_muts=%d, rep=%d, gen=%d, segregating sites=%d, mean distance to opt = %.3f, segregation variance =%.3f' %([round(x,2) for x in theta], n_muts,  rep+1, gen, numseg, mean_dist, psegvar)) 
-						
-						#save data
-						write_data_to_output(fileHandles, [theta, n_muts, rep+1,  gen, numseg, mean_dist, psegvar])
-						
-					# go to next generation
-					gen += 1
+							#print update
+							print('n=%d, opt=%r, n_muts=%d, rep=%d, gen=%d, segregating sites=%d, mean distance to opt = %.3f, segregation variance =%.3f' %(n, [round(x,2) for x in theta], n_muts,  rep+1, gen, numseg, mean_dist, psegvar)) 
+							
+							#save data
+							write_data_to_output(fileHandles, [theta, n_muts, rep+1,  gen, numseg, mean_dist, psegvar])
+							
+						# go to next generation
+						gen += 1
 
-				# go to next rep
-				rep += 1
+					# go to next rep
+					rep += 1
 
-			#go to next n_muts value
-			i += 1
+				#go to next n_muts value
+				i += 1
 
-		#go to next optima
-		j += 1
+			#go to next optima
+			j += 1
 
-	# cleanup
-	close_output_files(fileHandles)
+		# cleanup
+		close_output_files(fileHandles)
+
+		#next dimension
+		l += 1
 
 ######################################################################
 ##RUNNING ADAPTATION FUNCTION##

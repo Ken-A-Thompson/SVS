@@ -111,8 +111,8 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 2 #number of replicates for each set of parameters
-ns = [2, 5, 10] #phenotypic dimensions (positive integer >=1)
+nreps = 2 #number of replicates for each set of parameters (positive integer <= n_reps, the number of replicates of the ancestor)
+ns = [2, 5, 10] #phenotypic dimensions (positive integers >=1)
 data_dir = 'data'
 
 ######################################################################
@@ -132,7 +132,7 @@ rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep 
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-n_mut_list = [list(np.arange(0, 3, 2)),list(np.arange(0, 5, 2)) ,list(np.arange(0, 7, 2))] #starting nmuts, final n_muts, interval (for each n value)
+n_mut_list = [list(np.arange(0, 3, 2)), list(np.arange(0, 6, 4)), list(np.arange(0, 12, 8))] #starting nmuts, final n_muts, interval (for each n value)
 
 N_adapt = 10**3 #number of individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
@@ -162,6 +162,7 @@ nHybrids = 100 #number of hybrids to make at end of each replicate
 
 def main():
 
+	#loop over dimensions
 	l = 0
 	while l < len(ns):
 		n = ns[l]
@@ -169,6 +170,7 @@ def main():
 		# open output files
 		fileHandles = open_output_files(n, N_adapt, alpha_adapt, u_adapt, sigma_adapt, data_dir) 
 
+		#what selection styles will be run
 		if selection == 'both':
 			k = 0
 			kmax = 1
@@ -188,7 +190,6 @@ def main():
 				
 				#set optima
 				theta1 = np.append(opt_dists[j],[0]*(n-1)) #set one optima
-
 				if k == 0: #parallel
 					theta2 = theta1
 				elif k == 1: #divergent
@@ -202,8 +203,7 @@ def main():
 
 				#loop over all n_muts values
 				i = 0
-				while i < len(n_mut_list):
-
+				while i < len(n_mut_list[l]):
 					n_muts = n_mut_list[l][i] #set number of mutations in ancestor (ie how much SGV)
 
 					# hyloads = [0] * nreps #initialize vector to store hybrid loads in from each replicate
@@ -300,16 +300,17 @@ def main():
 							# offspring phenotype is collection of shared and random unshared mutations
 							offpheno.append(sum(np.append(sharedmuts, unsharedoffmuts, axis = 0)))
 
+						#calculate segregation variance in hybrids
 						offpheno = np.array(offpheno) #reformat correctly
 						dist = np.linalg.norm(offpheno - np.mean(offpheno, axis=0), axis=1) #phenotypic distance from mean hybrid
 						# hyload = np.log(1*B) - np.mean(np.log(survival(dist)*B)) #hybrid load as defined by Chevin et al 2014
 						segvar = np.mean(np.var(offpheno, axis = 0))
 						
 						#print an update
-						print('n=%d, opt1=%r, opt2=%r, rep=%d, n_muts=%d, segregation variance=%.3f, distance=%.3f, selection=%r' %(n, theta1, theta2, rep+1, n_mut_list[l][i], segvar, opt_dists[j], ['parallel','divergent'][k])) 
+						print('n=%d, opt1=%r, opt2=%r, rep=%d, n_muts=%d, segregation variance=%.3f, distance=%.3f, selection=%r' %(n, theta1, theta2, rep+1, n_muts, segvar, opt_dists[j], ['parallel','divergent'][k])) 
 						
 						#save data
-						write_data_to_output(fileHandles, [theta1, theta2, rep+1, n_mut_list[l][i], segvar, opt_dists[j], ['parallel','divergent'][k]])
+						write_data_to_output(fileHandles, [theta1, theta2, rep+1, n_muts, segvar, opt_dists[j], ['parallel','divergent'][k]])
 
 						# hyloads[rep] = hyload #save hybrid load for this replicate
 
