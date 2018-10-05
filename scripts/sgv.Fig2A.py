@@ -110,7 +110,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 1 #number of replicates for each set of parameters (positive integer <= n_reps, the number of replicates of the ancestor)
+nreps = 2 #number of replicates for each set of parameters (positive integer <= n_reps, the number of replicates of the ancestor)
 ns = [2] #phenotypic dimensions (positive integers >=1)
 data_dir = 'data'
 
@@ -118,33 +118,33 @@ data_dir = 'data'
 ##PARAMETERS OF ANCESTOR##
 ######################################################################
 
-n_reps = 1 #number of reps of ancestor that exist
-N = 10**3 #number of haploid individuals (positive integer >=1)
+n_reps = 10 #number of reps of ancestor that exist
+N = 10000 #number of haploid individuals (positive integer >=1)
 u = 10**(-3) #mutation probability per generation per genome (0<u<1)
-sigma = 10**(0) #selection strength
-alpha = 10**(-2) #mutational sd (positive real number)
+sigma = 0.01 #selection strength
+alpha = 0.1 #mutational sd (positive real number)
 
-burn_dir = 'data/'
+burn_dir = 'data/burnins_revision'
 rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep an ancestor, without or with replacement (i.e., unique ancestor for each sim or not)
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-n_mut_list = [[10]] #starting nmuts, final n_muts, interval (for each n value)
+n_mut_list = [[0, 10, 20, 30, 40, 50, 60, 70]] #starting nmuts, final n_muts, interval (for each n value)
 
-N_adapts = [N] #number of haploid individuals (positive integer)
+N_adapts = [1000] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 u_adapt = u #mutation probability per generation per genome (0<u<1)
-sigma_adapts = [sigma] #selection strengths
+sigma_adapts = [1] #selection strengths
 
-opt_dists = [0.1] #distances to optima
+opt_dists = [1] #distances to optima
 
 # selection = 'divergent' #divergent selection (angle = 180 deg)
 # selection = 'parallel' #parallel selection (angle = 0)
 selection = 'both' #both divergent and parallel selection
 
-maxgen = 10**4 #total number of generations populations adapt for
+maxgen = 1000 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
@@ -222,7 +222,7 @@ def main():
 							while rep < nreps:
 
 								#load ancestor
-								burn_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f_rep%d' %(n, N, alpha, u, sigma, rrep[rep]+1)
+								burn_id = 'm%d_N%d_alpha%.1f_u%.4f_sigma%.3f_rep%d' %(n, N, alpha, u, sigma, rrep[rep]+1)
 
 								filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
 								ancestor_muts = np.load(filename) #load mutations
