@@ -52,7 +52,7 @@ def found(n_muts, ancestor_muts, ancestor_freqs, N_adapt, n):
 		fix_id = [ancestor_freqs == 1] #indices for fixed mutations in ancestor
 		mutfound = np.append(mutfound, ancestor_muts[fix_id], axis=0) #add fixed mutations to founding mutation matrix
 		addpop = np.array([1]*N_adapt*np.sum(fix_id)).reshape(N_adapt,np.sum(fix_id)) #matrix of 1s for fixed mutations
-		popfound = np.append(popfound, addpop, axis=1) #add fixed mutations to founding pop matrix
+		popfound = np.append(addpop, popfound, axis=1) #add fixed mutations to founding pop matrix
 	else: #de novo only, even if p_mut>0
 		popfound = np.array([[1]] * N_adapt)
 		mutfound = np.array([[0] * n])
@@ -321,13 +321,13 @@ def main():
 							Efitmeanpheno = fitness(np.array([Emeanpheno]), theta1, sigma_adapt)
 
 							#calculate genetic parallelism across ancestrally-segregating loci that have been segregating in adapting populations since divergence
-							p = sum(pop1[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop1
-							q = sum(pop2[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop2
+							p = sum(pop1[:, len(mutfound)-n_muts:len(mutfound)]) / N_adapt #frequency of derived alleles in pop1
+							q = sum(pop2[:, len(mutfound)-n_muts:len(mutfound)]) / N_adapt #frequency of derived alleles in pop2
 							EH = np.mean(p*(1-q)+(1-p)*q) #expected heterozygosity in hybrids
 
 							#calculate genetic parallelism across ancestrally-shared segregating that have been segregating in adapting populations since divergence plus those loci that have mutations unique to one adapting population
-							p = sum(pop1[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop1 
-							q = sum(pop2[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop2
+							p = sum(pop1[:, len(mutfound)-n_muts:len(mutfound)]) / N_adapt #frequency of derived alleles in pop1
+							q = sum(pop2[:, len(mutfound)-n_muts:len(mutfound)]) / N_adapt #frequency of derived alleles in pop2
 							EH_1 = p*(1-q)+(1-p)*q #expected heterozygosities at those loci
 							p = sum(pop1[:, len(mutfound):]) / N_adapt #frequency of unique derived alleles in pop1 = expected heterozygosity at loci with mutations unique to pop1
 							q = sum(pop2[:, len(mutfound):]) / N_adapt #frequency of unique derived alleles in pop2 = expected heterozygosity at loci with mutations unique to pop2
