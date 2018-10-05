@@ -110,7 +110,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 10 #number of replicates for each set of parameters (positive integer <= n_reps, the number of replicates of the ancestor)
+nreps = 5 #number of replicates for each set of parameters (positive integer <= n_reps, the number of replicates of the ancestor)
 ns = [2] #phenotypic dimensions (positive integers >=1)
 data_dir = 'data'
 
@@ -131,7 +131,8 @@ rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep 
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-n_mut_list = [[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]] #starting nmuts, final n_muts, interval (for each n value)
+# n_mut_list = [[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]] #starting nmuts, final n_muts, interval (for each n value)
+n_mut_list = [list(np.arange(0, 151, 10))]
 
 N_adapts = [1000] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
