@@ -325,7 +325,6 @@ def main():
 								p = sum(pop1[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop1
 								q = sum(pop2[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop2
 								EH = np.mean(p*(1-q)+(1-p)*q) #expected heterozygosity in hybrids
-								P = 1 - EH #our measure of parallelism (expected homozygosity in F1 diploid hybrids; will be 0 if fixed all different alleles, 1 if fixed all same alleles)
 
 								#calculate genetic parallelism across ancestrally-shared segregating that have been segregating in adapting populations since divergence plus those loci that have mutations unique to one adapting population
 								p = sum(pop1[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop1 
@@ -334,14 +333,13 @@ def main():
 								p = sum(pop1[:, len(mutfound):]) / N_adapt #frequency of unique derived alleles in pop1 = expected heterozygosity at loci with mutations unique to pop1
 								q = sum(pop2[:, len(mutfound):]) / N_adapt #frequency of unique derived alleles in pop2 = expected heterozygosity at loci with mutations unique to pop2
 								EH_2 = np.append(p,q) #list of expected heterozygosities at unique loci
-								EH = np.mean(np.append(EH_1,EH_2)) #expected heterozygosity across all loci considered
-								P_all = 1 - EH #our measure of parallelism
+								EH_all = np.mean(np.append(EH_1,EH_2)) #expected heterozygosity across all loci considered
 								
 								#print an update
-								print('N=%d, sigma=%.2f, n=%d, opt1=%r, opt2=%r, rep=%d, n_muts=%d, distance=%.3f, selection=%r, segregation variance=%.3f, parallelism=%.4f, parallelism_all=%.4f' %(N_adapt, sigma_adapt, n, theta1, theta2, rep+1, n_muts, opt_dists[j], ['parallel','divergent'][k], segvar, P, P_all)) 
+								print('N=%d, sigma=%.2f, n=%d, opt1=%r, opt2=%r, rep=%d, n_muts=%d, distance=%.3f, selection=%r, segregation variance=%.3f, expected heterozygosity (shared)=%.4f, expected heterozygosity (all)=%.4f' %(N_adapt, sigma_adapt, n, theta1, theta2, rep+1, n_muts, opt_dists[j], ['parallel','divergent'][k], segvar, EH, EH_all)) 
 								
 								#save data
-								write_data_to_output(fileHandles, [theta1, theta2, rep+1, n_muts, opt_dists[j], ['parallel','divergent'][k], segvar, P, P_all])
+								write_data_to_output(fileHandles, [theta1, theta2, rep+1, n_muts, opt_dists[j], ['parallel','divergent'][k], segvar, EH, EH_all])
 
 								# hyloads[rep] = hyload #save hybrid load for this replicate
 
