@@ -110,7 +110,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 2 #number of replicates for each set of parameters (positive integer <= n_reps, the number of replicates of the ancestor)
+nreps = 5 #number of replicates for each set of parameters (positive integer <= n_reps, the number of replicates of the ancestor)
 ns = [2] #phenotypic dimensions (positive integers >=1)
 data_dir = 'data'
 
@@ -131,20 +131,21 @@ rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep 
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-n_mut_list = [[0, 10, 20, 30, 40, 50, 60, 70]] #starting nmuts, final n_muts, interval (for each n value)
+# n_mut_list = [[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]] #starting nmuts, final n_muts, interval (for each n value)
+n_mut_list = [list(np.arange(0, 151, 10))]
 
 N_adapts = [1000] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 u_adapt = u #mutation probability per generation per genome (0<u<1)
 sigma_adapts = [1] #selection strengths
 
-opt_dists = [1] #distances to optima
+opt_dists = [0.5] #distances to optima
 
 # selection = 'divergent' #divergent selection (angle = 180 deg)
 # selection = 'parallel' #parallel selection (angle = 0)
 selection = 'both' #both divergent and parallel selection
 
-maxgen = 1000 #total number of generations populations adapt for
+maxgen = 2000 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
@@ -316,13 +317,13 @@ def main():
 								segvar = np.mean(np.var(offpheno, axis = 0))
 
 								#calculate genetic parallelism across ancestrally-segregating loci that have been segregating in adapting populations since divergence
-								p = sum(pop1[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop1
-								q = sum(pop2[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop2
+								p = sum(pop1[:, len(mutfound)-n_muts:len(mutfound)]) / N_adapt #frequency of derived alleles in pop1
+								q = sum(pop2[:, len(mutfound)-n_muts:len(mutfound)]) / N_adapt #frequency of derived alleles in pop2
 								EH = np.mean(p*(1-q)+(1-p)*q) #expected heterozygosity in hybrids
 
 								#calculate genetic parallelism across ancestrally-shared segregating that have been segregating in adapting populations since divergence plus those loci that have mutations unique to one adapting population
-								p = sum(pop1[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop1 
-								q = sum(pop2[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop2
+								p = sum(pop1[:, len(mutfound)-n_muts:len(mutfound)]) / N_adapt #frequency of derived alleles in pop1
+								q = sum(pop2[:, len(mutfound)-n_muts:len(mutfound)]) / N_adapt #frequency of derived alleles in pop2
 								EH_1 = p*(1-q)+(1-p)*q #expected heterozygosities at those loci
 								p = sum(pop1[:, len(mutfound):]) / N_adapt #frequency of unique derived alleles in pop1 = expected heterozygosity at loci with mutations unique to pop1
 								q = sum(pop2[:, len(mutfound):]) / N_adapt #frequency of unique derived alleles in pop2 = expected heterozygosity at loci with mutations unique to pop2

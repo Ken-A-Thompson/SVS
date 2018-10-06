@@ -281,13 +281,13 @@ def main():
 							hyload = -np.mean(np.log(offfit)) #hybrid load as defined by Chevin et al 2014
 
 							#calculate genetic parallelism across ancestrally-segregating loci that have been segregating in adapting populations since divergence
-							p = sum(pop1[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop1
-							q = sum(pop2[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop2
+							p = sum(pop1[:, len(mutfound)-n_muts:len(mutfound)]) / N_adapt #frequency of derived alleles in pop1
+							q = sum(pop2[:, len(mutfound)-n_muts:len(mutfound)]) / N_adapt #frequency of derived alleles in pop2
 							EH = np.mean(p*(1-q)+(1-p)*q) #expected heterozygosity in hybrids
 
 							#calculate genetic parallelism across ancestrally-shared segregating that have been segregating in adapting populations since divergence plus those loci that have mutations unique to one adapting population
-							p = sum(pop1[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop1 
-							q = sum(pop2[:, len(mutfound)-n_muts:n_muts]) / N_adapt #frequency of derived alleles in pop2
+							p = sum(pop1[:, len(mutfound)-n_muts:len(mutfound)]) / N_adapt #frequency of derived alleles in pop1
+							q = sum(pop2[:, len(mutfound)-n_muts:len(mutfound)]) / N_adapt #frequency of derived alleles in pop2
 							EH_1 = p*(1-q)+(1-p)*q #expected heterozygosities at those loci
 							p = sum(pop1[:, len(mutfound):]) / N_adapt #frequency of unique derived alleles in pop1 = expected heterozygosity at loci with mutations unique to pop1
 							q = sum(pop2[:, len(mutfound):]) / N_adapt #frequency of unique derived alleles in pop2 = expected heterozygosity at loci with mutations unique to pop2
