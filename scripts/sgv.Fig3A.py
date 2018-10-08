@@ -112,7 +112,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ######################################################################
 
 nreps = 10 #number of replicates for each set of parameters
-ns = [2] #phenotypic dimensions (positive integer >=1)
+ns = [2, 5] #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
@@ -140,7 +140,7 @@ opt_dist = 1 #distance to optima
 
 n_angles = 20 #number of angles between optima to simulate (including 0 and 180) (>=2)
 
-n_mut_list = [[0, 40]] # de novo and one SGV scenario
+n_mut_list = [[0, 40], [0, 100]] # de novo and one SGV scenario
 
 maxgen = 2000 #total number of generations populations adapt for
 
@@ -315,10 +315,10 @@ def main():
 
 							#lag load
 							meanpheno = np.mean(offpheno, axis=0) #mean hybrid phenotype
-							fitmeanpheno = np.mean(np.maximum(fitness(np.array([meanpheno]), theta1, sigma_adapt), fitness(np.array([meanpheno]), theta2, sigma_adapt))) #fitness of mean hybrid phenotype
+							fitmeanpheno = np.mean(np.maximum(fitness(np.array([meanpheno]), theta1, sigma_adapt), fitness(np.array([meanpheno]), theta2, sigma_adapt)))/pfit #fitness of mean hybrid phenotype
 							# lagload = -np.log(fitmeanpheno) #lag load
 							Emeanpheno = np.mean(np.array([theta1, theta2]), axis=0)
-							Efitmeanpheno = np.mean(fitness(np.array([Emeanpheno]), theta1, sigma_adapt))
+							Efitmeanpheno = np.mean(fitness(np.array([Emeanpheno]), theta1, sigma_adapt))/pfit
 
 							#calculate genetic parallelism across ancestrally-segregating loci that have been segregating in adapting populations since divergence
 							p = sum(pop1[:, len(mutfound)-n_muts:len(mutfound)]) / N_adapt #frequency of derived alleles in pop1
