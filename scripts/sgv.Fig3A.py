@@ -111,7 +111,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 1 #number of replicates for each set of parameters
+nreps = 10 #number of replicates for each set of parameters
 ns = [2] #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
@@ -119,30 +119,30 @@ data_dir = 'data'
 ##PARAMETERS OF ANCESTOR##
 ######################################################################
 
-n_reps = 1 #number of reps of ancestor that exist
-N = 10**3 #number of individuals (positive integer >=1)
-alpha = 10**(-2) #mutational sd (positive real number)
-u = 10**(-3) #mutation probability per generation per genome (0<u<1)
-sigma = 10**(0) #selection strength
-burn_dir = 'data/'
+n_reps = 10 #number of reps of ancestor that exist
+N = 10000 #number of individuals (positive integer >=1)
+alpha = 0.1 #mutational sd (positive real number)
+u = 0.001 #mutation probability per generation per genome (0<u<1)
+sigma = 0.01 #selection strength
+burn_dir = 'data/burnins_revision'
 rrep = np.random.choice(n_reps, nreps, replace = False) #randomly assign each rep an ancestor
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-N_adapts = [10**3] #number of haploid individuals (positive integer)
+N_adapts = [1000] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 u_adapt = u #mutation probability per generation per genome (0<u<1)
-sigma_adapts = [10**0] #selection strengths
+sigma_adapts = [1] #selection strengths
 
 opt_dist = 1 #distance to optima
 
-n_angles = 2 #number of angles between optima to simulate (including 0 and 180) (>=2)
+n_angles = 20 #number of angles between optima to simulate (including 0 and 180) (>=2)
 
-n_mut_list = [[10]] # de novo and one SGV scenario
+n_mut_list = [[0, 40]] # de novo and one SGV scenario
 
-maxgen = 10**3 #total number of generations populations adapt for
+maxgen = 2000 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
@@ -211,7 +211,7 @@ def main():
 						while rep < nreps:
 
 							#load ancestor
-							burn_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f_rep%d' %(n, N, alpha, u, sigma, rrep[rep]+1)
+							burn_id = 'm%d_N%d_alpha%.1f_u%.4f_sigma%.3f_rep%d' %(n, N, alpha, u, sigma, rrep[rep]+1)
 
 							filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
 							ancestor_muts = np.load(filename) #load mutations
@@ -315,10 +315,10 @@ def main():
 
 							#lag load
 							meanpheno = np.mean(offpheno, axis=0) #mean hybrid phenotype
-							fitmeanpheno = np.maximum(fitness(np.array([meanpheno]), theta1, sigma_adapt), fitness(np.array([meanpheno]), theta2, sigma_adapt)) #fitness of mean hybrid phenotype
+							fitmeanpheno = np.mean(np.maximum(fitness(np.array([meanpheno]), theta1, sigma_adapt), fitness(np.array([meanpheno]), theta2, sigma_adapt))) #fitness of mean hybrid phenotype
 							# lagload = -np.log(fitmeanpheno) #lag load
 							Emeanpheno = np.mean(np.array([theta1, theta2]), axis=0)
-							Efitmeanpheno = fitness(np.array([Emeanpheno]), theta1, sigma_adapt)
+							Efitmeanpheno = np.mean(fitness(np.array([Emeanpheno]), theta1, sigma_adapt))
 
 							#calculate genetic parallelism across ancestrally-segregating loci that have been segregating in adapting populations since divergence
 							p = sum(pop1[:, len(mutfound)-n_muts:len(mutfound)]) / N_adapt #frequency of derived alleles in pop1

@@ -134,12 +134,12 @@ rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep 
 # n_mut_list = [[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]] #starting nmuts, final n_muts, interval (for each n value)
 n_mut_list = [list(np.arange(0, 151, 10))]
 
-N_adapts = [1000] #number of haploid individuals (positive integer)
+N_adapts = [100, 1000, 10000] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 u_adapt = u #mutation probability per generation per genome (0<u<1)
-sigma_adapts = [1] #selection strengths
+sigma_adapts = [0.1, 1, 10] #selection strengths
 
-opt_dists = [0.5] #distances to optima
+opt_dists = [1] #distances to optima
 
 # selection = 'divergent' #divergent selection (angle = 180 deg)
 # selection = 'parallel' #parallel selection (angle = 0)

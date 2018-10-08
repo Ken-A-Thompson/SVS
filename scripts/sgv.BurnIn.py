@@ -138,21 +138,21 @@ def histogram_files(pop, mut, theta, mean_mut, cov_mut, n, N, alpha, u, sigma, r
 ##PARAMETERS##
 ######################################################################
 
-ns = [2] #phenotypic dimensions (positive integer >=1)
-Ns = [10**3] #number of haploid individuals (positive integer >=1)
-u = 10**(-3) #mutation probability per generation per genome (0<=u<=1)
-sigmas = [10**(0)] #strength of selection (positive real number)
-alpha = 10**(-2) #mutational sd in each trait dimension (positive real number)
+ns = [5, 10] #phenotypic dimensions (positive integer >=1)
+Ns = [10000] #number of haploid individuals (positive integer >=1)
+u = 0.001 #mutation probability per generation per genome (0<=u<=1)
+sigmas = [0.01] #strength of selection (positive real number)
+alpha = 0.1 #mutational sd in each trait dimension (positive real number)
 
 maxgen = 10**4 #total number of generations population adapts for (positive integer)
-gen_rec = maxgen * 10**(-1) #print every this many generations (positve integer <=maxgen)
+gen_rec = 500 #print every this many generations (positve integer <=maxgen)
 
 remove_lost = True #If true, remove mutations that are lost
 remove_fixed = False #If true, remove mutations that are fixed
 
 make_histogram_files = True #if true ouput mutation sizes for plotting 
 
-reps = 1 #number of replicates (positive integer)
+reps = 10 #number of replicates (positive integer)
 
 data_dir = 'data/' #where to save data
 
