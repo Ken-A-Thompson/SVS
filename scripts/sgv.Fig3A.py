@@ -112,7 +112,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ######################################################################
 
 nreps = 10 #number of replicates for each set of parameters
-ns = [2, 5] #phenotypic dimensions (positive integer >=1)
+ns = [5] #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
@@ -140,7 +140,7 @@ opt_dist = 1 #distance to optima
 
 n_angles = 20 #number of angles between optima to simulate (including 0 and 180) (>=2)
 
-n_mut_list = [[0, 40], [0, 100]] # de novo and one SGV scenario
+n_mut_list = [[0, 100]] # de novo and one SGV scenario
 
 maxgen = 2000 #total number of generations populations adapt for
 
@@ -211,7 +211,7 @@ def main():
 						while rep < nreps:
 
 							#load ancestor
-							burn_id = 'm%d_N%d_alpha%.1f_u%.4f_sigma%.3f_rep%d' %(n, N, alpha, u, sigma, rrep[rep]+1)
+							burn_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f_rep%d' %(n, N, alpha, u, sigma, rrep[rep]+1)
 
 							filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
 							ancestor_muts = np.load(filename) #load mutations
