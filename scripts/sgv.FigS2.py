@@ -110,35 +110,36 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 2 #number of replicates for each set of parameters
-ns = [2, 5, 10] #phenotypic dimensions (positive integer >=1)
+nreps = 1 #number of replicates for each set of parameters
+ns = [2] #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
 ##PARAMETERS OF ANCESTOR##
 ######################################################################
 
-n_reps = 2 #number of reps of ancestor that exist
+n_reps = 10 #number of reps of ancestor that exist
 N = 10**4 #number of individuals (positive integer >=1)
-alpha = 2*10**(-1) #mutational sd (positive real number)
+alpha = 0.1 #mutational sd (positive real number)
 u = 10**(-3) #mutation probability per generation per genome (0<u<1)
 sigma = 10**(-2) #selection strength
-burn_dir = 'data'
+burn_dir = 'data/burnins_revision'
 rrep = np.random.choice(n_reps, nreps, replace=True) #randomly assign each rep an ancestor, without or with replacement (i.e., unique ancestor for each sim or not)
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATION##
 ######################################################################
 
-n_mut_list = [list(np.arange(0, 2, 1)), list(np.arange(0, 2, 1)), list(np.arange(0, 2, 1))] #starting nmuts, final n_muts, interval
+n_mut_list = [[0]]
+# n_mut_list = [list(np.arange(0, 2, 1)), list(np.arange(0, 2, 1)), list(np.arange(0, 2, 1))] #starting nmuts, final n_muts, interval
 
-N_adapts = [10**3, 10**4] #number of haploid individuals (positive integer)
+N_adapts = [1000] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 u_adapt = 0.001 #mutation probability per generation per genome (0<u<1)
-sigma_adapts = [10**(-1), 10**0] #selection strengths
+sigma_adapts = [0.1] #selection strengths
 
-maxgen = 20 #total number of generations population adapts for
-gen_rec = 5 #print and save after this many generations
+maxgen = 10000 #total number of generations population adapts for
+gen_rec = 100 #print and save after this many generations
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
@@ -188,7 +189,7 @@ def main():
 						while rep < nreps:
 
 							#load ancestor
-							burn_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f_rep%d' %(n, N, alpha, u, sigma, rrep[rep]+1)
+							burn_id = 'm%d_N%d_alpha%.1f_u%.4f_sigma%.3f_rep%d' %(n, N, alpha, u, sigma, rrep[rep]+1)
 
 							filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
 							ancestor_muts = np.load(filename) #load mutations

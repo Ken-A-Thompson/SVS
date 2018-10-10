@@ -114,7 +114,7 @@ def outer_einsum_dot_app(A,B):
 ######################################################################
 
 nreps = 10 #number of replicates for each set of parameters (positive integer <= n_reps, the number of replicates of the ancestor)
-ns = [5] #phenotypic dimensions (positive integers >=1)
+ns = [2] #phenotypic dimensions (positive integers >=1)
 data_dir = 'data'
 
 ######################################################################
@@ -136,7 +136,7 @@ rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep 
 ######################################################################
 
 # n_mut_list = [[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]] #starting nmuts, final n_muts, interval (for each n value)
-n_mut_list = [list(np.arange(0, 151, 10))]
+n_mut_list = [list(np.arange(0, 161, 10))]
 
 N_adapts = [1000] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)

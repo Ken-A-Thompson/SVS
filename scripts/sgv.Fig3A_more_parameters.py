@@ -17,7 +17,7 @@ def open_output_files(n, N, alpha, u, sigma, data_dir):
 	handles to each.
 	"""
 	sim_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f' %(n, N, alpha, u, sigma)
-	outfile_A = open("%s/Fig3A_%s.csv" %(data_dir, sim_id), "w")
+	outfile_A = open("%s/Fig3A_10kgens%s.csv" %(data_dir, sim_id), "w")
 	return outfile_A
 
 def write_data_to_output(fileHandles, data):
@@ -111,8 +111,8 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 10 #number of replicates for each set of parameters
-ns = [2] #phenotypic dimensions (positive integer >=1)
+nreps = 2 #number of replicates for each set of parameters
+ns = [2, 5, 10] #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
@@ -131,18 +131,18 @@ rrep = np.random.choice(n_reps, nreps, replace = False) #randomly assign each re
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-N_adapts = [1000] #number of haploid individuals (positive integer)
+N_adapts = [100, 1000, 10000] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 u_adapt = u #mutation probability per generation per genome (0<u<1)
-sigma_adapts = [1] #selection strengths
+sigma_adapts = [0.1, 1, 10] #selection strengths
 
 opt_dist = 1 #distance to optima
 
-n_angles = 45 #number of angles between optima to simulate (including 0 and 180) (>=2)
+n_angles = 10 #number of angles between optima to simulate (including 0 and 180) (>=2)
 
-n_mut_list = [[0, 40]] # de novo and one SGV scenario
+n_mut_list = [[0, 120], [0, 120], [0, 120]] # de novo and one SGV scenario
 
-maxgen = 2000 #total number of generations populations adapt for
+maxgen = 5000 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
