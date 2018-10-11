@@ -17,7 +17,7 @@ def open_output_files(n, N, alpha, u, sigma, data_dir):
 	handles to each.
 	"""
 	sim_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f' %(n, N, alpha, u, sigma)
-	outfile_A = open("%s/Fig3A_10kgens%s.csv" %(data_dir, sim_id), "w")
+	outfile_A = open("%s/Fig3A_5kgens%s.csv" %(data_dir, sim_id), "w")
 	return outfile_A
 
 def write_data_to_output(fileHandles, data):
@@ -138,7 +138,7 @@ sigma_adapts = [0.1, 1, 10] #selection strengths
 
 opt_dist = 1 #distance to optima
 
-n_angles = 10 #number of angles between optima to simulate (including 0 and 180) (>=2)
+n_angles = 30 #number of angles between optima to simulate (including 0 and 180) (>=2)
 
 n_mut_list = [[0, 120], [0, 120], [0, 120]] # de novo and one SGV scenario
 
@@ -342,10 +342,10 @@ def main():
 							# print(p[len(mutfound)-n_muts:len(mutfound)], q[len(mutfound)-n_muts:len(mutfound)])
 							r = (p[0:n_muts] + q[0:n_muts]) / 2 #average allele frequency across the two populations for all shared loci that were initially segregating
 							n12 = sum(r == 1) #number of loci that have fixed in both populations
-							kens_metric = 1 - (n12/n1 + n12/n2)/2 #average perctange of fixed loci that have fixed same allele in both populations
+							kens_metric = 1 - (n12/n1 + n12/n2)/2 if n1 != 0 or n2 != 0 else 0 #average perctange of fixed loci that have fixed same allele in both populations
 
 							#print an update
-							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, distance between optima=%.3f, segregation variance=%.3f, expected heterozygosity (shared)=%.4f, expected heterozygosity (all)=%.4f, relative mean hybrid fitness=%.3f, relative max hybrid fitness=%.3f, fitness of mean hybrid=%.3f, expected fitness of mean hybrid=%.3f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno)) 
+							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, delta=%.3f, segvar=%.3f, shared_exp_het=%.4f, all_exp_het=%.4f, rel_mean_hyfit=%.3f, rel_max_hyfit=%.3f, relfit_mean_hy_obs=%.3f, relfit_mean_hy_pred=%.3f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno)) 
 							
 							#save data
 							write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric])

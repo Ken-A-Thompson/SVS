@@ -143,8 +143,8 @@ sigma_adapts = [1] #selection strengths
 opt_dists = [0] #distances to optima
 
 # selection = 'divergent' #divergent selection (angle = 180 deg)
-# selection = 'parallel' #parallel selection (angle = 0)
-selection = 'both' #both divergent and parallel selection
+selection = 'parallel' #parallel selection (angle = 0)
+# selection = 'both' #both divergent and parallel selection
 
 maxgen = 5000 #total number of generations populations adapt for
 gen_rec = 100 #print and save after this many generations

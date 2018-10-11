@@ -110,8 +110,8 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 1 #number of replicates for each set of parameters
-ns = [2] #phenotypic dimensions (positive integer >=1)
+nreps = 10 #number of replicates for each set of parameters
+ns = [5] #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
@@ -119,10 +119,10 @@ data_dir = 'data'
 ######################################################################
 
 n_reps = 10 #number of reps of ancestor that exist
-N = 10**4 #number of individuals (positive integer >=1)
+N = 10000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
-u = 10**(-3) #mutation probability per generation per genome (0<u<1)
-sigma = 10**(-2) #selection strength
+u = 0.001 #mutation probability per generation per genome (0<u<1)
+sigma = 0.01 #selection strength
 burn_dir = 'data/burnins_revision'
 rrep = np.random.choice(n_reps, nreps, replace=True) #randomly assign each rep an ancestor, without or with replacement (i.e., unique ancestor for each sim or not)
 
@@ -130,15 +130,15 @@ rrep = np.random.choice(n_reps, nreps, replace=True) #randomly assign each rep a
 ##PARAMETERS FOR ADAPTING POPULATION##
 ######################################################################
 
-n_mut_list = [[0]]
+n_mut_list = [[0, 40]]
 # n_mut_list = [list(np.arange(0, 2, 1)), list(np.arange(0, 2, 1)), list(np.arange(0, 2, 1))] #starting nmuts, final n_muts, interval
 
 N_adapts = [1000] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 u_adapt = 0.001 #mutation probability per generation per genome (0<u<1)
-sigma_adapts = [0.1] #selection strengths
+sigma_adapts = [1] #selection strengths
 
-maxgen = 10000 #total number of generations population adapts for
+maxgen = 2000 #total number of generations population adapts for
 gen_rec = 100 #print and save after this many generations
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
