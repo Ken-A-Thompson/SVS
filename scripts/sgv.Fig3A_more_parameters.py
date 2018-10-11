@@ -342,7 +342,10 @@ def main():
 							# print(p[len(mutfound)-n_muts:len(mutfound)], q[len(mutfound)-n_muts:len(mutfound)])
 							r = (p[0:n_muts] + q[0:n_muts]) / 2 #average allele frequency across the two populations for all shared loci that were initially segregating
 							n12 = sum(r == 1) #number of loci that have fixed in both populations
-							kens_metric = 1 - (n12/n1 + n12/n2)/2 if n1 != 0 or n2 != 0 else 0 #average perctange of fixed loci that have fixed same allele in both populations
+							try: 
+								kens_metric = 1 - (n12/n1 + n12/n2)/2
+							except ZeroDivisionError:
+								kens_metric = 0 #average perctange of fixed loci that have fixed same allele in both populations
 
 							#print an update
 							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, delta=%.3f, segvar=%.3f, shared_exp_het=%.4f, all_exp_het=%.4f, rel_mean_hyfit=%.3f, rel_max_hyfit=%.3f, relfit_mean_hy_obs=%.3f, relfit_mean_hy_pred=%.3f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno)) 
