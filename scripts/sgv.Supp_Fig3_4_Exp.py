@@ -17,7 +17,7 @@ def open_output_files(n, N, alpha, u, sigma, data_dir):
 	handles to each.
 	"""
 	sim_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f' %(n, N, alpha, u, sigma)
-	outfile_A = open("%s/Fig3A_%s.csv" %(data_dir, sim_id), "w")
+	outfile_A = open("%s/Fig3_4_ExpFit_%s.csv" %(data_dir, sim_id), "w")
 	return outfile_A
 
 def write_data_to_output(fileHandles, data):
@@ -59,12 +59,9 @@ def found(n_muts, ancestor_muts, ancestor_freqs, N_adapt, n):
 	return [popfound, mutfound]
 
 def fitness(phenos, theta, sigma):
-	"""
-	This function determines relative fitness
-	"""
-	dist = np.linalg.norm(phenos - theta, axis=1) #phenotypic distance from optimum
-	w = np.exp(-0.5 * sigma * dist**2) #fitness
-	return w
+     dist = np.linalg.norm(phenos - theta, axis=1)
+     w = np.exp(-0.5 * sigma * dist**2) # fitness (quadratic)
+     return w * (w>0.0001)
 
 def recomb(surv):
 	"""
@@ -124,7 +121,7 @@ N = 10000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 sigma = 0.01 #selection strength
-burn_dir = 'data/burnins_revision_100k'
+burn_dir = 'data/burnins_revision'
 rrep = np.random.choice(n_reps, nreps, replace = False) #randomly assign each rep an ancestor
 
 ######################################################################
@@ -134,13 +131,13 @@ rrep = np.random.choice(n_reps, nreps, replace = False) #randomly assign each re
 N_adapts = [1000] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 u_adapt = u #mutation probability per generation per genome (0<u<1)
-sigma_adapts = [1] #selection strengths
+sigma_adapts = [0.8] #selection strengths
 
 opt_dist = 1 #distance to optima
 
-n_angles = 45 #number of angles between optima to simulate (including 0 and 180) (>=2)
+n_angles = 30 #number of angles between optima to simulate (including 0 and 180) (>=2)
 
-n_mut_list = [[0, 40]] # de novo and one SGV scenario
+n_mut_list = [[0, 120]] # de novo and one SGV scenario
 
 maxgen = 2000 #total number of generations populations adapt for
 

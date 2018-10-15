@@ -102,34 +102,34 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 1 #number of replicates for each set of parameters
-ns = [2] #phenotypic dimensions (positive integer >=1)
+nreps = 10 #number of replicates for each set of parameters
+ns = [5] #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
-##PARAMETERS TO MAKE ANCESTOR##
+##PARAMETERS TO MAKE SYNTHETIC ANCESTOR##
 ######################################################################
 
-N = 10**3 #number of individuals (positive integer >=1)
-n_mut_list = [[0, 10]] #number of mutations (positive integer >=1)
-p_mut = 10**(-2) #probability of having mutation at any one locus (0<=p<=1) #set this to zero for de novo only
-alpha = 10**(-2) #mutational sd (positive real number)
+N = 10000 #number of individuals (positive integer >=1)
+n_mut_list = [[0, 40]] #number of mutations (positive integer >=1)
+p_mut = 0.12 #probability of having mutation at any one locus (0<=p<=1) #set this to zero for de novo only
+alpha = 0.1 #mutational sd (positive real number)
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-N_adapts = [10**3] #number of haploid individuals (positive integer)
+N_adapts = [1000] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
-u_adapt = 10**(-3) #mutation probability per generation per genome (0<u<1)
-sigma_adapts = [10**0] #selection strengths
+u_adapt = 0.001 #mutation probability per generation per genome (0<u<1)
+sigma_adapts = [1] #selection strengths
 
 opt_dist = 1 #distance to optima
 
-n_angles = 2 #number of angles between optima to simulate (including 0 and 180)
+n_angles = 30 #number of angles between optima to simulate (including 0 and 180)
 angles = [math.pi*x/(n_angles-1) for x in range(n_angles)] #angles to use (in radians)
 
-maxgen = 10**3 #total number of generations populations adapt for
+maxgen = 2000 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
@@ -294,11 +294,21 @@ def main():
 							EH_2 = np.append(p,q) #list of expected heterozygosities at unique loci
 							EH_all = np.mean(np.append(EH_1,EH_2)) #expected heterozygosity across all loci considered
 
+							#proportion of fixed loci (not fixed in ancestor) that share allele
+							p = sum(pop1[:, len(mutfound)-n_muts:]) / N_adapt #allele frequencies in pop1
+							q = sum(pop2[:, len(mutfound)-n_muts:]) / N_adapt #allele frequencies in pop2
+							n1 = sum(p == 1) #number of fixed loci in pop1
+							n2 = sum(q == 1) #number of fixed loci in pop2
+							# print(p[len(mutfound)-n_muts:len(mutfound)], q[len(mutfound)-n_muts:len(mutfound)])
+							r = (p[0:n_muts] + q[0:n_muts]) / 2 #average allele frequency across the two populations for all shared loci that were initially segregating
+							n12 = sum(r == 1) #number of loci that have fixed in both populations
+							kens_metric = (n12/n1 + n12/n2)/2 #average perctange of fixed loci that have fixed same allele in both populations
+
 							#print an update
-							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, distance between optima=%.3f,  hybrid load=%.3f, expected heterozygosity (shared)=%.4f, expected heterozygosity (all)=%.4f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), hyload, EH, EH_all)) 
+							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, distance between optima=%.3f,  hybrid load=%.3f, share_expt_het=%.4f, all_exp_het=%.4f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), hyload, EH, EH_all)) 
 							
 							#save data
-							write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), hyload, EH, EH_all])
+							write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), hyload, EH, EH_all, kens_metric])
 
 							# hyloads[rep] = hyload #save hybrid load for this replicate
 

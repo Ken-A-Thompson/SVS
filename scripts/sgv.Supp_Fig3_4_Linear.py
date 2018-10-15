@@ -17,7 +17,7 @@ def open_output_files(n, N, alpha, u, sigma, data_dir):
 	handles to each.
 	"""
 	sim_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f' %(n, N, alpha, u, sigma)
-	outfile_A = open("%s/Fig3A_5kgens%s.csv" %(data_dir, sim_id), "w")
+	outfile_A = open("%s/Fig3_4_LinearFit_%s.csv" %(data_dir, sim_id), "w")
 	return outfile_A
 
 def write_data_to_output(fileHandles, data):
@@ -59,12 +59,9 @@ def found(n_muts, ancestor_muts, ancestor_freqs, N_adapt, n):
 	return [popfound, mutfound]
 
 def fitness(phenos, theta, sigma):
-	"""
-	This function determines relative fitness
-	"""
-	dist = np.linalg.norm(phenos - theta, axis=1) #phenotypic distance from optimum
-	w = np.exp(-0.5 * sigma * dist**2) #fitness
-	return w
+     dist = np.linalg.norm(phenos - theta, axis=1)
+     w = 1 - dist * sigma # fitness (linear)
+     return w * (w>0.0001)
 
 def recomb(surv):
 	"""
@@ -111,8 +108,8 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 2 #number of replicates for each set of parameters
-ns = [2, 5, 10] #phenotypic dimensions (positive integer >=1)
+nreps = 10 #number of replicates for each set of parameters
+ns = [5] #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
@@ -131,18 +128,18 @@ rrep = np.random.choice(n_reps, nreps, replace = False) #randomly assign each re
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-N_adapts = [100, 1000, 10000] #number of haploid individuals (positive integer)
+N_adapts = [1000] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 u_adapt = u #mutation probability per generation per genome (0<u<1)
-sigma_adapts = [0.1, 1, 10] #selection strengths
+sigma_adapts = [0.8] #selection strengths
 
 opt_dist = 1 #distance to optima
 
 n_angles = 30 #number of angles between optima to simulate (including 0 and 180) (>=2)
 
-n_mut_list = [[0, 120], [0, 120], [0, 120]] # de novo and one SGV scenario
+n_mut_list = [[0, 120]] # de novo and one SGV scenario
 
-maxgen = 5000 #total number of generations populations adapt for
+maxgen = 2000 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
@@ -342,13 +339,10 @@ def main():
 							# print(p[len(mutfound)-n_muts:len(mutfound)], q[len(mutfound)-n_muts:len(mutfound)])
 							r = (p[0:n_muts] + q[0:n_muts]) / 2 #average allele frequency across the two populations for all shared loci that were initially segregating
 							n12 = sum(r == 1) #number of loci that have fixed in both populations
-							try: 
-								kens_metric = 1 - (n12/n1 + n12/n2)/2
-							except ZeroDivisionError:
-								kens_metric = 0 #average perctange of fixed loci that have fixed same allele in both populations
+							kens_metric = 1 - (n12/n1 + n12/n2)/2 #average perctange of fixed loci that have fixed same allele in both populations
 
 							#print an update
-							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, delta=%.3f, segvar=%.3f, shared_exp_het=%.4f, all_exp_het=%.4f, rel_mean_hyfit=%.3f, rel_max_hyfit=%.3f, relfit_mean_hy_obs=%.3f, relfit_mean_hy_pred=%.3f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno)) 
+							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, distance between optima=%.3f, segregation variance=%.3f, expected heterozygosity (shared)=%.4f, expected heterozygosity (all)=%.4f, relative mean hybrid fitness=%.3f, relative max hybrid fitness=%.3f, fitness of mean hybrid=%.3f, expected fitness of mean hybrid=%.3f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno)) 
 							
 							#save data
 							write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric])

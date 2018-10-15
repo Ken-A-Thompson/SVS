@@ -113,8 +113,8 @@ def outer_einsum_dot_app(A,B):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 10 #number of replicates for each set of parameters (positive integer <= n_reps, the number of replicates of the ancestor)
-ns = [2] #phenotypic dimensions (positive integers >=1)
+nreps = 2 #number of replicates for each set of parameters (positive integer <= n_reps, the number of replicates of the ancestor)
+ns = [2, 5, 10] #phenotypic dimensions (positive integers >=1)
 data_dir = 'data'
 
 ######################################################################
@@ -136,13 +136,13 @@ rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep 
 ######################################################################
 
 # n_mut_list = [[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]] #starting nmuts, final n_muts, interval (for each n value)
-n_mut_list = [list(np.arange(0, 161, 10))]
+n_mut_list = [list(np.arange(0, 141, 20)), list(np.arange(0, 141, 20)), list(np.arange(0, 141, 20))]
 
-N_adapts = [1000] #number of haploid individuals (positive integer)
+N_adapts = [100, 1000, 5000] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 u_adapt = u #mutation probability per generation per genome (0<u<1)
 # sigma_adapts = [0.1, 1, 10] #selection strengths
-sigma_adapts = [1]
+sigma_adapts = [0.1, 1, 10]
 
 opt_dists = [1] #distances to optima
 
@@ -151,8 +151,7 @@ opt_dists = [1] #distances to optima
 selection = 'both' #both divergent and parallel selection
 
 # maxgen = 2000 #total number of generations populations adapt for
-maxgen = 2000
-
+maxgen = 5000
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
 
@@ -352,7 +351,7 @@ def main():
 								# print(p[len(mutfound)-n_muts:len(mutfound)], q[len(mutfound)-n_muts:len(mutfound)])
 								r = (p[0:n_muts] + q[0:n_muts]) / 2 #average allele frequency across the two populations for all shared loci that were initially segregating
 								n12 = sum(r == 1) #number of loci that have fixed in both populations
-								kens_metric = 1 - (n12/n1 + n12/n2)/2 #average perctange of fixed loci that have fixed same allele in both populations
+								kens_metric = (n12/n1 + n12/n2)/2 #average perctange of fixed loci that have fixed same allele in both populations
 
 								#estimated fst (equation 3 in Hudson, Slatkin, Maddison 1992 Genetics)
 								fst = 1 - ((pi1+pi2)/2) / pi12

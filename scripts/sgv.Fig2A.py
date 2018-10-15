@@ -127,7 +127,7 @@ u = 10**(-3) #mutation probability per generation per genome (0<u<1)
 sigma = 0.01 #selection strength
 alpha = 0.1 #mutational sd (positive real number)
 
-burn_dir = 'data/burnins_revision'
+burn_dir = 'data/burnins_revision_100k'
 # burn_dir = 'data'
 rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep an ancestor, without or with replacement (i.e., unique ancestor for each sim or not)
 
@@ -136,7 +136,7 @@ rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep 
 ######################################################################
 
 # n_mut_list = [[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]] #starting nmuts, final n_muts, interval (for each n value)
-n_mut_list = [list(np.arange(0, 141, 5))]
+n_mut_list = [list(np.arange(0, 171, 5))]
 
 N_adapts = [1000] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
@@ -229,7 +229,7 @@ def main():
 							while rep < nreps:
 
 								#load ancestor
-								burn_id = 'm%d_N%d_alpha%.1f_u%.4f_sigma%.3f_rep%d' %(n, N, alpha, u, sigma, rrep[rep]+1)
+								burn_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f_rep%d' %(n, N, alpha, u, sigma, rrep[rep]+1)
 
 								filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
 								ancestor_muts = np.load(filename) #load mutations
@@ -352,7 +352,7 @@ def main():
 								# print(p[len(mutfound)-n_muts:len(mutfound)], q[len(mutfound)-n_muts:len(mutfound)])
 								r = (p[0:n_muts] + q[0:n_muts]) / 2 #average allele frequency across the two populations for all shared loci that were initially segregating
 								n12 = sum(r == 1) #number of loci that have fixed in both populations
-								kens_metric = 1 - (n12/n1 + n12/n2)/2 #average perctange of fixed loci that have fixed same allele in both populations
+								kens_metric = (n12/n1 + n12/n2)/2 #average perctange of fixed loci that have fixed same allele in both populations
 
 								#estimated fst (equation 3 in Hudson, Slatkin, Maddison 1992 Genetics)
 								fst = 1 - ((pi1+pi2)/2) / pi12
