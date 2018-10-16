@@ -140,7 +140,7 @@ opt_dist = 1 #distance to optima
 
 n_angles = 45 #number of angles between optima to simulate (including 0 and 180) (>=2)
 
-n_mut_list = [[0, 40]] # de novo and one SGV scenario
+n_mut_list = [[0, 87]] # de novo and one SGV scenario
 
 maxgen = 2000 #total number of generations populations adapt for
 
@@ -211,7 +211,7 @@ def main():
 						while rep < nreps:
 
 							#load ancestor
-							burn_id = 'm%d_N%d_alpha%.1f_u%.4f_sigma%.3f_rep%d' %(n, N, alpha, u, sigma, rrep[rep]+1)
+							burn_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f_rep%d' %(n, N, alpha, u, sigma, rrep[rep]+1)
 
 							filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
 							ancestor_muts = np.load(filename) #load mutations
@@ -342,10 +342,10 @@ def main():
 							# print(p[len(mutfound)-n_muts:len(mutfound)], q[len(mutfound)-n_muts:len(mutfound)])
 							r = (p[0:n_muts] + q[0:n_muts]) / 2 #average allele frequency across the two populations for all shared loci that were initially segregating
 							n12 = sum(r == 1) #number of loci that have fixed in both populations
-							kens_metric = 1 - (n12/n1 + n12/n2)/2 #average perctange of fixed loci that have fixed same allele in both populations
+							kens_metric = (n12/n1 + n12/n2)/2 #average perctange of fixed loci that have fixed same allele in both populations
 
 							#print an update
-							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, distance between optima=%.3f, segregation variance=%.3f, expected heterozygosity (shared)=%.4f, expected heterozygosity (all)=%.4f, relative mean hybrid fitness=%.3f, relative max hybrid fitness=%.3f, fitness of mean hybrid=%.3f, expected fitness of mean hybrid=%.3f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno)) 
+							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, delta=%.3f, segvar=%.3f, shared_exp_het=%.4f, all_exp_het=%.4f, rel_mean_hyb_fit=%.3f, rel_max_hyb_fit=%.3f, fitness of mean hybrid=%.3f, expected fitness of mean hybrid=%.3f, kenmet=%.3f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric)) 
 							
 							#save data
 							write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric])
