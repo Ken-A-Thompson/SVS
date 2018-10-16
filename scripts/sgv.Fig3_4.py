@@ -111,7 +111,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 2 #number of replicates for each set of parameters
+nreps = 10 #number of replicates for each set of parameters
 ns = [5] #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
@@ -140,7 +140,7 @@ opt_dist = 1 #distance to optima
 
 n_angles = 45 #number of angles between optima to simulate (including 0 and 180) (>=2)
 
-n_mut_list = [[0, 51]] # de novo and one SGV scenario
+n_mut_list = [[0, 50]] # de novo and one SGV scenario
 
 maxgen = 2000 #total number of generations populations adapt for
 
@@ -344,11 +344,14 @@ def main():
 							n12 = sum(r == 1) #number of loci that have fixed in both populations
 							kens_metric = (n12/n1 + n12/n2)/2 #average perctange of fixed loci that have fixed same allele in both populations
 
+							# compute the average number of alleles that fix
+							n_fix_avg = (n1 + n2)/2
+
 							#print an update
-							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, delta=%.3f, segvar=%.3f, shared_exp_het=%.4f, all_exp_het=%.4f, rel_mean_hyb_fit=%.3f, rel_max_hyb_fit=%.3f, fitness of mean hybrid=%.3f, expected fitness of mean hybrid=%.3f, kenmet=%.3f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric)) 
+							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, delta=%.3f, segvar=%.3f, shared_exp_het=%.4f, all_exp_het=%.4f, rel_mean_hyb_fit=%.3f, rel_max_hyb_fit=%.3f, fit_mean_hyb=%.3f, exp_fit_mean_hyb=%.3f, kenmet=%.3f, nfix = =%.2f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric, n_fix_avg)) 
 							
 							#save data
-							write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric])
+							write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric, n_fix_avg])
 
 							# hyloads[rep] = hyload #save hybrid load for this replicate
 
