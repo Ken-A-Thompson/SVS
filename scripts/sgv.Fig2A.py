@@ -17,7 +17,7 @@ def open_output_files(n, N, alpha, u, sigma, data_dir):
 	handles to each.
 	"""
 	sim_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f' %(n, N, alpha, u, sigma)
-	outfile_A = open("%s/Fig2A_%s.csv" %(data_dir, sim_id), "w")
+	outfile_A = open("%s/Fig2A_1d_%s.csv" %(data_dir, sim_id), "w")
 	return outfile_A
 
 def write_data_to_output(fileHandles, data):
@@ -113,8 +113,8 @@ def outer_einsum_dot_app(A,B):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 10 #number of replicates for each set of parameters (positive integer <= n_reps, the number of replicates of the ancestor)
-ns = [5] #phenotypic dimensions (positive integers >=1)
+nreps = 3 #number of replicates for each set of parameters (positive integer <= n_reps, the number of replicates of the ancestor)
+ns = [2] #phenotypic dimensions (positive integers >=1)
 data_dir = 'data'
 
 ######################################################################
@@ -136,7 +136,7 @@ rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep 
 ######################################################################
 
 # n_mut_list = [[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]] #starting nmuts, final n_muts, interval (for each n value)
-n_mut_list = [list(np.arange(0, 151, 5))]
+n_mut_list = [list(np.arange(0, 151, 10))]
 
 N_adapts = [1000] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
