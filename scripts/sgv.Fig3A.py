@@ -111,8 +111,8 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 10 #number of replicates for each set of parameters
-ns = [2] #phenotypic dimensions (positive integer >=1)
+nreps = 2 #number of replicates for each set of parameters
+ns = [5] #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
@@ -140,7 +140,7 @@ opt_dist = 1 #distance to optima
 
 n_angles = 45 #number of angles between optima to simulate (including 0 and 180) (>=2)
 
-n_mut_list = [[0, 40]] # de novo and one SGV scenario
+n_mut_list = [[0, 51]] # de novo and one SGV scenario
 
 maxgen = 2000 #total number of generations populations adapt for
 

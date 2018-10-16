@@ -17,7 +17,7 @@ def open_output_files(n, N, alpha, u, sigma, data_dir):
 	handles to each.
 	"""
 	sim_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f' %(n, N, alpha, u, sigma)
-	outfile_A = open("%s/Fig2A_1d_%s.csv" %(data_dir, sim_id), "w")
+	outfile_A = open("%s/Fig2AB_%s.csv" %(data_dir, sim_id), "w")
 	return outfile_A
 
 def write_data_to_output(fileHandles, data):
@@ -113,7 +113,7 @@ def outer_einsum_dot_app(A,B):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 3 #number of replicates for each set of parameters (positive integer <= n_reps, the number of replicates of the ancestor)
+nreps = 10 #number of replicates for each set of parameters (positive integer <= n_reps, the number of replicates of the ancestor)
 ns = [2] #phenotypic dimensions (positive integers >=1)
 data_dir = 'data'
 
@@ -136,7 +136,7 @@ rrep = np.random.choice(n_reps, nreps, replace=False) #randomly assign each rep 
 ######################################################################
 
 # n_mut_list = [[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]] #starting nmuts, final n_muts, interval (for each n value)
-n_mut_list = [list(np.arange(0, 151, 10))]
+n_mut_list = [list(np.arange(0, 171, 5))]
 
 N_adapts = [1000] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
@@ -358,7 +358,7 @@ def main():
 								fst = 1 - ((pi1+pi2)/2) / pi12
 
 								#print an update
-								print('N=%d, sigma=%.2f, n=%d, opt1=%r, opt2=%r, rep=%d, n_muts=%d, distance=%.3f, selection=%r, segregation variance=%.3f, expected heterozygosity (shared)=%.4f, expected heterozygosity (all)=%.4f, net pi=%.3f, kens metric=%.3f, fst=%.3f' %(N_adapt, sigma_adapt, n, theta1, theta2, rep+1, n_muts, opt_dists[j], ['parallel','divergent'][k], segvar, EH, EH_all, pi12_net, kens_metric, fst)) 
+								print('N=%d, sigma=%.2f, n=%d, opt1=%r, opt2=%r, rep=%d, n_muts=%d, distance=%.3f, selection=%r, segbar=%.3f, s_exp_het=%.4f, a_exp_het=%.4f, net pi=%.3f, kens metric=%.3f, fst=%.3f' %(N_adapt, sigma_adapt, n, theta1, theta2, rep+1, n_muts, opt_dists[j], ['parallel','divergent'][k], segvar, EH, EH_all, pi12_net, kens_metric, fst)) 
 								
 								#save data
 								write_data_to_output(fileHandles, [theta1, theta2, rep+1, n_muts, opt_dists[j], ['parallel','divergent'][k], segvar, EH , EH_all, pi12_net, kens_metric, fst])
