@@ -316,11 +316,16 @@ def main():
 									# offspring phenotype is collection of shared and random unshared mutations
 									offpheno.append(sum(np.append(sharedmuts, unsharedoffmuts, axis = 0)))
 
-								#calculate segregation variance in hybrids
 								offpheno = np.array(offpheno) #reformat correctly
-								dist = np.linalg.norm(offpheno - np.mean(offpheno, axis=0), axis=1) #phenotypic distance from mean hybrid
-								# hyload = np.log(1*B) - np.mean(np.log(survival(dist)*B)) #hybrid load as defined by Chevin et al 2014
+
+								#calculate segregation variance in hybrids
 								segvar = np.mean(np.var(offpheno, axis = 0))
+
+								#calculate segregation variance along parental dimension
+								segvar_parental = np.var(offpheno[:,0])
+
+								#calculate average segregation variance along all but parental dimension
+								segvar_nonparental = np.mean(np.var(offpheno[:,1:], axis=0))
 
 								#calculate expected heterozygosity in hybrids across shared loci that were segregating in the ancestor
 								p = sum(pop1[:, len(mutfound)-n_muts:len(mutfound)]) / N_adapt #frequency of derived alleles in pop1
@@ -358,10 +363,10 @@ def main():
 								fst = 1 - ((pi1+pi2)/2) / pi12
 
 								#print an update
-								print('N=%d, sigma=%.2f, n=%d, opt1=%r, opt2=%r, rep=%d, n_muts=%d, distance=%.3f, selection=%r, segbar=%.3f, s_exp_het=%.4f, a_exp_het=%.4f, net pi=%.3f, kens metric=%.3f, fst=%.3f' %(N_adapt, sigma_adapt, n, theta1, theta2, rep+1, n_muts, opt_dists[j], ['parallel','divergent'][k], segvar, EH, EH_all, pi12_net, kens_metric, fst)) 
+								print('N=%d, sigma=%.2f, n=%d, opt1=%r, opt2=%r, rep=%d, n_muts=%d, distance=%.3f, selection=%r, segbar=%.3f, s_exp_het=%.4f, a_exp_het=%.4f, net pi=%.3f, kens metric=%.3f, fst=%.3f, segvar_parental=%.3f, segvar_nonparental=%.3f' %(N_adapt, sigma_adapt, n, theta1, theta2, rep+1, n_muts, opt_dists[j], ['parallel','divergent'][k], segvar, EH, EH_all, pi12_net, kens_metric, fst, segvar_parental, segvar_nonparental)) 
 								
 								#save data
-								write_data_to_output(fileHandles, [theta1, theta2, rep+1, n_muts, opt_dists[j], ['parallel','divergent'][k], segvar, EH , EH_all, pi12_net, kens_metric, fst])
+								write_data_to_output(fileHandles, [theta1, theta2, rep+1, n_muts, opt_dists[j], ['parallel','divergent'][k], segvar, EH , EH_all, pi12_net, kens_metric, fst, segvar_parental, segvar_nonparental])
 
 								# hyloads[rep] = hyload #save hybrid load for this replicate
 
