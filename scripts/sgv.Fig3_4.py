@@ -17,7 +17,7 @@ def open_output_files(n, N, alpha, u, sigma, data_dir):
 	handles to each.
 	"""
 	sim_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f' %(n, N, alpha, u, sigma)
-	outfile_A = open("%s/Fig3A_%s.csv" %(data_dir, sim_id), "w")
+	outfile_A = open("%s/Fig3_4_%s.csv" %(data_dir, sim_id), "w")
 	return outfile_A
 
 def write_data_to_output(fileHandles, data):
@@ -112,7 +112,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ######################################################################
 
 nreps = 10 #number of replicates for each set of parameters
-ns = [5] #phenotypic dimensions (positive integer >=1)
+ns = [2] #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
@@ -304,7 +304,15 @@ def main():
 							offpheno = np.array(offpheno) #reformat correctly
 							# dist = np.linalg.norm(offpheno - np.mean(offpheno, axis=0), axis=1) #phenotypic distance from mean hybrid
 							# hyload = np.log(1*B) - np.mean(np.log(survival(dist)*B)) #hybrid load as defined by Chevin et al 2014
-							segvar = np.mean(np.var(offpheno, axis = 0)) #segregation variance
+
+							#calculate segregation variance in hybrids
+							segvar = np.mean(np.var(offpheno, axis = 0))
+
+							#calculate segregation variance along parental dimension
+							segvar_parental = np.var(offpheno[:,0])
+
+							#calculate average segregation variance along all but parental dimension
+							segvar_nonparental = np.mean(np.var(offpheno[:,1:], axis=0))
 
 							#mean hybrid fitness
 							hybrid_fitnesses = np.maximum(fitness(offpheno, theta1, sigma_adapt), fitness(offpheno, theta2, sigma_adapt)) #max fitness of hybrid, ie. gets fitness in parent enviro it is closest to
@@ -348,10 +356,10 @@ def main():
 							n_fix_avg = (n1 + n2)/2
 
 							#print an update
-							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, delta=%.3f, segvar=%.3f, shared_exp_het=%.4f, all_exp_het=%.4f, rel_mean_hyb_fit=%.3f, rel_max_hyb_fit=%.3f, fit_mean_hyb=%.3f, exp_fit_mean_hyb=%.3f, kenmet=%.3f, nfix = =%.2f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric, n_fix_avg)) 
+							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, delta=%.3f, segvar=%.3f, shared_exp_het=%.4f, all_exp_het=%.4f, rel_mean_hyb_fit=%.3f, rel_max_hyb_fit=%.3f, fit_mean_hyb=%.3f, exp_fit_mean_hyb=%.3f, kenmet=%.3f, nfix = %.2f, segvar_par=%.3f, segvar_nonparental=%.3f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric, n_fix_avg, segvar_parental, segvar_nonparental)) 
 							
 							#save data
-							write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric, n_fix_avg])
+							write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric, n_fix_avg, segvar_parental, segvar_nonparental])
 
 							# hyloads[rep] = hyload #save hybrid load for this replicate
 
@@ -365,10 +373,8 @@ def main():
 						#go to next n_muts value
 						i += 1
 
-					# plt.pause(1) #pause on finished plot for a second
-					# plt.savefig('Figs/HLvsNMUT.png') #save finished plot
 
-					#go to next optima
+					#go to next optimum
 					j += 1
 
 				# cleanup
