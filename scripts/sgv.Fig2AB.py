@@ -357,7 +357,9 @@ def main():
 								# print(p[len(mutfound)-n_muts:len(mutfound)], q[len(mutfound)-n_muts:len(mutfound)])
 								r = (p[0:n_muts] + q[0:n_muts]) / 2 #average allele frequency across the two populations for all shared loci that were initially segregating
 								n12 = sum(r == 1) #number of loci that have fixed in both populations
-								kens_metric = (n12/n1 + n12/n2)/2 #average perctange of fixed loci that have fixed same allele in both populations
+								if n1>0 and n2>0:
+									kens_metric = (n12/n1 + n12/n2)/2 #average perctange of fixed loci that have fixed same allele in both populations
+									kens_metric = np.nan
 
 								#estimated fst (equation 3 in Hudson, Slatkin, Maddison 1992 Genetics)
 								fst = 1 - ((pi1+pi2)/2) / pi12

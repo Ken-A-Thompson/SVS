@@ -17,7 +17,7 @@ def open_output_files(n, N, alpha, u, sigma, data_dir):
 	handles to each.
 	"""
 	sim_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f' %(n, N, alpha, u, sigma)
-	outfile_A = open("%s/Fig3_4_%s.csv" %(data_dir, sim_id), "w")
+	outfile_A = open("%s/Fig3_4_%s.csv" %(data_dir, sim_id), "w") #summary data
 	return outfile_A
 
 def write_data_to_output(fileHandles, data):
@@ -111,15 +111,15 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ##UNIVERSAL PARAMETERS##
 ######################################################################
 
-nreps = 10 #number of replicates for each set of parameters
-ns = [2] #phenotypic dimensions (positive integer >=1)
+nreps = 1#10 #number of replicates for each set of parameters
+ns = [5] #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
 ##PARAMETERS OF ANCESTOR##
 ######################################################################
 
-n_reps = 10 #number of reps of ancestor that exist
+n_reps = 1#10 #number of reps of ancestor that exist
 N = 10000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
@@ -131,18 +131,18 @@ rrep = np.random.choice(n_reps, nreps, replace = False) #randomly assign each re
 ##PARAMETERS FOR ADAPTING POPULATIONS##
 ######################################################################
 
-N_adapts = [1000] #number of haploid individuals (positive integer)
+N_adapts = [100]#[1000] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 u_adapt = u #mutation probability per generation per genome (0<u<1)
 sigma_adapts = [1] #selection strengths
 
 opt_dist = 1 #distance to optima
 
-n_angles = 45 #number of angles between optima to simulate (including 0 and 180) (>=2)
+n_angles = 3#45 #number of angles between optima to simulate (including 0 and 180) (>=2)
 
-n_mut_list = [[0, 50]] # de novo and one SGV scenario
+n_mut_list = [[0,10]]#[[0, 50]] # de novo and one SGV scenario
 
-maxgen = 2000 #total number of generations populations adapt for
+maxgen = 20#2000 #total number of generations populations adapt for
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
@@ -183,7 +183,7 @@ def main():
 					theta2_list = np.array([np.append([opt_dist*math.cos(x), opt_dist*math.sin(x)], [0]*(n-2)) for x in angles]) #optima to use
 
 				# open output files
-				fileHandles = open_output_files(n, N_adapt, alpha_adapt, u_adapt, sigma_adapt, data_dir)
+				fileHandle_A = open_output_files(n, N_adapt, alpha_adapt, u_adapt, sigma_adapt, data_dir)
 
 				#loop over optima
 				j = 0
@@ -308,11 +308,19 @@ def main():
 							#calculate segregation variance in hybrids
 							segvar = np.mean(np.var(offpheno, axis = 0))
 
+							#rotate axes so that new x axis is parallel to a line connecting parental optima
+							if angles[j] % np.pi == 0: #if parallel selection then keep axes as they are (required to prevent dividing by zero in formula below)
+								offpheno_rotated = offpheno
+							else:								
+								spin = -np.arctan(np.sin(angles[j])/(1-np.cos(angles[j]))) #angle to rotate axes 0 and 1 so that axis 0 is always parallel to the line connecting parental optima (worked out on paper!)
+								offpheno_rotated_12 = np.array([np.dot([[np.cos(spin), np.sin(spin)],[-np.sin(spin), np.cos(spin)]], offpheno[ind,0:2]) for ind in range(len(offpheno))]) #perform rotation on axes 0 and 1
+								offpheno_rotated = np.column_stack([offpheno_rotated_12, offpheno[:,2:]]) #add rotated columns to the columns which did not have to be rotated
+
 							#calculate segregation variance along parental dimension
-							segvar_parental = np.var(offpheno[:,0])
+							segvar_parental = np.var(offpheno_rotated[:,0])
 
 							#calculate average segregation variance along all but parental dimension
-							segvar_nonparental = np.mean(np.var(offpheno[:,1:], axis=0))
+							segvar_nonparental = np.mean(np.var(offpheno_rotated[:,1:], axis=0))
 
 							#mean hybrid fitness
 							hybrid_fitnesses = np.maximum(fitness(offpheno, theta1, sigma_adapt), fitness(offpheno, theta2, sigma_adapt)) #max fitness of hybrid, ie. gets fitness in parent enviro it is closest to
@@ -350,16 +358,24 @@ def main():
 							# print(p[len(mutfound)-n_muts:len(mutfound)], q[len(mutfound)-n_muts:len(mutfound)])
 							r = (p[0:n_muts] + q[0:n_muts]) / 2 #average allele frequency across the two populations for all shared loci that were initially segregating
 							n12 = sum(r == 1) #number of loci that have fixed in both populations
-							kens_metric = (n12/n1 + n12/n2)/2 #average perctange of fixed loci that have fixed same allele in both populations
-
+							if n1>0 and n2>0:
+								kens_metric = (n12/n1 + n12/n2)/2 #average perctange of fixed loci that have fixed same allele in both populations
+							else:
+								kens_metric = np.nan
+							
 							# compute the average number of alleles that fix
 							n_fix_avg = (n1 + n2)/2
 
 							#print an update
 							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, delta=%.3f, segvar=%.3f, shared_exp_het=%.4f, all_exp_het=%.4f, rel_mean_hyb_fit=%.3f, rel_max_hyb_fit=%.3f, fit_mean_hyb=%.3f, exp_fit_mean_hyb=%.3f, kenmet=%.3f, nfix = %.2f, segvar_par=%.3f, segvar_nonparental=%.3f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric, n_fix_avg, segvar_parental, segvar_nonparental)) 
 							
-							#save data
-							write_data_to_output(fileHandles, [round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric, n_fix_avg, segvar_parental, segvar_nonparental])
+							#save summary data
+							write_data_to_output(fileHandle_A, [round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric, n_fix_avg, segvar_parental, segvar_nonparental])
+
+							#save hybrid phenotype data
+							pheno_data = np.column_stack( [np.array([i+1 for i in range(len(offpheno))]), np.array([rep+1]*len(offpheno)), np.array([n_muts]*len(offpheno)), np.array([round(angles[j]*180/math.pi,2)]*len(offpheno)), np.array([opt_dist * (2*(1-math.cos(angles[j])))**(0.5)]*len(offpheno)), offpheno]) #make data
+							sim_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f' %(n, N, alpha, u, sigma) #sim id
+							np.savetxt('%s/Fig3_4_phenotypes_%s.csv' %(data_dir, sim_id), pheno_data, fmt='%.3f', delimiter=',') #save
 
 							# hyloads[rep] = hyload #save hybrid load for this replicate
 
@@ -378,7 +394,7 @@ def main():
 					j += 1
 
 				# cleanup
-				close_output_files(fileHandles)
+				close_output_files(fileHandle_A)
 
 				#next dimension
 				l += 1
