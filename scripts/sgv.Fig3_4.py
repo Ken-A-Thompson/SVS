@@ -358,7 +358,7 @@ def main():
 							# print(p[len(mutfound)-n_muts:len(mutfound)], q[len(mutfound)-n_muts:len(mutfound)])
 							r = (p[0:n_muts] + q[0:n_muts]) / 2 #average allele frequency across the two populations for all shared loci that were initially segregating
 							n12 = sum(r == 1) #number of loci that have fixed in both populations
-							if n1>0 and n2>0:
+							if n1>0 and n2>0: #prevent dividing by zero errors
 								kens_metric = (n12/n1 + n12/n2)/2 #average perctange of fixed loci that have fixed same allele in both populations
 							else:
 								kens_metric = np.nan
@@ -372,10 +372,19 @@ def main():
 							#save summary data
 							write_data_to_output(fileHandle_A, [round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric, n_fix_avg, segvar_parental, segvar_nonparental])
 
-							#save hybrid phenotype data
-							pheno_data = np.column_stack( [np.array([i+1 for i in range(len(offpheno))]), np.array([rep+1]*len(offpheno)), np.array([n_muts]*len(offpheno)), np.array([round(angles[j]*180/math.pi,2)]*len(offpheno)), np.array([opt_dist * (2*(1-math.cos(angles[j])))**(0.5)]*len(offpheno)), offpheno]) #make data
+							#save hybrid phenotype data (to make hybrid clouds)
+							pheno_data = np.column_stack( [np.array([i+1 for i in range(len(offpheno))]), np.array([rep+1]*len(offpheno)), np.array([n_muts]*len(offpheno)), np.array([round(angles[j]*180/math.pi,2)]*len(offpheno)), np.array([opt_dist * (2*(1-math.cos(angles[j])))**(0.5)]*len(offpheno)), offpheno]) #make hybrid phenotype data (with a bunch of identifiers in front of each phenotype)
 							sim_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f' %(n, N, alpha, u, sigma) #sim id
 							np.savetxt('%s/Fig3_4_phenotypes_%s.csv' %(data_dir, sim_id), pheno_data, fmt='%.3f', delimiter=',') #save
+
+							#save segregating ancestral mutation data (to calculate effect sizes and initial selection coefficients)
+							ancestral_muts = mut1[len(mutfound)-n_muts:len(mutfound)]
+							ancestral_effects = np.linalg.norm(ancestral_muts, axis=1)
+							initial_fitness = np.linalg.norm(ancestral_muts - theta1, axis=1) - np.linalg.norm(theta1)
+							ancestral_selection = np.exp(-0.5 * sigma * ancestral_effects**2) - np.exp(-0.5 * sigma * initial_fitness**2)
+							mut_data = np.column_stack( [np.array([i+1 for i in range(n_muts)]), np.array([rep+1]*n_muts), np.array([n_muts]*n_muts), np.array([round(angles[j]*180/math.pi,2)]*n_muts), np.array([opt_dist * (2*(1-math.cos(angles[j])))**(0.5)]*n_muts), ancestral_muts, ancestral_effects, ancestral_selection]) #make ancestral mutation data (with a bunch of identifiers)
+							sim_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f' %(n, N, alpha, u, sigma) #sim id
+							np.savetxt('%s/Fig3_4_ancestral_mutations_%s.csv' %(data_dir, sim_id), mut_data, fmt='%.5f', delimiter=',') #save
 
 							# hyloads[rep] = hyload #save hybrid load for this replicate
 
