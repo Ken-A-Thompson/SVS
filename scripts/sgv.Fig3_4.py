@@ -380,17 +380,28 @@ def main():
 							sim_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f' %(n, N, alpha, u, sigma) #sim id
 							np.savetxt('%s/Fig3_4_ancestral_mutations_%s.csv' %(data_dir, sim_id), mut_data, fmt='%.5f', delimiter=',') #save
 
-							#rotate axes so that new x axis is parallel to a line connecting parental optima
+							# #rotate axes so that new x axis is parallel to the line connecting parental optima
+							# mut1_seg = mut1[len(mutfound)-n_muts:] #look at only segregating ancestral muts and de novos
+							# mut2_seg = mut2[len(mutfound)-n_muts:]
+							# if angles[j] % np.pi == 0: #if parallel selection then keep axes as they are (required to prevent dividing by zero in formula below)
+							# 	mut1_rotated = mut1_seg
+							# 	mut2_rotated = mut2_seg
+							# else:								
+							# 	spin = -np.arctan(np.sin(angles[j])/(1-np.cos(angles[j]))) #angle to rotate axes 0 and 1 so that axis 0 is always parallel to the line connecting parental optima (worked out on paper!)
+							# 	mut1_rotated_12 = np.array([np.dot([[np.cos(spin), np.sin(spin)],[-np.sin(spin), np.cos(spin)]], mut1_seg[ind,0:2]) for ind in range(len(mut1_seg))]) #perform rotation on axes 0 and 1
+							# 	mut2_rotated_12 = np.array([np.dot([[np.cos(spin), np.sin(spin)],[-np.sin(spin), np.cos(spin)]], mut2_seg[ind,0:2]) for ind in range(len(mut2_seg))]) #perform rotation on axes 0 and 1
+							# 	mut1_rotated = np.column_stack([mut1_rotated_12, mut1_seg[:,2:]]) #add rotated columns to the columns which did not have to be rotated
+							# 	mut2_rotated = np.column_stack([mut2_rotated_12, mut2_seg[:,2:]]) #add rotated columns to the columns which did not have to be rotated
+
+							#rotate axes so that new x axis is parallel to the line connecting the ancestor with the new optimum 
 							mut1_seg = mut1[len(mutfound)-n_muts:] #look at only segregating ancestral muts and de novos
 							mut2_seg = mut2[len(mutfound)-n_muts:]
-							if angles[j] % np.pi == 0: #if parallel selection then keep axes as they are (required to prevent dividing by zero in formula below)
-								mut1_rotated = mut1_seg
+							mut1_rotated = mut1_seg #we always set pop1 to evolve along the x axis, so no rotation needed
+							if angles[j] % np.pi == 0: #if pop2 also evolves along the x-axis then do not rotate
 								mut2_rotated = mut2_seg
 							else:								
-								spin = -np.arctan(np.sin(angles[j])/(1-np.cos(angles[j]))) #angle to rotate axes 0 and 1 so that axis 0 is always parallel to the line connecting parental optima (worked out on paper!)
-								mut1_rotated_12 = np.array([np.dot([[np.cos(spin), np.sin(spin)],[-np.sin(spin), np.cos(spin)]], mut1_seg[ind,0:2]) for ind in range(len(mut1_seg))]) #perform rotation on axes 0 and 1
+								spin = angles[j] #else rotate by theta so that new x-axis aligns with new pop2 optimum
 								mut2_rotated_12 = np.array([np.dot([[np.cos(spin), np.sin(spin)],[-np.sin(spin), np.cos(spin)]], mut2_seg[ind,0:2]) for ind in range(len(mut2_seg))]) #perform rotation on axes 0 and 1
-								mut1_rotated = np.column_stack([mut1_rotated_12, mut1_seg[:,2:]]) #add rotated columns to the columns which did not have to be rotated
 								mut2_rotated = np.column_stack([mut2_rotated_12, mut2_seg[:,2:]]) #add rotated columns to the columns which did not have to be rotated
 
 							#look at effect sizes of mutations (from SGV or not) along axes (parental or not)
