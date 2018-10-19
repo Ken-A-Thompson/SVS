@@ -380,28 +380,17 @@ def main():
 							mut_data = np.column_stack( [np.array([i+1 for i in range(n_muts)]), np.array([rep+1]*n_muts), np.array([n_muts]*n_muts), np.array([round(angles[j]*180/math.pi,2)]*n_muts), np.array([opt_dist * (2*(1-math.cos(angles[j])))**(0.5)]*n_muts), ancestral_muts, ancestral_effects, ancestral_selection]) #make ancestral mutation data (with a bunch of identifiers)
 							np.savetxt(fileHandle_C, mut_data, fmt='%.5f', delimiter=',') #save
 
-							# #rotate axes so that new x axis is parallel to the line connecting parental optima
-							# mut1_seg = mut1[len(mutfound)-n_muts:] #look at only segregating ancestral muts and de novos
-							# mut2_seg = mut2[len(mutfound)-n_muts:]
-							# if angles[j] % np.pi == 0: #if parallel selection then keep axes as they are (required to prevent dividing by zero in formula below)
-							# 	mut1_rotated = mut1_seg
-							# 	mut2_rotated = mut2_seg
-							# else:								
-							# 	spin = -np.arctan(np.sin(angles[j])/(1-np.cos(angles[j]))) #angle to rotate axes 0 and 1 so that axis 0 is always parallel to the line connecting parental optima (worked out on paper!)
-							# 	mut1_rotated_12 = np.array([np.dot([[np.cos(spin), np.sin(spin)],[-np.sin(spin), np.cos(spin)]], mut1_seg[ind,0:2]) for ind in range(len(mut1_seg))]) #perform rotation on axes 0 and 1
-							# 	mut2_rotated_12 = np.array([np.dot([[np.cos(spin), np.sin(spin)],[-np.sin(spin), np.cos(spin)]], mut2_seg[ind,0:2]) for ind in range(len(mut2_seg))]) #perform rotation on axes 0 and 1
-							# 	mut1_rotated = np.column_stack([mut1_rotated_12, mut1_seg[:,2:]]) #add rotated columns to the columns which did not have to be rotated
-							# 	mut2_rotated = np.column_stack([mut2_rotated_12, mut2_seg[:,2:]]) #add rotated columns to the columns which did not have to be rotated
-
-							#rotate axes so that new x axis is parallel to the line connecting the ancestor with the new optimum 
+							#rotate axes so that new x axis is parallel to the line connecting parental optima
 							mut1_seg = mut1[len(mutfound)-n_muts:] #look at only segregating ancestral muts and de novos
 							mut2_seg = mut2[len(mutfound)-n_muts:]
-							mut1_rotated = mut1_seg #we always set pop1 to evolve along the x axis, so no rotation needed
-							if angles[j] % np.pi == 0: #if pop2 also evolves along the x-axis then do not rotate
+							if angles[j] % np.pi == 0: #if parallel selection then keep axes as they are (required to prevent dividing by zero in formula below)
+								mut1_rotated = mut1_seg
 								mut2_rotated = mut2_seg
 							else:								
-								spin = angles[j] #else rotate by theta so that new x-axis aligns with new pop2 optimum
+								spin = -np.arctan(np.sin(angles[j])/(1-np.cos(angles[j]))) #angle to rotate axes 0 and 1 so that axis 0 is always parallel to the line connecting parental optima (worked out on paper!)
+								mut1_rotated_12 = np.array([np.dot([[np.cos(spin), np.sin(spin)],[-np.sin(spin), np.cos(spin)]], mut1_seg[ind,0:2]) for ind in range(len(mut1_seg))]) #perform rotation on axes 0 and 1
 								mut2_rotated_12 = np.array([np.dot([[np.cos(spin), np.sin(spin)],[-np.sin(spin), np.cos(spin)]], mut2_seg[ind,0:2]) for ind in range(len(mut2_seg))]) #perform rotation on axes 0 and 1
+								mut1_rotated = np.column_stack([mut1_rotated_12, mut1_seg[:,2:]]) #add rotated columns to the columns which did not have to be rotated
 								mut2_rotated = np.column_stack([mut2_rotated_12, mut2_seg[:,2:]]) #add rotated columns to the columns which did not have to be rotated
 
 							#look at effect sizes of mutations (from SGV or not) along axes (parental or not)
@@ -437,11 +426,55 @@ def main():
 							rel_var_effect_dn = (rel_var_effect_dn1 + rel_var_effect_dn2) /2
 							# hyloads[rep] = hyload #save hybrid load for this replicate
 
+							#rotate axes so that new x axis is parallel to the line connecting the ancestor with the new optimum 
+							mut1_seg = mut1[len(mutfound)-n_muts:] #look at only segregating ancestral muts and de novos
+							mut2_seg = mut2[len(mutfound)-n_muts:]
+							mut1_rotated = mut1_seg #we always set pop1 to evolve along the x axis, so no rotation needed
+							if angles[j] % np.pi == 0: #if pop2 also evolves along the x-axis then do not rotate
+								mut2_rotated = mut2_seg
+							else:								
+								spin = angles[j] #else rotate by theta so that new x-axis aligns with new pop2 optimum
+								mut2_rotated_12 = np.array([np.dot([[np.cos(spin), np.sin(spin)],[-np.sin(spin), np.cos(spin)]], mut2_seg[ind,0:2]) for ind in range(len(mut2_seg))]) #perform rotation on axes 0 and 1
+								mut2_rotated = np.column_stack([mut2_rotated_12, mut2_seg[:,2:]]) #add rotated columns to the columns which did not have to be rotated
+
+							#look at effect sizes of mutations (from SGV or not) along axes (parental or not)
+							p = sum(pop1[:, len(mutfound)-n_muts:]) / N_adapt #frequency of derived alleles in pop1
+							q = sum(pop2[:, len(mutfound)-n_muts:]) / N_adapt #frequency of derived alleles in pop1
+							mut1_fixed = mut1_rotated[p==1] #mutations that fixed in pop1
+							mut2_fixed = mut2_rotated[q==1] #mutations that fixed in pop2
+							#sgv
+							mut1_fixed_sgv = mut1_fixed[0:n_muts] #mutations segregating in sgv
+							mut2_fixed_sgv = mut2_fixed[0:n_muts] #mutations segregating in sgv
+							mut1_fixed_sgv_mean = np.mean(np.abs(mut1_fixed_sgv), axis=0) #mean absolute effect of fixed mutations from sgv in each dimension for pop1
+							mut2_fixed_sgv_mean = np.mean(np.abs(mut2_fixed_sgv), axis=0) #mean absolute effect of fixed mutations from sgv in each dimension for pop2
+							mut1_fixed_sgv_var = np.var(mut1_fixed_sgv, axis=0) #variance in effect of fixed mutations from sgv in each dimension for pop1
+							mut2_fixed_sgv_var = np.var(mut2_fixed_sgv, axis=0) #variance in effect of fixed mutations from sgv in each dimension for pop2
+							rel_effect_sgv1 = mut1_fixed_sgv_mean[0]/np.mean(mut1_fixed_sgv_mean[1:]) #mean effect along parental axis relative to all others
+							rel_effect_sgv2 = mut2_fixed_sgv_mean[0]/np.mean(mut2_fixed_sgv_mean[1:])
+							rel_var_effect_sgv1 = mut1_fixed_sgv_var[0]/np.mean(mut1_fixed_sgv_var[1:]) #variance along parental axis relative to all others
+							rel_var_effect_sgv2 = mut2_fixed_sgv_var[0]/np.mean(mut2_fixed_sgv_var[1:])
+							rel_effect_sgv_sel = (rel_effect_sgv1 + rel_effect_sgv2) /2
+							rel_var_effect_sgv_sel = (rel_var_effect_sgv1 + rel_var_effect_sgv2) /2
+							#de novo
+							mut1_fixed_dn = mut1_fixed[n_muts:] #mutations arising de novo in pop1
+							mut2_fixed_dn = mut2_fixed[n_muts:] #mutations arising de novo in pop2
+							mut1_fixed_dn_mean = np.mean(np.abs(mut1_fixed_dn), axis=0) #mean effect of fixed mutations arising de novo in each dimension for pop1
+							mut2_fixed_dn_mean = np.mean(np.abs(mut2_fixed_dn), axis=0) #mean effect of fixed mutations arising de novo in each dimension for pop2
+							mut1_fixed_dn_var = np.var(mut1_fixed_dn, axis=0) #variance in effect of fixed mutations arising de novo in each dimension for pop1
+							mut2_fixed_dn_var = np.var(mut2_fixed_dn, axis=0) #variance in effect of fixed mutations arising de novo in each dimension for pop2
+							rel_effect_dn1 = mut1_fixed_dn_mean[0]/np.mean(mut1_fixed_dn_mean[1:]) #mean effect along parental axis relative to all others
+							rel_effect_dn2 = mut2_fixed_dn_mean[0]/np.mean(mut2_fixed_dn_mean[1:])
+							rel_var_effect_dn1 = mut1_fixed_dn_var[0]/np.mean(mut1_fixed_dn_var[1:]) #variance along parental axis relative to all others
+							rel_var_effect_dn2 = mut2_fixed_dn_var[0]/np.mean(mut2_fixed_dn_var[1:])
+							rel_effect_dn_sel = (rel_effect_dn1 + rel_effect_dn2) /2
+							rel_var_effect_dn_sel = (rel_var_effect_dn1 + rel_var_effect_dn2) /2
+							# hyloads[rep] = hyload #save hybrid load for this replicate
+
 							#save summary data
-							write_data_to_output(fileHandle_A, [round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric, n_fix_avg, segvar_parental, segvar_nonparental, rel_effect_sgv, rel_effect_dn, rel_var_effect_sgv, rel_var_effect_dn])
+							write_data_to_output(fileHandle_A, [round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric, n_fix_avg, segvar_parental, segvar_nonparental, rel_effect_sgv, rel_effect_dn, rel_var_effect_sgv, rel_var_effect_dn, rel_effect_sgv_sel, rel_effect_dn_sel, rel_var_effect_sgv_sel, rel_var_effect_dn_sel])
 
 							#print an update
-							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, delta=%.3f, segvar=%.3f, shared_exp_het=%.4f, all_exp_het=%.4f, rel_mean_hyb_fit=%.3f, rel_max_hyb_fit=%.3f, fit_mean_hyb=%.3f, exp_fit_mean_hyb=%.3f, kenmet=%.3f, nfix = %.2f, segvar_par=%.3f, segvar_nonparental=%.3f, rel_effect_sgv=%.3f, rel_effect_dn=%.3f, rel_var_effect_sgv=%.3f , rel_var_effect_dn=%.3f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric, n_fix_avg, segvar_parental, segvar_nonparental, rel_effect_sgv, rel_effect_dn, rel_var_effect_sgv, rel_var_effect_dn)) 
+							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, delta=%.3f, segvar=%.3f, shared_exp_het=%.4f, all_exp_het=%.4f, rel_mean_hyb_fit=%.3f, rel_max_hyb_fit=%.3f, fit_mean_hyb=%.3f, exp_fit_mean_hyb=%.3f, kenmet=%.3f, nfix = %.2f, segvar_par=%.3f, segvar_nonparental=%.3f, rel_effect_sgv=%.3f, rel_effect_dn=%.3f, rel_var_effect_sgv=%.3f, rel_var_effect_dn=%.3f, rel_effect_sgv_sel=%.3f, rel_effect_dn_sel=%.3f, rel_var_effect_sgv_sel=%.3f, rel_var_effect_dn_sel=%.3f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric, n_fix_avg, segvar_parental, segvar_nonparental, rel_effect_sgv, rel_effect_dn, rel_var_effect_sgv, rel_var_effect_dn, rel_effect_sgv_sel, rel_effect_dn_sel, rel_var_effect_sgv_sel, rel_var_effect_dn_sel)) 
 	
 							# go to next rep
 							rep += 1
