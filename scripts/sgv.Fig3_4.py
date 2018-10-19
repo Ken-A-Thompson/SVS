@@ -18,7 +18,9 @@ def open_output_files(n, N, alpha, u, sigma, data_dir):
 	"""
 	sim_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f' %(n, N, alpha, u, sigma)
 	outfile_A = open("%s/Fig3_4_%s.csv" %(data_dir, sim_id), "w") #summary data
-	return outfile_A
+	outfile_B = open("%s/Fig3_4_phenotypes_%s.csv" %(data_dir, sim_id),"w") #hybrid phenotypes
+	outfile_C = open("%s/Fig3_4_ancestral_mutations_%s.csv" %(data_dir, sim_id),"w") #stats on ancestral mutations
+	return [outfile_A, outfile_B, outfile_C]
 
 def write_data_to_output(fileHandles, data):
 	"""
@@ -183,7 +185,7 @@ def main():
 					theta2_list = np.array([np.append([opt_dist*math.cos(x), opt_dist*math.sin(x)], [0]*(n-2)) for x in angles]) #optima to use
 
 				# open output files
-				fileHandle_A = open_output_files(n, N_adapt, alpha_adapt, u_adapt, sigma_adapt, data_dir)
+				[fileHandle_A, fileHandle_B, fileHandle_C] = open_output_files(n, N_adapt, alpha_adapt, u_adapt, sigma_adapt, data_dir)
 
 				#loop over optima
 				j = 0
@@ -368,8 +370,7 @@ def main():
 						
 							#save hybrid phenotype data (to make hybrid clouds)
 							pheno_data = np.column_stack( [np.array([i+1 for i in range(len(offpheno))]), np.array([rep+1]*len(offpheno)), np.array([n_muts]*len(offpheno)), np.array([round(angles[j]*180/math.pi,2)]*len(offpheno)), np.array([opt_dist * (2*(1-math.cos(angles[j])))**(0.5)]*len(offpheno)), offpheno]) #make hybrid phenotype data (with a bunch of identifiers in front of each phenotype)
-							sim_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f' %(n, N, alpha, u, sigma) #sim id
-							np.savetxt('%s/Fig3_4_phenotypes_%s.csv' %(data_dir, sim_id), pheno_data, fmt='%.3f', delimiter=',') #save
+							np.savetxt(fileHandle_B, pheno_data, fmt='%.3f', delimiter=',') #save
 
 							#save segregating ancestral mutation data (to calculate effect sizes and initial selection coefficients)
 							ancestral_muts = mut1[len(mutfound)-n_muts:len(mutfound)]
@@ -377,8 +378,7 @@ def main():
 							initial_fitness = np.linalg.norm(ancestral_muts - theta1, axis=1) - np.linalg.norm(theta1)
 							ancestral_selection = np.exp(-0.5 * sigma * ancestral_effects**2) - np.exp(-0.5 * sigma * initial_fitness**2)
 							mut_data = np.column_stack( [np.array([i+1 for i in range(n_muts)]), np.array([rep+1]*n_muts), np.array([n_muts]*n_muts), np.array([round(angles[j]*180/math.pi,2)]*n_muts), np.array([opt_dist * (2*(1-math.cos(angles[j])))**(0.5)]*n_muts), ancestral_muts, ancestral_effects, ancestral_selection]) #make ancestral mutation data (with a bunch of identifiers)
-							sim_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f' %(n, N, alpha, u, sigma) #sim id
-							np.savetxt('%s/Fig3_4_ancestral_mutations_%s.csv' %(data_dir, sim_id), mut_data, fmt='%.5f', delimiter=',') #save
+							np.savetxt(fileHandle_C, mut_data, fmt='%.5f', delimiter=',') #save
 
 							# #rotate axes so that new x axis is parallel to the line connecting parental optima
 							# mut1_seg = mut1[len(mutfound)-n_muts:] #look at only segregating ancestral muts and de novos
@@ -459,6 +459,8 @@ def main():
 
 				# cleanup
 				close_output_files(fileHandle_A)
+				close_output_files(fileHandle_B)
+				close_output_files(fileHandle_C)
 
 				#next dimension
 				l += 1
