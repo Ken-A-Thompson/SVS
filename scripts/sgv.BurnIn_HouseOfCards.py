@@ -36,7 +36,7 @@ def save_arrays(n, N, alpha, u, sigma, rep, data_dir, mut, pop):
 	"""
 	Save numpy arrays of mutations and their frequencies.
 	"""
-	sim_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f_rep%d' %(n, N, alpha, u, sigma, rep)
+	sim_id = 'Burn_HOC_n%d_N%d_alpha%.4f_u%.4f_sigma%.4f_rep%d' %(n, N, alpha, u, sigma, rep)
 	
 	filename = "%s/Muts_%s.npy" %(data_dir, sim_id)
 	np.save(filename, mut[1:]) #save mutations
@@ -138,12 +138,13 @@ def histogram_files(pop, mut, theta, mean_mut, cov_mut, n, N, alpha, u, sigma, r
 ##PARAMETERS##
 ######################################################################
 
-ns = [5] #phenotypic dimensions (positive integer >=1)
+ns = [2] #phenotypic dimensions (positive integer >=1)
 Ns = [10000] #number of haploid individuals (positive integer >=1)
 u = 0.001 #mutation probability per generation per genome (0<=u<=1)
-sigmas = [10] #strength of selection (positive real number)
+sigmas = [1] #strength of selection (positive real number)
 alpha = 0.1 #mutational sd in each trait dimension (positive real number)
 
+# if this doesn't work then make pop size bigger...
 maxgen = 100000 #total number of generations population adapts for (positive integer)
 gen_rec = 500 #print every this many generations (positve integer <=maxgen)
 
@@ -152,9 +153,9 @@ remove_fixed = False #If true, remove mutations that are fixed
 
 make_histogram_files = True #if true ouput mutation sizes for plotting 
 
-reps = 10 #number of replicates (positive integer)
+reps = 7 #number of replicates (positive integer)
 
-data_dir = 'data/burnins_revision_100k' #where to save data
+data_dir = 'data/burnins_hoc' #where to save data
 
 ######################################################################
 ##MAIN SIMULATION CODE##
