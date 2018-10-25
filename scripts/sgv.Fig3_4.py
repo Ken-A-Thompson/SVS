@@ -114,7 +114,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ######################################################################
 
 nreps = 10 #number of replicates for each set of parameters
-ns = [2] #phenotypic dimensions (positive integer >=1)
+ns = [5] #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
@@ -141,9 +141,9 @@ sigma_adapts = [1] #selection strengths
 opt_dist = 1 #distance to optima
 
 # n_angles = 36 #number of angles between optima to simulate (including 0 and 180) (>=2)
-n_angles = 30 #number of angles between optima to simulate (including 0 and 180) (>=2)
+n_angles = 37 #number of angles between optima to simulate (including 0 and 180) (>=2)
 
-n_mut_list = [[0, 50]] # de novo and one SGV scenario
+n_mut_list = [[0, 100]] # de novo and one SGV scenario
 
 maxgen = 2000 #total number of generations populations adapt for
 
@@ -399,6 +399,10 @@ def main():
 							q = sum(pop2[:, len(mutfound)-n_muts:]) / N_adapt #frequency of derived alleles in pop1
 							mut1_fixed = mut1_rotated[p==1] #mutations that fixed in pop1
 							mut2_fixed = mut2_rotated[q==1] #mutations that fixed in pop2
+							mean_effect_size_1 = np.mean(np.linalg.norm(mut1_fixed, axis=1)) # mean effect size of mutations fixed in pop 1
+							mean_effect_size_2 = np.mean(np.linalg.norm(mut2_fixed, axis=1)) # mean effect size of mutations fixed in pop 1
+							mean_effect_size = (mean_effect_size_1 + mean_effect_size_2) / 2
+
 							#sgv
 							mut1_fixed_sgv = mut1_fixed[0:n_muts] #mutations segregating in sgv
 							mut2_fixed_sgv = mut2_fixed[0:n_muts] #mutations segregating in sgv
@@ -443,12 +447,18 @@ def main():
 							q = sum(pop2[:, len(mutfound)-n_muts:]) / N_adapt #frequency of derived alleles in pop1
 							mut1_fixed = mut1_rotated[p==1] #mutations that fixed in pop1
 							mut2_fixed = mut2_rotated[q==1] #mutations that fixed in pop2
+							mut1_fixed_mean = np.mean(np.abs(mut1_fixed), axis=0) #mean effect of fixed mutations arising de novo in each dimension for pop1
+							mut2_fixed_mean = np.mean(np.abs(mut2_fixed), axis=0) #mean effect of fixed mutations arising de novo in each dimension for pop2
+							rel_effect_1 = mut1_fixed_mean[0]/np.mean(mut1_fixed_mean[1:]) #mean effect along parental axis relative to all others
+							rel_effect_2 = mut1_fixed_mean[0]/np.mean(mut1_fixed_mean[1:])
+							pleiotropy_index = (rel_effect_1 + rel_effect_2) /2 # how much do fixed alleles vary in the direction of selection vs. all other directions?
+
 							#sgv
 							mut1_fixed_sgv = mut1_fixed[0:n_muts] #mutations segregating in sgv
 							mut2_fixed_sgv = mut2_fixed[0:n_muts] #mutations segregating in sgv
 							mut1_fixed_sgv_mean = np.mean(np.abs(mut1_fixed_sgv), axis=0) #mean absolute effect of fixed mutations from sgv in each dimension for pop1
 							mut2_fixed_sgv_mean = np.mean(np.abs(mut2_fixed_sgv), axis=0) #mean absolute effect of fixed mutations from sgv in each dimension for pop2
-							mut1_fixed_sgv_var = np.var(mut1_fixed_sgv, axis=0) #variance in effect of fixed mutations from sgv in each dimension for pop1
+							mut1_fixed_sgv_var = np.var(mut1_fixed, axis=0) #variance in effect of fixed mutations from sgv in each dimension for pop1
 							mut2_fixed_sgv_var = np.var(mut2_fixed_sgv, axis=0) #variance in effect of fixed mutations from sgv in each dimension for pop2
 							rel_effect_sgv1 = mut1_fixed_sgv_mean[0]/np.mean(mut1_fixed_sgv_mean[1:]) #mean effect along parental axis relative to all others
 							rel_effect_sgv2 = mut2_fixed_sgv_mean[0]/np.mean(mut2_fixed_sgv_mean[1:])
@@ -461,6 +471,7 @@ def main():
 							mut2_fixed_dn = mut2_fixed[n_muts:] #mutations arising de novo in pop2
 							mut1_fixed_dn_mean = np.mean(np.abs(mut1_fixed_dn), axis=0) #mean effect of fixed mutations arising de novo in each dimension for pop1
 							mut2_fixed_dn_mean = np.mean(np.abs(mut2_fixed_dn), axis=0) #mean effect of fixed mutations arising de novo in each dimension for pop2
+
 							mut1_fixed_dn_var = np.var(mut1_fixed_dn, axis=0) #variance in effect of fixed mutations arising de novo in each dimension for pop1
 							mut2_fixed_dn_var = np.var(mut2_fixed_dn, axis=0) #variance in effect of fixed mutations arising de novo in each dimension for pop2
 							rel_effect_dn1 = mut1_fixed_dn_mean[0]/np.mean(mut1_fixed_dn_mean[1:]) #mean effect along parental axis relative to all others
@@ -472,10 +483,10 @@ def main():
 							# hyloads[rep] = hyload #save hybrid load for this replicate
 
 							#save summary data
-							write_data_to_output(fileHandle_A, [round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric, n_fix_avg, segvar_parental, segvar_nonparental, rel_effect_sgv, rel_effect_dn, rel_var_effect_sgv, rel_var_effect_dn, rel_effect_sgv_sel, rel_effect_dn_sel, rel_var_effect_sgv_sel, rel_var_effect_dn_sel])
+							write_data_to_output(fileHandle_A, [round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric, n_fix_avg, segvar_parental, segvar_nonparental, rel_effect_sgv, rel_effect_dn, rel_var_effect_sgv, rel_var_effect_dn, rel_effect_sgv_sel, rel_effect_dn_sel, rel_var_effect_sgv_sel, rel_var_effect_dn_sel, mean_effect_size, pleiotropy_index])
 
 							#print an update
-							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, delta=%.3f, segvar=%.3f, shared_exp_het=%.4f, all_exp_het=%.4f, rel_mean_hyb_fit=%.3f, rel_max_hyb_fit=%.3f, fit_mean_hyb=%.3f, exp_fit_mean_hyb=%.3f, kenmet=%.3f, nfix = %.2f, segvar_par=%.3f, segvar_nonparental=%.3f, rel_effect_sgv=%.3f, rel_effect_dn=%.3f, rel_var_effect_sgv=%.3f, rel_var_effect_dn=%.3f, rel_effect_sgv_sel=%.3f, rel_effect_dn_sel=%.3f, rel_var_effect_sgv_sel=%.3f, rel_var_effect_dn_sel=%.3f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric, n_fix_avg, segvar_parental, segvar_nonparental, rel_effect_sgv, rel_effect_dn, rel_var_effect_sgv, rel_var_effect_dn, rel_effect_sgv_sel, rel_effect_dn_sel, rel_var_effect_sgv_sel, rel_var_effect_dn_sel)) 
+							print('N=%d, sigma=%.2f, n=%d, angle=%r, rep=%d, n_muts=%d, delta=%.3f, segvar=%.3f, shared_exp_het=%.4f, all_exp_het=%.4f, rel_mean_hyb_fit=%.3f, rel_max_hyb_fit=%.3f, fit_mean_hyb=%.3f, exp_fit_mean_hyb=%.3f, kenmet=%.3f, nfix = %.2f, segvar_par=%.3f, segvar_nonparental=%.3f, rel_effect_sgv=%.3f, rel_effect_dn=%.3f, rel_var_effect_sgv=%.3f, rel_var_effect_dn=%.3f, rel_effect_sgv_sel=%.3f, rel_effect_dn_sel=%.3f, rel_var_effect_sgv_sel=%.3f, rel_var_effect_dn_sel=%.3f, mean_effect_size=%3f, pleiotropy=%2f' %(N_adapt, sigma_adapt, n, round(angles[j]*180/math.pi,2), rep+1, n_muts, opt_dist * (2*(1-math.cos(angles[j])))**(0.5), segvar, EH, EH_all, rhyfit, rel_max_hyfit, fitmeanpheno, Efitmeanpheno, kens_metric, n_fix_avg, segvar_parental, segvar_nonparental, rel_effect_sgv, rel_effect_dn, rel_var_effect_sgv, rel_var_effect_dn, rel_effect_sgv_sel, rel_effect_dn_sel, rel_var_effect_sgv_sel, rel_var_effect_dn_sel, mean_effect_size, pleiotropy_index)) 
 	
 							# go to next rep
 							rep += 1
