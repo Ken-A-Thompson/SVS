@@ -140,7 +140,7 @@ sigma_adapts = [1] #selection strengths
 
 opt_dist = 1 #distance to optima
 
-n_angles = 30 #number of angles between optima to simulate (including 0 and 180) (>=2)
+n_angles = 37 #number of angles between optima to simulate (including 0 and 180) (>=2)
 
 n_mut_list = [[0, 50]] # de novo and one SGV scenario
 
