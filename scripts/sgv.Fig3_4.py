@@ -394,13 +394,13 @@ def main():
 								mut2_rotated = np.column_stack([mut2_rotated_12, mut2_seg[:,2:]]) #add rotated columns to the columns which did not have to be rotated
 
 							#look at effect sizes of mutations (from SGV or not) along axes (parental or not)
-							p = sum(pop1[:, len(mutfound)-n_muts:]) / N_adapt #frequency of derived alleles in pop1
-							q = sum(pop2[:, len(mutfound)-n_muts:]) / N_adapt #frequency of derived alleles in pop1
+							p = sum(pop1[:, len(mutfound)-n_muts:]) / N_adapt #frequency of derived alleles in pop1 (excluding those fixed in ancestor)
+							q = sum(pop2[:, len(mutfound)-n_muts:]) / N_adapt #frequency of derived alleles in pop2 (excluding those fixed in ancestor)
 							mut1_fixed = mut1_rotated[p==1] #mutations that fixed in pop1
 							mut2_fixed = mut2_rotated[q==1] #mutations that fixed in pop2
 							#sgv
-							mut1_fixed_sgv = mut1_fixed[0:n_muts] #mutations segregating in sgv
-							mut2_fixed_sgv = mut2_fixed[0:n_muts] #mutations segregating in sgv
+							mut1_fixed_sgv = mut1_fixed[0:n_muts] #mutations previously segregating in sgv that have fixed in pop1
+							mut2_fixed_sgv = mut2_fixed[0:n_muts] #mutations previously segregating in sgv that have fixed in pop2
 							mut1_fixed_sgv_mean = np.mean(np.abs(mut1_fixed_sgv), axis=0) #mean absolute effect of fixed mutations from sgv in each dimension for pop1
 							mut2_fixed_sgv_mean = np.mean(np.abs(mut2_fixed_sgv), axis=0) #mean absolute effect of fixed mutations from sgv in each dimension for pop2
 							mut1_fixed_sgv_var = np.var(mut1_fixed_sgv, axis=0) #variance in effect of fixed mutations from sgv in each dimension for pop1
