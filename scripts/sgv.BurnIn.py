@@ -138,7 +138,7 @@ def histogram_files(pop, mut, theta, mean_mut, cov_mut, n, N, alpha, u, sigma, r
 ##PARAMETERS##
 ######################################################################
 
-ns = [2,5,10] #phenotypic dimensions (positive integer >=1)
+ns = [5] #phenotypic dimensions (positive integer >=1)
 Ns = [10000] #number of haploid individuals (positive integer >=1)
 u = 0.001 #mutation probability per generation per genome (0<=u<=1)
 sigmas = [0.01] #strength of selection (positive real number)
@@ -154,7 +154,7 @@ make_histogram_files = True #if true ouput mutation sizes for plotting
 
 reps = 10 #number of replicates (positive integer)
 
-data_dir = 'data/burnins_revision_100k' #where to save data
+data_dir = 'data/burnins_var_over_time' #where to save data
 
 ######################################################################
 ##MAIN SIMULATION CODE##
@@ -207,6 +207,8 @@ def main():
 
 						# wright-fisher (multinomial) sampling
 						parents = np.random.multinomial(N, w/sum(w)) #number of times each parent chosen
+						parent_phenos = np.dot(pop[parents], mut)	
+						psegvar = np.mean(np.var(parent_phenos, axis = 0)) # segregation variance (mean of individual trait variances)
 						off = np.repeat(pop, parents, axis=0) #offspring genotypes
 
 						# mating and recombination
@@ -222,13 +224,13 @@ def main():
 						if gen % gen_rec == 0:
 							
 							# print(np.mean(pop[:,1:],axis=0))
-							print('N=%d, sigma=%.2f, n=%d   rep=%d   gen=%d   num_seg=%d   mean_freq=%.3f   mean_dist=%.3f' %(N, sigma, n, rep, gen, len(mut), np.mean(np.mean(pop[:,1:],axis=0)), np.mean(np.linalg.norm(mut - theta, axis=1))))
+							print('N=%d, sigma=%.2f, n=%d   rep=%d   gen=%d   num_seg=%d   mean_freq=%.3f   mean_dist=%.3f   psegvar=%.3f' %(N, sigma, n, rep, gen, len(mut), np.mean(np.mean(pop[:,1:],axis=0)), np.mean(np.linalg.norm(mut - theta, axis=1)), psegvar))
 
 							#save for plotting approach to MS balance (number of segregating mutations, avg frequency)
 							seg = np.any(pop-1, axis=0) #segregating mutations only
 							mut_seg = mut[seg] #which mutations segregating
 							pop_seg = pop[:, seg] #only look at those sites which are segregating
-							write_data_to_output(fileHandles, [rep, gen, len(mut_seg), np.mean(np.mean(pop_seg,axis=0)), np.mean(np.linalg.norm(mut_seg - theta, axis=1))]) #save replicate, generation, number of segregating mutations, avg frequency, and average departure from optimum
+							write_data_to_output(fileHandles, [rep, gen, len(mut_seg), np.mean(np.mean(pop_seg,axis=0)), np.mean(np.linalg.norm(mut_seg - theta, axis=1)), psegvar]) #save replicate, generation, number of segregating mutations, avg frequency, and average departure from optimum
 
 						# go to next generation
 						gen += 1

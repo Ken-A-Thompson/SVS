@@ -123,14 +123,14 @@ N = 10000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 sigma = 0.01 #selection strength
-burn_dir = 'data/burnins_revision'
+burn_dir = 'data/burnins_revision_100k'
 rrep = np.random.choice(n_reps, nreps, replace=True) #randomly assign each rep an ancestor, without or with replacement (i.e., unique ancestor for each sim or not)
 
 ######################################################################
 ##PARAMETERS FOR ADAPTING POPULATION##
 ######################################################################
 
-n_mut_list = [[0, 40]]
+n_mut_list = [[0, 100]]
 # n_mut_list = [list(np.arange(0, 2, 1)), list(np.arange(0, 2, 1)), list(np.arange(0, 2, 1))] #starting nmuts, final n_muts, interval
 
 N_adapts = [1000] #number of haploid individuals (positive integer)
@@ -139,7 +139,7 @@ u_adapt = 0.001 #mutation probability per generation per genome (0<u<1)
 sigma_adapts = [1] #selection strengths
 
 maxgen = 2000 #total number of generations population adapts for
-gen_rec = 100 #print and save after this many generations
+gen_rec = 50 #print and save after this many generations
 
 remove_lost = True #If true, remove mutations that are lost (0 for all individuals)
 remove = 'derived' #.. any derived (not from ancestor) mutation that is lost 
@@ -189,7 +189,7 @@ def main():
 						while rep < nreps:
 
 							#load ancestor
-							burn_id = 'm%d_N%d_alpha%.1f_u%.4f_sigma%.3f_rep%d' %(n, N, alpha, u, sigma, rrep[rep]+1)
+							burn_id = 'n%d_N%d_alpha%.4f_u%.4f_sigma%.4f_rep%d' %(n, N, alpha, u, sigma, rrep[rep]+1)
 
 							filename = "%s/Muts_%s.npy" %(burn_dir, burn_id)
 							ancestor_muts = np.load(filename) #load mutations
