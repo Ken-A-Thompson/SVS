@@ -138,7 +138,7 @@ def histogram_files(pop, mut, theta, mean_mut, cov_mut, n, N, alpha, u, sigma, r
 ##PARAMETERS##
 ######################################################################
 
-ns = [5] #phenotypic dimensions (positive integer >=1)
+ns = [25] #phenotypic dimensions (positive integer >=1)
 Ns = [10000] #number of haploid individuals (positive integer >=1)
 u = 0.001 #mutation probability per generation per genome (0<=u<=1)
 sigmas = [0.01] #strength of selection (positive real number)
@@ -152,7 +152,7 @@ remove_fixed = False #If true, remove mutations that are fixed
 
 make_histogram_files = True #if true ouput mutation sizes for plotting 
 
-reps = 10 #number of replicates (positive integer)
+reps = 5 #number of replicates (positive integer)
 
 data_dir = 'data/burnins_var_over_time' #where to save data
 

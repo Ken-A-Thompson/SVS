@@ -113,7 +113,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 
 nreps = 5 #number of replicates for each set of parameters
 # ns = [2, 5, 10] #phenotypic dimensions (positive integer >=1)
-ns = [5] #phenotypic dimensions (positive integer >=1)
+ns = [25] #phenotypic dimensions (positive integer >=1)
 
 data_dir = 'data'
 
@@ -126,7 +126,7 @@ N = 10000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 sigma = 0.01 #selection strength
-burn_dir = 'data/burnins_revision_100k'
+burn_dir = 'data/burnins_var_over_time'
 rrep = np.random.choice(n_reps, nreps, replace = False) #randomly assign each rep an ancestor
 
 ######################################################################

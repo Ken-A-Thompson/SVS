@@ -114,7 +114,7 @@ def remove_muts(remove, remove_lost, pop, mut, mutfound):
 ######################################################################
 
 nreps = 10 #number of replicates for each set of parameters
-ns = [5] #phenotypic dimensions (positive integer >=1)
+ns = [25] #phenotypic dimensions (positive integer >=1)
 data_dir = 'data'
 
 ######################################################################
@@ -126,7 +126,7 @@ N = 10000 #number of individuals (positive integer >=1)
 alpha = 0.1 #mutational sd (positive real number)
 u = 0.001 #mutation probability per generation per genome (0<u<1)
 sigma = 0.01 #selection strength
-burn_dir = 'data/burnins_revision_100k'
+burn_dir = 'data/burnins_var_over_time'
 rrep = np.random.choice(n_reps, nreps, replace = False) #randomly assign each rep an ancestor
 
 ######################################################################
@@ -136,12 +136,12 @@ rrep = np.random.choice(n_reps, nreps, replace = False) #randomly assign each re
 N_adapts = [1000] #number of haploid individuals (positive integer)
 alpha_adapt = alpha #mutational sd (positive real number)
 u_adapt = u #mutation probability per generation per genome (0<u<1)
-sigma_adapts = [1] #selection strengths
+sigma_adapts = [10] #selection strengths
 
 opt_dist = 1 #distance to optima
 
 # n_angles = 36 #number of angles between optima to simulate (including 0 and 180) (>=2)
-n_angles = 37 #number of angles between optima to simulate (including 0 and 180) (>=2)
+n_angles = 74 #number of angles between optima to simulate (including 0 and 180) (>=2)
 
 n_mut_list = [[0, 100]] # de novo and one SGV scenario
 
